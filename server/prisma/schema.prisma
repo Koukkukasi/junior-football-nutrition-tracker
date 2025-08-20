@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  COACH
+  ADMIN
+}
+
+enum PlayerPosition {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+
+enum MealType {
+  BREAKFAST
+  SNACK
+  LUNCH
+  DINNER
+  EVENING_SNACK
+}
+
+model User {
+  id                String           @id @default(uuid())
+  clerkId           String           @unique
+  email             String           @unique
+  name              String
+  age               Int
+  role              UserRole         @default(PLAYER)
+  position          PlayerPosition?
+  parentEmail       String?
+  dataConsent       Boolean          @default(false)
+  teamId            String?
+  team              Team?            @relation(fields: [teamId], references: [id])
+  foodEntries       FoodEntry[]
+  performanceMetrics PerformanceMetric[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+
+  @@index([clerkId])
+  @@index([email])
+  @@index([teamId])
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  description String?
+  coachId     String?
+  players     User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([code])
+  @@index([coachId])
+}
+
+model FoodEntry {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  date        DateTime
+  mealType    MealType
+  time        String
+  location    String?
+  description String
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, date])
+  @@index([date])
+}
+
+model PerformanceMetric {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  date           DateTime
+  energyLevel    Int      // 1-5 scale
+  sleepHours     Float
+  isTrainingDay  Boolean  @default(false)
+  trainingType   String?
+  matchDay       Boolean  @default(false)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@index([date])
+}

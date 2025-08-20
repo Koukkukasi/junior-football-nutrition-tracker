@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Junior Football Nutrition Tracker" [level=1] [ref=e6]
+      - generic [ref=e7]:
+        - link "Sign In" [ref=e8] [cursor=pointer]:
+          - /url: /sign-in
+        - link "Get Started" [ref=e9] [cursor=pointer]:
+          - /url: /sign-up
+  - generic [ref=e10]:
+    - banner [ref=e11]:
+      - heading "Fuel Your Football Journey" [level=2] [ref=e12]
+      - paragraph [ref=e13]: Track nutrition, monitor performance, and reach your full potential as a junior football player
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: 🍎
+        - heading "Smart Food Logging" [level=3] [ref=e17]
+        - paragraph [ref=e18]: Easy meal tracking with 5 daily meal types. Perfect for young athletes on the go.
+        - list [ref=e19]:
+          - listitem [ref=e20]: ✓ Quick entry system
+          - listitem [ref=e21]: ✓ Location tracking
+          - listitem [ref=e22]: ✓ Meal notes
+      - generic [ref=e23]:
+        - generic [ref=e24]: ⚡
+        - heading "Performance Metrics" [level=3] [ref=e25]
+        - paragraph [ref=e26]: Track energy levels, sleep, and training intensity to optimize your game.
+        - list [ref=e27]:
+          - listitem [ref=e28]: ✓ Daily energy tracking
+          - listitem [ref=e29]: ✓ Sleep monitoring
+          - listitem [ref=e30]: ✓ Training logs
+      - generic [ref=e31]:
+        - generic [ref=e32]: 👥
+        - heading "Team Insights" [level=3] [ref=e33]
+        - paragraph [ref=e34]: Coaches can monitor team nutrition and identify areas for improvement.
+        - list [ref=e35]:
+          - listitem [ref=e36]: ✓ Team dashboard
+          - listitem [ref=e37]: ✓ Individual reports
+          - listitem [ref=e38]: ✓ Performance trends
+    - generic [ref=e39]:
+      - link "Start Free Trial" [ref=e40] [cursor=pointer]:
+        - /url: /sign-up
+      - paragraph [ref=e41]: No credit card required • For players aged 10-25
+```
