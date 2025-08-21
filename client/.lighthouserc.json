@@ -1,0 +1,52 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:5174/",
+        "http://localhost:5174/dashboard",
+        "http://localhost:5174/food",
+        "http://localhost:5174/performance"
+      ],
+      "startServerCommand": "npm run dev",
+      "startServerReadyPattern": "ready in",
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "throttling": {
+          "cpuSlowdownMultiplier": 1
+        },
+        "skipAudits": ["uses-http2", "offline-start-url", "maskable-icon"]
+      }
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.8 }],
+        "categories:accessibility": ["error", { "minScore": 0.9 }],
+        "categories:best-practices": ["error", { "minScore": 0.9 }],
+        "categories:seo": ["error", { "minScore": 0.9 }],
+        "first-contentful-paint": ["error", { "maxNumericValue": 2000 }],
+        "largest-contentful-paint": ["error", { "maxNumericValue": 3000 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "total-blocking-time": ["error", { "maxNumericValue": 500 }],
+        "interactive": ["error", { "maxNumericValue": 5000 }],
+        "max-potential-fid": ["error", { "maxNumericValue": 200 }],
+        "resource-summary:script:size": ["error", { "maxNumericValue": 500000 }],
+        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 100000 }],
+        "resource-summary:image:size": ["error", { "maxNumericValue": 1000000 }],
+        "resource-summary:total:size": ["error", { "maxNumericValue": 2000000 }],
+        "unused-javascript": ["warn", { "maxNumericValue": 100000 }],
+        "uses-responsive-images": "warn",
+        "uses-optimized-images": "warn",
+        "uses-text-compression": "warn",
+        "uses-rel-preconnect": "warn",
+        "font-display": "warn"
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage",
+      "outputDir": "./lighthouse-reports",
+      "reportFilenamePattern": "report-%%PATHNAME%%-%%DATETIME%%.%%EXTENSION%%"
+    }
+  }
+}

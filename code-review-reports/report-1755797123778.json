@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "timestamp": "2025-08-21T17:25:23.778Z",
+    "executionTime": "0.02",
+    "projectName": "Junior Football Nutrition Tracker",
+    "version": "1.0.0"
+  },
+  "overallHealth": 64,
+  "criticalIssues": 1,
+  "riskLevel": "medium",
+  "metrics": {
+    "codeQuality": {
+      "score": 36,
+      "complexity": 8,
+      "maintainability": 4,
+      "testCoverage": 75,
+      "issues": 48
+    },
+    "security": {
+      "score": 90,
+      "vulnerabilities": 1,
+      "dependencies": 0
+    },
+    "performance": {
+      "bundleSize": 1.5,
+      "componentCount": 5,
+      "lazyLoaded": false,
+      "codeSplitting": false
+    },
+    "architecture": {
+      "score": 100,
+      "patterns": [
+        "Context API",
+        "Custom Hooks",
+        "Utility Functions",
+        "Multi-Agent Architecture"
+      ],
+      "violations": 0
+    },
+    "bestPractices": {
+      "strictMode": true,
+      "eslintRules": 25,
+      "prettier": true,
+      "testingFramework": "Playwright + Jest"
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "title": "Improve Test Coverage",
+      "description": "Increase test coverage to 80%+"
+    },
+    {
+      "priority": "MEDIUM",
+      "title": "Optimize Bundle Size",
+      "description": "Implement code splitting for better performance"
+    },
+    {
+      "priority": "LOW",
+      "title": "Add More Documentation",
+      "description": "Document complex functions and components"
+    }
+  ],
+  "agentCollaboration": {
+    "synergy": 88,
+    "agents": [
+      "Code Review",
+      "Testing",
+      "Nutrition",
+      "UI"
+    ]
+  }
+}

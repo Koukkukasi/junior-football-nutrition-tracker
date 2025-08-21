@@ -1,0 +1,590 @@
+name: 📈 Continuous Code Quality Monitoring
+
+on:
+  push:
+    branches: [main, develop]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      comprehensive:
+        description: 'Run comprehensive analysis'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+  pages: write
+  id-token: write
+
+jobs:
+  continuous-analysis:
+    name: 🔄 Continuous Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: |
+          cd client && npm ci
+          cd ../server && npm ci
+
+      - name: 🔍 Run comprehensive analysis
+        id: analysis
+        run: |
+          cd client
+          
+          # Run code review
+          node run-code-review.cjs > analysis-output.txt
+          
+          # Extract metrics
+          QUALITY_SCORE=$(grep "Overall Score:" analysis-output.txt | grep -o '[0-9]*' | head -1)
+          COMPLEXITY=$(grep "Complexity:" analysis-output.txt | grep -o '[0-9]*' | head -1)
+          MAINTAINABILITY=$(grep "Maintainability:" analysis-output.txt | grep -o '[0-9]*' | head -1)
+          TEST_COVERAGE=$(grep "Test Coverage:" analysis-output.txt | grep -o '[0-9]*' | head -1)
+          SECURITY_SCORE=$(grep "Security Score:" analysis-output.txt | grep -o '[0-9]*' | head -1)
+          
+          # Store metrics
+          echo "quality_score=$QUALITY_SCORE" >> $GITHUB_OUTPUT
+          echo "complexity=$COMPLEXITY" >> $GITHUB_OUTPUT
+          echo "maintainability=$MAINTAINABILITY" >> $GITHUB_OUTPUT
+          echo "test_coverage=$TEST_COVERAGE" >> $GITHUB_OUTPUT
+          echo "security_score=$SECURITY_SCORE" >> $GITHUB_OUTPUT
+          
+          # Generate metrics JSON
+          cat > metrics.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "metrics": {
+              "quality_score": ${QUALITY_SCORE:-0},
+              "complexity": ${COMPLEXITY:-0},
+              "maintainability": ${MAINTAINABILITY:-0},
+              "test_coverage": ${TEST_COVERAGE:-0},
+              "security_score": ${SECURITY_SCORE:-0}
+            }
+          }
+          EOF
+
+      - name: 📊 Generate trend analysis
+        run: |
+          cd client
+          
+          # Create or update metrics history
+          METRICS_FILE="code-review-reports/metrics-history.json"
+          
+          if [ ! -f "$METRICS_FILE" ]; then
+            echo '{"history": []}' > "$METRICS_FILE"
+          fi
+          
+          # Add current metrics to history
+          jq --slurpfile new metrics.json '.history += $new' "$METRICS_FILE" > temp.json
+          mv temp.json "$METRICS_FILE"
+          
+          # Keep only last 30 days
+          jq '.history |= .[-30:]' "$METRICS_FILE" > temp.json
+          mv temp.json "$METRICS_FILE"
+          
+          # Generate trend report
+          node -e "
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('$METRICS_FILE'));
+          const history = data.history;
+          
+          if (history.length > 1) {
+            const current = history[history.length - 1].metrics;
+            const previous = history[history.length - 2].metrics;
+            
+            const trends = {
+              quality_score: current.quality_score - previous.quality_score,
+              complexity: current.complexity - previous.complexity,
+              maintainability: current.maintainability - previous.maintainability,
+              test_coverage: current.test_coverage - previous.test_coverage,
+              security_score: current.security_score - previous.security_score
+            };
+            
+            console.log('📈 Trend Analysis:');
+            Object.entries(trends).forEach(([key, value]) => {
+              const arrow = value > 0 ? '↑' : value < 0 ? '↓' : '→';
+              const emoji = value > 0 ? '✅' : value < 0 ? '⚠️' : '➖';
+              console.log(\`\${emoji} \${key}: \${arrow} \${Math.abs(value)}\`);
+            });
+          }
+          " | tee trend-analysis.txt
+
+      - name: 🎨 Generate dashboard
+        run: |
+          cd client/code-review-reports
+          
+          cat > dashboard.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Code Quality Dashboard - Junior Football Nutrition Tracker</title>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+              }
+              .container {
+                max-width: 1400px;
+                margin: 0 auto;
+              }
+              h1 {
+                color: white;
+                text-align: center;
+                margin-bottom: 30px;
+                font-size: 2.5rem;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+              }
+              .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+              }
+              .metric-card {
+                background: white;
+                border-radius: 15px;
+                padding: 25px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                transition: transform 0.3s;
+              }
+              .metric-card:hover {
+                transform: translateY(-5px);
+              }
+              .metric-title {
+                font-size: 0.9rem;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+              }
+              .metric-value {
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #1e293b;
+                margin-bottom: 10px;
+              }
+              .metric-trend {
+                font-size: 1rem;
+                padding: 5px 10px;
+                border-radius: 20px;
+                display: inline-block;
+              }
+              .trend-up { background: #dcfce7; color: #16a34a; }
+              .trend-down { background: #fee2e2; color: #dc2626; }
+              .trend-stable { background: #f3f4f6; color: #6b7280; }
+              .chart-container {
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                margin-bottom: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+              }
+              .chart-title {
+                font-size: 1.5rem;
+                color: #1e293b;
+                margin-bottom: 20px;
+              }
+              .recommendations {
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+              }
+              .recommendation {
+                padding: 15px;
+                margin: 10px 0;
+                border-left: 4px solid #667eea;
+                background: #f8fafc;
+                border-radius: 5px;
+              }
+              .footer {
+                text-align: center;
+                color: white;
+                margin-top: 40px;
+                font-size: 0.9rem;
+              }
+              .quality-gauge {
+                position: relative;
+                width: 200px;
+                height: 100px;
+                margin: 0 auto;
+              }
+              .gauge-arc {
+                fill: none;
+                stroke-width: 20;
+              }
+              .gauge-value {
+                position: absolute;
+                top: 70%;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 2rem;
+                font-weight: bold;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>📊 Code Quality Dashboard</h1>
+              
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <div class="metric-title">Overall Quality</div>
+                  <div class="metric-value" id="quality-score">--</div>
+                  <span class="metric-trend trend-stable" id="quality-trend">Stable</span>
+                </div>
+                
+                <div class="metric-card">
+                  <div class="metric-title">Code Complexity</div>
+                  <div class="metric-value" id="complexity">--</div>
+                  <span class="metric-trend trend-stable" id="complexity-trend">Stable</span>
+                </div>
+                
+                <div class="metric-card">
+                  <div class="metric-title">Maintainability</div>
+                  <div class="metric-value" id="maintainability">--</div>
+                  <span class="metric-trend trend-stable" id="maintainability-trend">Stable</span>
+                </div>
+                
+                <div class="metric-card">
+                  <div class="metric-title">Test Coverage</div>
+                  <div class="metric-value" id="test-coverage">--%</div>
+                  <span class="metric-trend trend-stable" id="coverage-trend">Stable</span>
+                </div>
+                
+                <div class="metric-card">
+                  <div class="metric-title">Security Score</div>
+                  <div class="metric-value" id="security-score">--</div>
+                  <span class="metric-trend trend-stable" id="security-trend">Stable</span>
+                </div>
+                
+                <div class="metric-card">
+                  <div class="metric-title">Last Updated</div>
+                  <div class="metric-value" id="last-updated" style="font-size: 1.2rem;">--</div>
+                </div>
+              </div>
+              
+              <div class="chart-container">
+                <h2 class="chart-title">📈 Quality Trends (30 Days)</h2>
+                <canvas id="trendChart" width="400" height="150"></canvas>
+              </div>
+              
+              <div class="chart-container">
+                <h2 class="chart-title">🎯 Quality Distribution</h2>
+                <canvas id="radarChart" width="400" height="200"></canvas>
+              </div>
+              
+              <div class="recommendations">
+                <h2 class="chart-title">💡 Recommendations</h2>
+                <div class="recommendation">
+                  <strong>🔴 Critical:</strong> Address code quality issues to improve maintainability
+                </div>
+                <div class="recommendation">
+                  <strong>🟡 Important:</strong> Increase test coverage to ensure reliability
+                </div>
+                <div class="recommendation">
+                  <strong>🟢 Suggested:</strong> Implement automated code formatting
+                </div>
+              </div>
+              
+              <div class="footer">
+                <p>🤖 Powered by Multi-Agent Code Review System | Updated every 24 hours</p>
+              </div>
+            </div>
+            
+            <script>
+              // Load metrics data
+              fetch('metrics-history.json')
+                .then(response => response.json())
+                .then(data => {
+                  const history = data.history;
+                  const latest = history[history.length - 1];
+                  
+                  // Update metric cards
+                  document.getElementById('quality-score').textContent = latest.metrics.quality_score;
+                  document.getElementById('complexity').textContent = latest.metrics.complexity;
+                  document.getElementById('maintainability').textContent = latest.metrics.maintainability;
+                  document.getElementById('test-coverage').textContent = latest.metrics.test_coverage + '%';
+                  document.getElementById('security-score').textContent = latest.metrics.security_score;
+                  document.getElementById('last-updated').textContent = new Date(latest.timestamp).toLocaleString();
+                  
+                  // Calculate trends
+                  if (history.length > 1) {
+                    const previous = history[history.length - 2];
+                    updateTrend('quality', latest.metrics.quality_score - previous.metrics.quality_score);
+                    updateTrend('complexity', previous.metrics.complexity - latest.metrics.complexity);
+                    updateTrend('maintainability', latest.metrics.maintainability - previous.metrics.maintainability);
+                    updateTrend('coverage', latest.metrics.test_coverage - previous.metrics.test_coverage);
+                    updateTrend('security', latest.metrics.security_score - previous.metrics.security_score);
+                  }
+                  
+                  // Create trend chart
+                  const ctx = document.getElementById('trendChart').getContext('2d');
+                  new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                      labels: history.map(h => new Date(h.timestamp).toLocaleDateString()),
+                      datasets: [
+                        {
+                          label: 'Quality Score',
+                          data: history.map(h => h.metrics.quality_score),
+                          borderColor: '#667eea',
+                          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                          tension: 0.4
+                        },
+                        {
+                          label: 'Test Coverage',
+                          data: history.map(h => h.metrics.test_coverage),
+                          borderColor: '#10b981',
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          tension: 0.4
+                        },
+                        {
+                          label: 'Security Score',
+                          data: history.map(h => h.metrics.security_score),
+                          borderColor: '#f59e0b',
+                          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                          tension: 0.4
+                        }
+                      ]
+                    },
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom'
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          max: 100
+                        }
+                      }
+                    }
+                  });
+                  
+                  // Create radar chart
+                  const radarCtx = document.getElementById('radarChart').getContext('2d');
+                  new Chart(radarCtx, {
+                    type: 'radar',
+                    data: {
+                      labels: ['Quality', 'Complexity', 'Maintainability', 'Coverage', 'Security'],
+                      datasets: [{
+                        label: 'Current',
+                        data: [
+                          latest.metrics.quality_score,
+                          100 - latest.metrics.complexity,
+                          latest.metrics.maintainability,
+                          latest.metrics.test_coverage,
+                          latest.metrics.security_score
+                        ],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: '#667eea',
+                        pointBackgroundColor: '#667eea'
+                      }]
+                    },
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        r: {
+                          beginAtZero: true,
+                          max: 100
+                        }
+                      }
+                    }
+                  });
+                })
+                .catch(error => {
+                  console.error('Error loading metrics:', error);
+                });
+              
+              function updateTrend(metric, change) {
+                const element = document.getElementById(metric + '-trend');
+                if (change > 0) {
+                  element.className = 'metric-trend trend-up';
+                  element.textContent = '↑ +' + Math.abs(change);
+                } else if (change < 0) {
+                  element.className = 'metric-trend trend-down';
+                  element.textContent = '↓ -' + Math.abs(change);
+                } else {
+                  element.className = 'metric-trend trend-stable';
+                  element.textContent = '→ Stable';
+                }
+              }
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: 📤 Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: |
+            client/code-review-reports/
+            client/metrics.json
+            client/trend-analysis.txt
+
+      - name: 🌐 Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./client/code-review-reports
+          destination_dir: quality-dashboard
+
+      - name: 📊 Update README badges
+        if: github.ref == 'refs/heads/main'
+        run: |
+          QUALITY_SCORE=${{ steps.analysis.outputs.quality_score }}
+          COLOR="red"
+          if [ "$QUALITY_SCORE" -ge 80 ]; then COLOR="green"; 
+          elif [ "$QUALITY_SCORE" -ge 60 ]; then COLOR="yellow"; fi
+          
+          # Create badge URL
+          BADGE_URL="https://img.shields.io/badge/Code%20Quality-${QUALITY_SCORE}%2F100-${COLOR}"
+          
+          # Update README (if badge section exists)
+          if grep -q "!\[Code Quality\]" README.md; then
+            sed -i "s|!\[Code Quality\].*|![Code Quality](${BADGE_URL})|" README.md
+          fi
+
+      - name: 📧 Send notification on quality drop
+        if: steps.analysis.outputs.quality_score < 60
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const qualityScore = ${{ steps.analysis.outputs.quality_score }};
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ Code Quality Alert: Score dropped to ${qualityScore}/100`,
+              body: `## Code Quality Alert
+              
+              The code quality score has dropped below the acceptable threshold.
+              
+              **Current Score:** ${qualityScore}/100
+              **Threshold:** 60/100
+              **Branch:** ${{ github.ref_name }}
+              **Commit:** ${{ github.sha }}
+              
+              ### Immediate Actions Required:
+              1. Review the [latest quality report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              2. Address critical code quality issues
+              3. Run local code review before pushing changes
+              
+              ### View Dashboard
+              [Code Quality Dashboard](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/quality-dashboard/)
+              
+              ---
+              *This issue was automatically created by the Continuous Monitoring workflow*`,
+              labels: ['quality-alert', 'automated']
+            });
+
+  sonarcloud-analysis:
+    name: 🔍 SonarCloud Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install dependencies and run tests
+        run: |
+          cd client && npm ci && npm run test:coverage || true
+          cd ../server && npm ci && npm run test:coverage || true
+
+      - name: 🔍 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=junior-football-nutrition-tracker
+            -Dsonar.organization=${{ github.repository_owner }}
+            -Dsonar.javascript.lcov.reportPaths=client/coverage/lcov.info,server/coverage/lcov.info
+            -Dsonar.sources=client/src,server/src
+            -Dsonar.tests=client/tests,server/tests
+            -Dsonar.exclusions=**/*.test.ts,**/*.spec.ts,**/node_modules/**
+
+  dependency-updates:
+    name: 🔄 Check Dependencies
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * *'
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Check for updates
+        run: |
+          cd client
+          npx npm-check-updates -u --target minor > ../client-updates.txt
+          
+          cd ../server
+          npx npm-check-updates -u --target minor > ../server-updates.txt
+          
+          # Check if there are updates
+          if grep -q "Run npm install" ../client-updates.txt ../server-updates.txt; then
+            echo "📦 Dependencies can be updated"
+            
+            # Create PR for updates
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            
+            git checkout -b deps/automated-updates-$(date +%Y%m%d)
+            git add .
+            git commit -m "chore(deps): automated dependency updates"
+            git push origin HEAD
+            
+            # Create PR
+            gh pr create \
+              --title "🔄 Automated Dependency Updates" \
+              --body "This PR contains automated dependency updates for minor and patch versions." \
+              --label "dependencies,automated"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
