@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest } from '../types/auth.types';
 import prisma from '../utils/db';
 import { clerkClient } from '@clerk/clerk-sdk-node';
 
@@ -19,7 +19,7 @@ export const authController = {
       let teamId = null;
       if (teamCode) {
         const team = await prisma.team.findUnique({
-          where: { code: teamCode }
+          where: { inviteCode: teamCode }
         });
         if (team) {
           teamId = team.id;
@@ -116,7 +116,7 @@ export const authController = {
       if (teamCode !== undefined) {
         if (teamCode) {
           const team = await prisma.team.findUnique({
-            where: { code: teamCode }
+            where: { inviteCode: teamCode }
           });
           if (!team) {
             return res.status(400).json({ error: 'Invalid team code' });

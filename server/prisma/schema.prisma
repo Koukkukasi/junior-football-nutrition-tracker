@@ -29,22 +29,34 @@ enum MealType {
 }
 
 model User {
-  id                String           @id @default(uuid())
-  clerkId           String           @unique
-  email             String           @unique
-  name              String
-  age               Int
-  role              UserRole         @default(PLAYER)
-  position          PlayerPosition?
-  parentEmail       String?
-  dataConsent       Boolean          @default(false)
-  teamId            String?
-  team              Team?            @relation(fields: [teamId], references: [id])
-  foodEntries       FoodEntry[]
-  performanceMetrics PerformanceMetric[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
+  id                   String           @id @default(uuid())
+  clerkId              String           @unique
+  email                String           @unique
+  name                 String
+  age                  Int
+  role                 UserRole         @default(PLAYER)
+  position             PlayerPosition?
+  parentEmail          String?
+  dataConsent          Boolean          @default(false)
+  teamId               String?
+  team                 Team?            @relation(fields: [teamId], references: [id])
+  
+  // Onboarding fields
+  ageGroup             String?          // '10-12', '13-15', '16-18', '19-25'
+  goals                String[]         @default([])
+  trainingDaysPerWeek  Int              @default(3)
+  completedOnboarding  Boolean          @default(false)
+  onboardingDate       DateTime?
+  preferences          Json?            // Stores user preferences as JSON
+  
+  // Relations
+  foodEntries          FoodEntry[]
+  performanceMetrics   PerformanceMetric[]
+  teams                TeamMember[]
+  
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  deletedAt            DateTime?
 
   @@index([clerkId])
   @@index([email])
@@ -52,17 +64,32 @@ model User {
 }
 
 model Team {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   name        String
-  code        String   @unique
+  inviteCode  String       @unique @default(cuid())
   description String?
   coachId     String?
-  players     User[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  players     User[]       // Legacy relation, use TeamMember for new features
+  members     TeamMember[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  @@index([code])
+  @@index([inviteCode])
   @@index([coachId])
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  role      String   @default("PLAYER") // PLAYER, COACH, ASSISTANT
+  joinedAt  DateTime @default(now())
+  
+  @@unique([userId, teamId])
+  @@index([userId])
+  @@index([teamId])
 }
 
 model FoodEntry {

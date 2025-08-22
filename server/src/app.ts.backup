@@ -40,10 +40,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // CRITICAL: Add comprehensive request logging to track all incoming requests
-app.use((req: Request, res: Response, next: NextFunction) => {
-  // Test with multiple output methods to ensure visibility
+app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log('=== INCOMING REQUEST ===');
-  console.error('=== INCOMING REQUEST (stderr) ===');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
   console.log('Path:', req.path);
@@ -55,9 +53,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   });
   console.log('Body keys:', Object.keys(req.body || {}));
   console.log('=== END REQUEST LOG ===');
-  
-  // Also add a header to prove middleware is executing
-  res.set('X-Request-Logged', 'true');
   next();
 });
 

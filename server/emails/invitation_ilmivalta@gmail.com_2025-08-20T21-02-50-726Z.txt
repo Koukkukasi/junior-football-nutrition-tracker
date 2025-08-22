@@ -1,0 +1,42 @@
+Junior Football Nutrition Tracker - Beta Testing Invitation
+==========================================================
+
+Welcome, Future Champion! ⚽
+
+You've been specially selected to test our new nutrition tracking app designed specifically for junior football players.
+
+YOUR TEST ACCOUNT DETAILS:
+--------------------------
+Email: ilmivalta@gmail.com
+Role: PLAYER
+Team Code: TEST-TEAM-2024
+Access: Full Beta Features
+
+ACCEPT YOUR INVITATION:
+-----------------------
+http://localhost:5174/sign-up?invite=baeff9d5b153471d&email=ilmivalta%40gmail.com&role=PLAYER&team=TEST-TEAM-2024
+
+WHAT YOU'LL BE TESTING:
+-----------------------
+• Food Logging - Track meals and get nutrition scores
+• Performance Metrics - Monitor energy and recovery
+• Age-Specific Recommendations
+• Team Features
+• Analytics Dashboard
+
+GETTING STARTED:
+---------------
+1. Click the invitation link above
+2. Create your account (email will be pre-filled)
+3. Complete the onboarding wizard
+4. Start testing features
+5. Share feedback using the in-app widget
+
+Password Suggestion: TestPass123!
+
+This invitation expires in 7 days.
+
+Thank you for helping us build something amazing!
+
+Best regards,
+The Junior Football Nutrition Team

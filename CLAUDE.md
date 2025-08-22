@@ -88,7 +88,32 @@ npm run lint             # ESLint
 
 When working on this project, utilize specialized agents for different domains:
 
-### 1. Testing Agent 🧪
+### 1. Code Review Agent 🔍 **[MANDATORY - Use with ALL code changes]**
+**Responsibilities**:
+- Review all code changes for correctness, security, and performance
+- Identify race conditions, memory leaks, and edge cases
+- Validate error handling patterns and security considerations
+- Ensure consistent coding patterns across the codebase
+- Performance analysis and optimization recommendations
+
+**Usage Pattern**:
+```typescript
+// ALWAYS engage Code Review Agent when:
+- Making significant code changes (>10 lines)
+- Implementing new API endpoints or database operations
+- Modifying authentication or security-related code
+- Fixing bugs or resolving errors
+- Refactoring existing functionality
+- Adding new features or components
+```
+
+**Integration Workflow**:
+1. **Before Implementation**: Engage agent to review approach and identify potential issues
+2. **During Development**: Work side-by-side for complex changes
+3. **After Changes**: Mandatory review of all modifications before testing
+4. **Bug Fixes**: Always use agent to identify root cause and validate fixes
+
+### 2. Testing Agent 🧪
 **Responsibilities**:
 - Playwright test development and execution
 - E2E scenario creation and validation
