@@ -36,7 +36,7 @@
     - generic [ref=e53]:
       - generic [ref=e54]: Already have an account?
       - link "Sign in" [ref=e55] [cursor=pointer]:
-        - /url: https://wise-hamster-28.accounts.dev/sign-in?__clerk_db_jwt=dvb_31YktU2w3rPJHyaHWoRSr3U4lRF
+        - /url: https://wise-hamster-28.accounts.dev/sign-in?__clerk_db_jwt=dvb_31Z840K6gurq5jdUxfmaTto8IL1
     - generic [ref=e57]:
       - generic [ref=e59]:
         - paragraph [ref=e60]: Secured by

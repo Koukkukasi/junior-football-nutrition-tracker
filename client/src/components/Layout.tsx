@@ -1,6 +1,7 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
+import FeedbackWidget from './feedback/FeedbackWidget'
 
 export default function Layout() {
   const { user } = useUser()
@@ -10,6 +11,7 @@ export default function Layout() {
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/food', label: 'Food Log', icon: '🍎' },
     { path: '/performance', label: 'Performance', icon: '⚡' },
+    { path: '/analytics', label: 'Analytics', icon: '📈' },
     { path: '/team', label: 'Team', icon: '👥' },
     { path: '/profile', label: 'Profile', icon: '👤' },
   ]
@@ -149,6 +151,9 @@ export default function Layout() {
 
       {/* Add padding for mobile bottom nav */}
       <div className="h-16 lg:hidden" />
+      
+      {/* Feedback Widget */}
+      <FeedbackWidget />
     </div>
   )
 }

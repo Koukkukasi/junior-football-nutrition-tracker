@@ -39,7 +39,7 @@
     - generic [ref=e41]:
       - generic [ref=e42]: Don’t have an account?
       - link "Sign up" [ref=e43] [cursor=pointer]:
-        - /url: https://wise-hamster-28.accounts.dev/sign-up?__clerk_db_jwt=dvb_31YkvDkXNrNKnd71jtvFuDwnv60
+        - /url: https://wise-hamster-28.accounts.dev/sign-up?__clerk_db_jwt=dvb_31Z85rxO761QnG3v0KbQZOYXNVH
     - generic [ref=e45]:
       - generic [ref=e47]:
         - paragraph [ref=e48]: Secured by

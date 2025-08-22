@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import API from '../lib/api'
 
 export default function Performance() {
   const [formData, setFormData] = useState({
@@ -8,11 +9,89 @@ export default function Performance() {
     trainingType: '',
     notes: ''
   })
+  const [recentEntries, setRecentEntries] = useState<any[]>([])
+  const [weekSummary, setWeekSummary] = useState({
+    avgEnergy: 0,
+    avgSleep: 0,
+    trainingDays: 0
+  })
+  const [loading, setLoading] = useState(true)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fetch performance data on mount
+  useEffect(() => {
+    fetchPerformanceData()
+  }, [])
+
+  const fetchPerformanceData = async () => {
+    try {
+      setLoading(true)
+      const response = await API.performance.history()
+      
+      if (response.success && response.data) {
+        // Handle the nested data structure
+        const performanceData = response.data.data || response.data
+        
+        // Process recent entries
+        const entries = (Array.isArray(performanceData) ? performanceData : []).slice(0, 7).map((entry: any) => ({
+          date: new Date(entry.date),
+          energyLevel: entry.energyLevel,
+          sleepHours: entry.sleepHours,
+          isTrainingDay: entry.isTrainingDay,
+          trainingType: entry.trainingType,
+          notes: entry.notes
+        }))
+        setRecentEntries(entries)
+
+        // Calculate week summary
+        if (entries.length > 0) {
+          const avgEnergy = entries.reduce((sum: number, e: any) => sum + e.energyLevel, 0) / entries.length
+          const avgSleep = entries.reduce((sum: number, e: any) => sum + e.sleepHours, 0) / entries.length
+          const trainingDays = entries.filter((e: any) => e.isTrainingDay).length
+          
+          setWeekSummary({
+            avgEnergy: Math.round(avgEnergy * 10) / 10,
+            avgSleep: Math.round(avgSleep * 10) / 10,
+            trainingDays
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch performance data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Performance data:', formData)
-    // TODO: Send to API
+    
+    console.log('Submitting performance data:', formData)
+    
+    try {
+      const response = await API.performance.submit({
+        ...formData,
+        matchDay: false // Add missing field
+      })
+      
+      if (response.success) {
+        alert('Performance data saved successfully!')
+        setFormData({
+          energyLevel: 3,
+          sleepHours: 8,
+          isTrainingDay: false,
+          trainingType: '',
+          notes: ''
+        })
+        // Refresh data
+        fetchPerformanceData()
+      } else {
+        console.error('API error response:', response)
+        alert(response.error || response.message || 'Failed to save performance data')
+      }
+    } catch (error) {
+      console.error('Error submitting performance data:', error)
+      alert('Failed to create performance metrics')
+    }
   }
 
   return (
@@ -140,36 +219,46 @@ export default function Performance() {
               <h2 className="text-xl font-bold text-gray-800">This Week's Summary</h2>
               <span className="text-3xl">📊</span>
             </div>
-            <div className="space-y-4">
-              <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">⚡</span>
-                    <span className="text-gray-700 font-medium">Average Energy</span>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="text-gray-500">Loading summary...</div>
+              </div>
+            ) : weekSummary.avgEnergy > 0 || weekSummary.avgSleep > 0 || weekSummary.trainingDays > 0 ? (
+              <div className="space-y-4">
+                <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">⚡</span>
+                      <span className="text-gray-700 font-medium">Average Energy</span>
+                    </div>
+                    <span className="text-2xl font-bold text-yellow-600">{weekSummary.avgEnergy}/5</span>
                   </div>
-                  <span className="text-2xl font-bold text-yellow-600">4.2/5</span>
+                </div>
+                <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">😴</span>
+                      <span className="text-gray-700 font-medium">Average Sleep</span>
+                    </div>
+                    <span className="text-2xl font-bold text-purple-600">{weekSummary.avgSleep}h</span>
+                  </div>
+                </div>
+                <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🏋️</span>
+                      <span className="text-gray-700 font-medium">Training Days</span>
+                    </div>
+                    <span className="text-2xl font-bold text-green-600">{weekSummary.trainingDays}</span>
+                  </div>
                 </div>
               </div>
-              <div className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">😴</span>
-                    <span className="text-gray-700 font-medium">Average Sleep</span>
-                  </div>
-                  <span className="text-2xl font-bold text-purple-600">7.5h</span>
-                </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>No data available yet</p>
+                <p className="text-sm mt-2">Start tracking your performance to see your summary</p>
               </div>
-              <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">🏋️</span>
-                    <span className="text-gray-700 font-medium">Training Days</span>
-                  </div>
-                  <span className="text-2xl font-bold text-green-600">4</span>
-                </div>
-              </div>
-            </div>
-          </div>
+            )}</div>
 
           {/* Recent Entries Card */}
           <div className="bg-white rounded-xl shadow-lg p-6">
@@ -179,81 +268,80 @@ export default function Performance() {
                 Last 7 days
               </span>
             </div>
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-green-50 to-white border-l-4 border-green-500 rounded-lg p-4 hover:shadow-md transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-semibold text-gray-800 mb-1">Monday</div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="flex items-center gap-1">
-                        <span>⚡</span>
-                        <span className="font-medium">5/5</span>
-                      </span>
-                      <span className="text-gray-400">•</span>
-                      <span className="flex items-center gap-1">
-                        <span>😴</span>
-                        <span className="font-medium">8h</span>
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
-                        ⚽ Match Day
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-gray-500">2 days ago</span>
-                </div>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="text-gray-500">Loading entries...</div>
               </div>
-              <div className="bg-gradient-to-r from-yellow-50 to-white border-l-4 border-yellow-500 rounded-lg p-4 hover:shadow-md transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-semibold text-gray-800 mb-1">Sunday</div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="flex items-center gap-1">
-                        <span>⚡</span>
-                        <span className="font-medium">3/5</span>
-                      </span>
-                      <span className="text-gray-400">•</span>
-                      <span className="flex items-center gap-1">
-                        <span>😴</span>
-                        <span className="font-medium">6.5h</span>
-                      </span>
+            ) : recentEntries.length > 0 ? (
+              <div className="space-y-3">
+                {recentEntries.map((entry, index) => {
+                  const dayName = entry.date.toLocaleDateString('en-US', { weekday: 'long' });
+                  const daysAgo = Math.floor((Date.now() - entry.date.getTime()) / (1000 * 60 * 60 * 24));
+                  const daysAgoText = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`;
+                  
+                  // Determine border color based on energy level
+                  const borderColor = entry.energyLevel >= 4 ? 'border-green-500' : 
+                                     entry.energyLevel === 3 ? 'border-yellow-500' : 
+                                     'border-red-500';
+                  const bgGradient = entry.energyLevel >= 4 ? 'from-green-50' : 
+                                    entry.energyLevel === 3 ? 'from-yellow-50' : 
+                                    'from-red-50';
+                  
+                  // Training type labels
+                  const trainingTypeLabels: Record<string, string> = {
+                    'team_practice': '🎯 Team Practice',
+                    'match': '⚽ Match Day',
+                    'gym': '🏋️ Gym Session',
+                    'individual': '👤 Individual Training',
+                    'recovery': '💆 Recovery Session'
+                  };
+                  
+                  return (
+                    <div key={index} className={`bg-gradient-to-r ${bgGradient} to-white border-l-4 ${borderColor} rounded-lg p-4 hover:shadow-md transition-all`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-semibold text-gray-800 mb-1">{dayName}</div>
+                          <div className="flex items-center gap-3 text-sm">
+                            <span className="flex items-center gap-1">
+                              <span>⚡</span>
+                              <span className="font-medium">{entry.energyLevel}/5</span>
+                            </span>
+                            <span className="text-gray-400">•</span>
+                            <span className="flex items-center gap-1">
+                              <span>😴</span>
+                              <span className="font-medium">{entry.sleepHours}h</span>
+                            </span>
+                          </div>
+                          {entry.isTrainingDay && (
+                            <div className="mt-2">
+                              <span className={`text-xs ${entry.trainingType === 'match' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} px-2 py-1 rounded-full font-semibold`}>
+                                {trainingTypeLabels[entry.trainingType] || '🏃 Training'}
+                              </span>
+                            </div>
+                          )}
+                          {!entry.isTrainingDay && (
+                            <div className="mt-2">
+                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-semibold">
+                                🌴 Rest Day
+                              </span>
+                            </div>
+                          )}
+                          {entry.notes && (
+                            <p className="text-xs text-gray-600 mt-2 italic">{entry.notes}</p>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500">{daysAgoText}</span>
+                      </div>
                     </div>
-                    <div className="mt-2">
-                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-semibold">
-                        🌴 Rest Day
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-gray-500">3 days ago</span>
-                </div>
+                  );
+                })}
               </div>
-              <div className="bg-gradient-to-r from-blue-50 to-white border-l-4 border-blue-500 rounded-lg p-4 hover:shadow-md transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-semibold text-gray-800 mb-1">Saturday</div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="flex items-center gap-1">
-                        <span>⚡</span>
-                        <span className="font-medium">4/5</span>
-                      </span>
-                      <span className="text-gray-400">•</span>
-                      <span className="flex items-center gap-1">
-                        <span>😴</span>
-                        <span className="font-medium">7h</span>
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
-                        🎯 Team Practice
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-gray-500">4 days ago</span>
-                </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>No entries yet</p>
+                <p className="text-sm mt-2">Start tracking your daily performance</p>
               </div>
-            </div>
-          </div>
+            )}</div>
         </div>
       </div>
     </div>

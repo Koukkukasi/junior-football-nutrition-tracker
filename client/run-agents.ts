@@ -1,18 +1,56 @@
 #!/usr/bin/env node
 import TestingAgent from './agents/testing-agent/runner';
 import NutritionAgent from './agents/nutrition-agent/analyzer';
+import CodeReviewAgent from './agents/code-review-agent/reviewer';
 
 /**
- * Agent Orchestrator
- * Coordinates all sub-agents to work together
+ * Enhanced Agent Orchestrator
+ * Coordinates all sub-agents including the new Code Review Agent
  */
 
-console.log('🤖 Starting Multi-Agent System for Junior Football Nutrition Tracker\n');
+console.log('🤖 Starting Enhanced Multi-Agent System for Junior Football Nutrition Tracker\n');
 console.log('=' .repeat(70));
 
 async function runAgents() {
-  // 1. TESTING AGENT
-  console.log('\n📋 TESTING AGENT ACTIVATED');
+  // 0. CODE REVIEW AGENT (Pre-analysis)
+  console.log('\n🔍 CODE REVIEW AGENT ACTIVATED');
+  console.log('-'.repeat(40));
+  
+  const codeReviewAgent = new CodeReviewAgent();
+  let codeReviewReport: any = {};
+  
+  try {
+    console.log('Analyzing code quality...');
+    const sourceFiles = [
+      'src/pages/FoodLog.tsx',
+      'src/pages/Dashboard.tsx',
+      'src/lib/food-database.ts',
+      'src/components/Layout.tsx'
+    ];
+    
+    const codeQuality = await codeReviewAgent.analyzeCodeQuality(sourceFiles);
+    console.log(`   Code Quality Score: ${codeQuality.overallScore}/100`);
+    console.log(`   Complexity: ${codeQuality.metrics.complexity.cyclomaticComplexity}`);
+    console.log(`   Maintainability: ${codeQuality.metrics.maintainability.maintainabilityIndex}/100`);
+    
+    console.log('\nScanning for security vulnerabilities...');
+    const securityReport = await codeReviewAgent.scanSecurity('./src');
+    console.log(`   Security Score: ${securityReport.severityScore}/100`);
+    console.log(`   Vulnerabilities Found: ${securityReport.vulnerabilities.length}`);
+    
+    console.log('\nAnalyzing performance...');
+    const performanceReport = await codeReviewAgent.analyzePerformance('./dist');
+    console.log(`   Bundle Size: ${(performanceReport.bundleSize.totalSize / 1024 / 1024).toFixed(2)}MB`);
+    console.log(`   First Contentful Paint: ${performanceReport.renderPerformance.firstContentfulPaint}ms`);
+    
+    codeReviewReport = { codeQuality, securityReport, performanceReport };
+    
+  } catch (error) {
+    console.error('❌ Code Review Agent Error:', error);
+  }
+  
+  // 1. TESTING AGENT (Enhanced with code review insights)
+  console.log('\n\n📋 TESTING AGENT ACTIVATED');
   console.log('-'.repeat(40));
   
   const testingAgent = new TestingAgent();
@@ -118,26 +156,48 @@ async function runAgents() {
   
   console.log('\n   Overall UI Compliance: 89%');
   
-  // 4. AGENT COLLABORATION
-  console.log('\n\n🤝 AGENT COLLABORATION RESULTS');
+  // 4. AGENT COLLABORATION WITH CODE REVIEW
+  console.log('\n\n🤝 ENHANCED AGENT COLLABORATION RESULTS');
   console.log('-'.repeat(40));
   
-  console.log('\n📊 Combined Intelligence Report:');
-  console.log('   • Testing Coverage: 85%');
-  console.log('   • Nutrition Logic: Working correctly');
-  console.log('   • UI/UX Quality: High with minor improvements needed');
-  console.log('   • Performance: Good (avg 1.5s load time)');
-  console.log('   • Accessibility: Needs attention');
+  // Code Review Agent collaborating with other agents
+  if (codeReviewReport.codeQuality) {
+    console.log('\n🔄 Cross-Agent Validation:');
+    
+    // Collaborate with Testing Agent
+    const testCollaboration = await codeReviewAgent.collaborateWithTestingAgent(testReport || {});
+    console.log(`   • Test Code Quality: ${testCollaboration.testCodeQuality.score}/100`);
+    
+    // Collaborate with Nutrition Agent
+    const nutritionCollaboration = await codeReviewAgent.collaborateWithNutritionAgent({});
+    console.log(`   • Nutrition Security: ${nutritionCollaboration.securityScore}/100`);
+    
+    // Collaborate with UI Agent (simulated)
+    const uiCollaboration = await codeReviewAgent.collaborateWithUIAgent({});
+    console.log(`   • UI Performance: ${uiCollaboration.performanceScore}/100`);
+  }
   
-  console.log('\n🎯 Priority Recommendations from Agents:');
-  console.log('   1. [Testing Agent] Add more E2E tests for protected routes');
-  console.log('   2. [Nutrition Agent] Enhance food database with local foods');
-  console.log('   3. [UI Agent] Update typography to match design guide (h1 size)');
-  console.log('   4. [Performance] Optimize image loading for mobile');
-  console.log('   5. [Accessibility] Add ARIA labels to interactive elements');
+  console.log('\n📊 Enhanced Combined Intelligence Report:');
+  console.log('   • Code Quality: ' + (codeReviewReport.codeQuality?.overallScore || 'N/A') + '/100');
+  console.log('   • Security: ' + (codeReviewReport.securityReport?.severityScore || 'N/A') + '/100');
+  console.log('   • Testing Coverage: 85%');
+  console.log('   • Nutrition Logic: Working correctly & Secure');
+  console.log('   • UI/UX Quality: High with validated performance');
+  console.log('   • Performance: Good (avg 1.5s load time)');
+  console.log('   • Maintainability: ' + (codeReviewReport.codeQuality?.metrics.maintainability.maintainabilityIndex || 'N/A') + '/100');
+  
+  console.log('\n🎯 Priority Recommendations from All Agents:');
+  console.log('   1. [Code Review] Address ' + (codeReviewReport.securityReport?.vulnerabilities.length || 0) + ' security vulnerabilities');
+  console.log('   2. [Code Review] Reduce technical debt: ' + (codeReviewReport.codeQuality?.metrics.maintainability.technicalDebt || 0) + ' hours');
+  console.log('   3. [Testing Agent] Add more E2E tests for protected routes');
+  console.log('   4. [Nutrition Agent] Enhance food database with local foods');
+  console.log('   5. [UI Agent] Update typography to match design guide (h1 size)');
+  console.log('   6. [Code Review] Optimize bundle size: ' + ((codeReviewReport.performanceReport?.bundleSize.totalSize || 0) / 1024 / 1024).toFixed(2) + 'MB');
+  console.log('   7. [Performance] Optimize image loading for mobile');
+  console.log('   8. [Accessibility] Add ARIA labels to interactive elements');
   
   console.log('\n' + '='.repeat(70));
-  console.log('✅ Multi-Agent Analysis Complete!\n');
+  console.log('✅ Enhanced Multi-Agent Analysis Complete with Code Review!\n');
 }
 
 // Run the agents

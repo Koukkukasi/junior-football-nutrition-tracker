@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <button onclick="testAuth()">Test Authentication</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAuth() {
+            const resultEl = document.getElementById('result');
+            
+            try {
+                // Test profile endpoint
+                const profileRes = await fetch('http://localhost:3001/api/v1/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+                    }
+                });
+                
+                // Test stats endpoint
+                const statsRes = await fetch('http://localhost:3001/api/v1/users/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+                    }
+                });
+                
+                const results = {
+                    authenticated: !!window.Clerk?.session,
+                    profileStatus: profileRes.status,
+                    profileData: profileRes.ok ? await profileRes.json() : null,
+                    statsStatus: statsRes.status,
+                    statsData: statsRes.ok ? await statsRes.json() : null
+                };
+                
+                resultEl.textContent = JSON.stringify(results, null, 2);
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testAuth, 1000);
+        });
+    </script>
+</body>
+</html>

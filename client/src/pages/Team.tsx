@@ -4,10 +4,31 @@ export default function Team() {
   const [teamCode, setTeamCode] = useState('')
   const [hasTeam, setHasTeam] = useState(false)
 
-  const handleJoinTeam = (e: React.FormEvent) => {
+  const handleJoinTeam = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Call API to join team
-    setHasTeam(true)
+    
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${API_BASE}/api/v1/teams/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+        },
+        body: JSON.stringify({ code: teamCode })
+      })
+      
+      if (response.ok) {
+        setHasTeam(true)
+        alert('Successfully joined team!')
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to join team. Please check the code and try again.')
+      }
+    } catch (error) {
+      console.error('Error joining team:', error)
+      alert('Network error. Please try again.')
+    }
   }
 
   if (!hasTeam) {

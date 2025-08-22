@@ -1,10 +1,12 @@
 import { useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useOnboarding } from '../hooks/useOnboarding'
 
 export default function Dashboard() {
   const { user } = useUser()
   const navigate = useNavigate()
+  useOnboarding() // Just run the hook for its side effects
   const [stats, setStats] = useState({
     todayMeals: 3,
     weekAvgEnergy: 4.2,
@@ -12,16 +14,56 @@ export default function Dashboard() {
     trainingDays: 4,
     nutritionScore: 75
   })
+  const [, setShowDemoData] = useState(false)
 
   useEffect(() => {
-    // TODO: Fetch actual stats from API
-    setStats({
-      todayMeals: 3,
-      weekAvgEnergy: 4.2,
-      sleepAvg: 7.5,
-      trainingDays: 4,
-      nutritionScore: 75
-    })
+    // Check if user is new and should see demo data
+    const isNewUser = localStorage.getItem('showDemoData') === 'true'
+    setShowDemoData(isNewUser)
+    
+    // Fetch actual stats from API
+    const fetchStats = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${API_BASE}/api/v1/users/stats`, {
+          headers: {
+            'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setStats(data.stats || {
+            todayMeals: 0,
+            weekAvgEnergy: 0,
+            sleepAvg: 0,
+            trainingDays: 0,
+            nutritionScore: 0
+          })
+        } else {
+          // Use default values if API fails
+          setStats({
+            todayMeals: 0,
+            weekAvgEnergy: 0,
+            sleepAvg: 0,
+            trainingDays: 0,
+            nutritionScore: 0
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error)
+        // Use default values on error
+        setStats({
+          todayMeals: 0,
+          weekAvgEnergy: 0,
+          sleepAvg: 0,
+          trainingDays: 0,
+          nutritionScore: 0
+        })
+      }
+    }
+    
+    fetchStats()
   }, [])
 
   const getScoreColor = (score: number) => {
