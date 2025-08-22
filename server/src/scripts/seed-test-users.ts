@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+// import { clerkClient } from '@clerk/clerk-sdk-node';
 import dotenv from 'dotenv';
 import { logger } from '../utils/logger';
 
