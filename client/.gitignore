@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test artifacts
+test-results/
+playwright-report/
+*.webm
+.last-run.json
+.playwright-artifacts*/
+coverage/
+
+# Environment files
+.env.local
+.env.production
+.env*.local
+
+# Build outputs
+build/

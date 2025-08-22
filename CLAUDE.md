@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with the Junior Football Nutrition Tracker project.
 
+## 🚨 CRITICAL DEVELOPMENT RULE 🚨
+
+**⚠️ MANDATORY: Code Review Agent MUST be used for ALL code changes - NO EXCEPTIONS**
+
+Before making ANY modification to this codebase:
+1. ✅ ALWAYS engage the Code Review Agent first
+2. ✅ Work side-by-side with the agent during development  
+3. ✅ Get agent approval before proceeding with changes
+4. ✅ No code commits without agent sign-off
+
+This rule applies to ALL changes: single line edits, bug fixes, new features, configuration updates, etc.
+
 ## Project Overview
 
 **Project**: Junior Football Nutrition Tracker  
@@ -89,6 +101,8 @@ npm run lint             # ESLint
 When working on this project, utilize specialized agents for different domains:
 
 ### 1. Code Review Agent 🔍 **[MANDATORY - Use with ALL code changes]**
+**⚠️ CRITICAL RULE: The Code Review Agent MUST be engaged for every single code modification, no exceptions.**
+
 **Responsibilities**:
 - Review all code changes for correctness, security, and performance
 - Identify race conditions, memory leaks, and edge cases
@@ -99,19 +113,31 @@ When working on this project, utilize specialized agents for different domains:
 **Usage Pattern**:
 ```typescript
 // ALWAYS engage Code Review Agent when:
-- Making significant code changes (>10 lines)
+- Making ANY code changes (even 1 line changes)
 - Implementing new API endpoints or database operations
 - Modifying authentication or security-related code
 - Fixing bugs or resolving errors
 - Refactoring existing functionality
 - Adding new features or components
+- Updating configuration files
+- Modifying environment variables
+- Creating new tests or updating existing ones
 ```
 
-**Integration Workflow**:
-1. **Before Implementation**: Engage agent to review approach and identify potential issues
-2. **During Development**: Work side-by-side for complex changes
-3. **After Changes**: Mandatory review of all modifications before testing
-4. **Bug Fixes**: Always use agent to identify root cause and validate fixes
+**Mandatory Integration Workflow**:
+1. **Before Implementation**: ALWAYS engage agent to review approach and identify potential issues
+2. **During Development**: Work side-by-side for ALL changes (mandatory collaboration)
+3. **After Changes**: MANDATORY review of all modifications before testing
+4. **Bug Fixes**: ALWAYS use agent to identify root cause and validate fixes
+5. **No Code Commits**: Without Code Review Agent approval and sign-off
+
+**Enforcement Rules**:
+- ❌ NO code changes without Code Review Agent involvement
+- ❌ NO exceptions for "small" or "trivial" changes
+- ❌ NO solo development without agent collaboration
+- ✅ ALWAYS start with Code Review Agent engagement
+- ✅ ALWAYS get agent approval before proceeding
+- ✅ ALWAYS include agent in problem-solving discussions
 
 ### 2. Testing Agent 🧪
 **Responsibilities**:
