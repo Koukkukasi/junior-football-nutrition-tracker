@@ -137,14 +137,32 @@ export const API = {
   },
   
   // Team endpoints
-  team: {
-    join: (code: string) => 
+  teams: {
+    create: (data: { name: string; description?: string }) => 
+      apiRequest('/api/v1/teams/create', {
+        method: 'POST',
+        body: data
+      }),
+    join: (inviteCode: string) => 
       apiRequest('/api/v1/teams/join', {
         method: 'POST',
-        body: { code }
+        body: { inviteCode }
       }),
-    members: (teamId: string) => 
-      apiRequest(`/api/v1/teams/${teamId}/members`)
+    getMyTeams: () => 
+      apiRequest('/api/v1/teams/my-teams'),
+    getDetails: (teamId: string) => 
+      apiRequest(`/api/v1/teams/${teamId}`),
+    getStats: (teamId: string, period: string = '7d') => 
+      apiRequest(`/api/v1/teams/${teamId}/stats?period=${period}`),
+    updateMemberRole: (teamId: string, userId: string, role: string) => 
+      apiRequest(`/api/v1/teams/${teamId}/member/${userId}/role`, {
+        method: 'PUT',
+        body: { role }
+      }),
+    leave: (teamId: string) => 
+      apiRequest(`/api/v1/teams/${teamId}/leave`, {
+        method: 'DELETE'
+      })
   },
   
   // Performance endpoints

@@ -15,6 +15,8 @@ import feedbackRoutes from './routes/feedback.routes';
 import inviteRoutes from './routes/invite.routes';
 import testInviteRoutes from './routes/test-invite.routes';
 import testRoutes from './routes/test.routes';
+import adminRoutes from './routes/admin.routes';
+import teamRoutes from './routes/team.routes';
 
 const app: Application = express();
 
@@ -76,10 +78,8 @@ app.use('/api/v1/feedback', feedbackRoutes);
 app.use('/api/v1/invites', inviteRoutes);
 app.use('/api/v1/test-invite', testInviteRoutes);
 app.use('/api/v1/test', testRoutes);
-
-app.use('/api/v1/teams', (_req: Request, res: Response) => {
-  res.json({ message: 'Team routes coming soon' });
-});
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/teams', teamRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

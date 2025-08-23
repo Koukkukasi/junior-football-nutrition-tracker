@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import { UserProvider } from './contexts/UserContext'
 import { ToastProvider } from './hooks/useToast'
+import { AdminOnly, CoachOrAdmin } from './components/auth/RoleGuard'
 import './App.css'
 
 // Lazy load all protected pages for better performance
@@ -18,6 +19,9 @@ const Analytics = lazy(() => import('./pages/Analytics'))
 const OnboardingWizard = lazy(() => import('./components/onboarding/OnboardingWizard'))
 const AdminInvite = lazy(() => import('./pages/AdminInvite'))
 const AdminMonitor = lazy(() => import('./pages/AdminMonitor'))
+const CoachDashboard = lazy(() => import('./pages/CoachDashboard'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 // TestInvite page removed - functionality merged into AdminInvite
 
 // Loading component
@@ -57,6 +61,16 @@ function App() {
         <Route path="/" element={isSignedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
         <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
+        <Route path="/terms" element={
+          <Suspense fallback={<PageLoader />}>
+            <TermsOfService />
+          </Suspense>
+        } />
+        <Route path="/privacy" element={
+          <Suspense fallback={<PageLoader />}>
+            <PrivacyPolicy />
+          </Suspense>
+        } />
         
         <Route path="/onboarding" element={
           <ProtectedRoute>
@@ -111,16 +125,29 @@ function App() {
           } />
           <Route path="/admin/invite" element={
             <ProtectedRoute>
-              <Suspense fallback={<PageLoader />}>
-                <AdminInvite />
-              </Suspense>
+              <AdminOnly>
+                <Suspense fallback={<PageLoader />}>
+                  <AdminInvite />
+                </Suspense>
+              </AdminOnly>
             </ProtectedRoute>
           } />
           <Route path="/admin/monitor" element={
             <ProtectedRoute>
-              <Suspense fallback={<PageLoader />}>
-                <AdminMonitor />
-              </Suspense>
+              <AdminOnly>
+                <Suspense fallback={<PageLoader />}>
+                  <AdminMonitor />
+                </Suspense>
+              </AdminOnly>
+            </ProtectedRoute>
+          } />
+          <Route path="/coach-dashboard" element={
+            <ProtectedRoute>
+              <CoachOrAdmin>
+                <Suspense fallback={<PageLoader />}>
+                  <CoachDashboard />
+                </Suspense>
+              </CoachOrAdmin>
             </ProtectedRoute>
           } />
           {/* Test invite functionality now available in /admin/invite */}

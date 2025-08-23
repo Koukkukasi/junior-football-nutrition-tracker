@@ -2,10 +2,14 @@ import { Outlet, NavLink } from 'react-router-dom'
 import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
 import FeedbackWidget from './feedback/FeedbackWidget'
+import { useUserProfile } from '../contexts/UserContext'
 
 export default function Layout() {
   const { user } = useUser()
+  const { profile } = useUserProfile()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  const isAdmin = profile?.role === 'ADMIN'
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', color: 'from-blue-500 to-cyan-500' },
@@ -85,6 +89,24 @@ export default function Layout() {
                 <span className="font-medium">{item.label}</span>
               </NavLink>
             ))}
+            {isAdmin && (
+              <NavLink
+                to="/admin/monitor"
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    isActive
+                      ? `bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-md`
+                      : 'text-white/70 hover:bg-white/10'
+                  }`
+                }
+              >
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 opacity-80 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded"></div>
+                </div>
+                <span className="font-medium">Admin</span>
+              </NavLink>
+            )}
           </div>
 
           {/* Quick Stats Card */}

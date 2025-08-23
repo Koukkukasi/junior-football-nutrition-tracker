@@ -28,20 +28,37 @@ export function useAdminData() {
     try {
       const token = await getToken();
       
-      // Fetch user stats
-      const usersResponse = await fetch(`${API_BASE}/api/v1/users/stats`, {
+      // Fetch admin stats (all in one call)
+      const adminStatsResponse = await fetch(`${API_BASE}/api/v1/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      if (usersResponse.ok) {
-        const userData = await usersResponse.json();
-        setStats(prev => ({
-          ...prev,
-          totalUsers: userData.total || 0,
-          activeToday: userData.activeToday || 0
-        }));
+      if (adminStatsResponse.ok) {
+        const adminData = await adminStatsResponse.json();
+        if (adminData.success && adminData.data) {
+          const { users, foodEntries, recentActivity } = adminData.data;
+          
+          setStats(prev => ({
+            ...prev,
+            totalUsers: users.total || 0,
+            activeToday: users.activeToday || 0,
+            totalMeals: foodEntries.total || 0
+          }));
+          
+          // Convert recent activity to the expected format
+          if (recentActivity && recentActivity.length > 0) {
+            const formattedActivities: RecentActivity[] = recentActivity.map((entry: any) => ({
+              id: entry.id,
+              type: 'food_entry' as const,
+              description: `${entry.userName} logged ${entry.mealType.toLowerCase()}`,
+              timestamp: entry.createdAt,
+              userId: entry.id
+            }));
+            setActivities(formattedActivities);
+          }
+        }
       }
 
       // Fetch pending invites
@@ -60,20 +77,25 @@ export function useAdminData() {
         }));
       }
 
-      // Fetch feedback stats
-      const feedbackResponse = await fetch(`${API_BASE}/api/v1/feedback/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      // Fetch feedback stats (still separate as it requires admin role)
+      try {
+        const feedbackResponse = await fetch(`${API_BASE}/api/v1/feedback/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (feedbackResponse.ok) {
+          const feedbackData = await feedbackResponse.json();
+          setStats(prev => ({
+            ...prev,
+            totalFeedback: feedbackData.stats?.total || 0,
+            averageScore: feedbackData.stats?.averageRating || 0
+          }));
         }
-      });
-      
-      if (feedbackResponse.ok) {
-        const feedbackData = await feedbackResponse.json();
-        setStats(prev => ({
-          ...prev,
-          totalFeedback: feedbackData.stats?.total || 0,
-          averageScore: feedbackData.stats?.averageRating || 0
-        }));
+      } catch (err) {
+        // Feedback stats might fail if user is not admin
+        console.log('Could not fetch feedback stats');
       }
 
       setLastUpdate(new Date());
@@ -84,22 +106,9 @@ export function useAdminData() {
   };
 
   const fetchActivities = async () => {
-    try {
-      const token = await getToken();
-      
-      const response = await fetch(`${API_BASE}/api/v1/admin/activities`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities || []);
-      }
-    } catch (err) {
-      // Silent fail for activities
-    }
+    // Activities are now fetched as part of admin stats
+    // This function is kept for compatibility but does nothing
+    return;
   };
 
   useEffect(() => {

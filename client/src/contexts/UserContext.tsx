@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useUser, useAuth } from '@clerk/clerk-react';
+import API from '../lib/api';
 
 interface UserProfile {
   id: string;
@@ -9,7 +10,7 @@ interface UserProfile {
   lastName?: string;
   age: number;
   ageGroup: '10-12' | '13-15' | '16-18' | '19-25';
-  role: 'player' | 'coach';
+  role: 'PLAYER' | 'COACH' | 'ADMIN';
   teamId?: string;
   preferences: {
     measurementUnit: 'metric' | 'imperial';
@@ -34,6 +35,7 @@ interface UserContextType {
   getNutritionRequirements: () => NutritionRequirements;
   getAgeSpecificMultiplier: () => number;
   isLoading: boolean;
+  loading: boolean; // Add loading for compatibility
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -76,37 +78,77 @@ const ageGroupRequirements: Record<string, NutritionRequirements> = {
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Add loading state for compatibility
 
   useEffect(() => {
-    if (isLoaded && user) {
-      // Load user profile from localStorage or API
-      const savedProfile = localStorage.getItem('userProfile');
-      if (savedProfile) {
-        setProfile(JSON.parse(savedProfile));
-      } else {
-        // Default profile for new users
-        const defaultProfile: UserProfile = {
-          id: user.id,
-          email: user.primaryEmailAddress?.emailAddress || '',
-          firstName: user.firstName || undefined,
-          lastName: user.lastName || undefined,
-          age: 14, // Default age
-          ageGroup: '13-15',
-          role: 'player',
-          preferences: {
-            measurementUnit: 'metric',
-            language: 'en',
-            notifications: true
+    const fetchProfile = async () => {
+      if (isLoaded && user) {
+        try {
+          // Try to fetch profile from API first
+          const response = await API.users.profile();
+          
+          if (response.success && response.data) {
+            const dbUser = response.data;
+            const userProfile: UserProfile = {
+              id: dbUser.id,
+              email: dbUser.email,
+              firstName: dbUser.name?.split(' ')[0] || user.firstName || undefined,
+              lastName: dbUser.name?.split(' ')[1] || user.lastName || undefined,
+              age: dbUser.age || 14,
+              ageGroup: dbUser.ageGroup || '13-15',
+              role: dbUser.role || 'PLAYER',
+              teamId: dbUser.teamId || undefined,
+              preferences: dbUser.preferences || {
+                measurementUnit: 'metric',
+                language: 'en',
+                notifications: true
+              }
+            };
+            setProfile(userProfile);
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+          } else {
+            // Fallback to localStorage or default
+            const savedProfile = localStorage.getItem('userProfile');
+            if (savedProfile) {
+              setProfile(JSON.parse(savedProfile));
+            } else {
+              // Default profile for new users
+              const defaultProfile: UserProfile = {
+                id: user.id,
+                email: user.primaryEmailAddress?.emailAddress || '',
+                firstName: user.firstName || undefined,
+                lastName: user.lastName || undefined,
+                age: 14,
+                ageGroup: '13-15',
+                role: 'PLAYER',
+                preferences: {
+                  measurementUnit: 'metric',
+                  language: 'en',
+                  notifications: true
+                }
+              };
+              setProfile(defaultProfile);
+              localStorage.setItem('userProfile', JSON.stringify(defaultProfile));
+            }
           }
-        };
-        setProfile(defaultProfile);
-        localStorage.setItem('userProfile', JSON.stringify(defaultProfile));
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+          // Fallback to localStorage
+          const savedProfile = localStorage.getItem('userProfile');
+          if (savedProfile) {
+            setProfile(JSON.parse(savedProfile));
+          }
+        }
       }
-    }
-    setIsLoading(false);
-  }, [isLoaded, user]);
+      setIsLoading(false);
+      setLoading(false);
+    };
+
+    fetchProfile();
+  }, [isLoaded, user, getToken]);
 
   const updateAge = (age: number) => {
     if (!profile) return;
@@ -168,7 +210,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     updateAge,
     getNutritionRequirements,
     getAgeSpecificMultiplier,
-    isLoading
+    isLoading,
+    loading
   };
 
   return (

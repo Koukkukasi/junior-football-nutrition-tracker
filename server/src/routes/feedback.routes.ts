@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { requireAuth } from '../middleware/auth';
+import { requireAdmin } from '../middleware/roleAuth';
 import { AuthRequest } from '../types/auth.types';
 import fs from 'fs/promises';
 import path from 'path';
@@ -125,7 +126,7 @@ router.get('/all', requireAuth, async (req: AuthRequest, res: Response): Promise
 });
 
 // Get feedback statistics
-router.get('/stats', requireAuth, async (_req: AuthRequest, res: Response) => {
+router.get('/stats', requireAuth, requireAdmin, async (_req: AuthRequest, res: Response) => {
   try {
     await ensureFeedbackDir();
     const files = await fs.readdir(FEEDBACK_DIR);

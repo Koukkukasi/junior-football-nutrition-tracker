@@ -8,7 +8,7 @@ import { Plus, Calendar, Info } from 'lucide-react';
 import { analyzeFoodQuality, totalKeywordCount } from '../lib/food-database';
 import { useUserProfile } from '../contexts/UserContext';
 import { useToast } from '../hooks/useToast';
-import { FoodEntryForm } from '../components/food/FoodEntryForm';
+import { FoodEntryFormValidated } from '../components/food/FoodEntryFormValidated';
 import { FoodEntryCard } from '../components/food/FoodEntryCard';
 import { NutritionScoreDisplay } from '../components/food/NutritionScoreDisplay';
 import { SkeletonFoodEntry } from '../components/ui/SkeletonLoader';
@@ -151,28 +151,27 @@ export default function FoodLog() {
         </button>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Left Column - Food Entries */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Form or Entries */}
-          {showForm ? (
-            <FoodEntryForm
-              formData={formData}
-              onFormDataChange={setFormData}
-              onSubmit={handleSubmit}
-              onCancel={() => {
-                setShowForm(false);
-                setFormData({
-                  mealType: 'BREAKFAST',
-                  time: '',
-                  location: '',
-                  description: '',
-                  notes: ''
-                });
-              }}
-            />
-          ) : (
-            <>
+      {/* Show form full width when active, otherwise show grid layout */}
+      {showForm ? (
+        <FoodEntryFormValidated
+          formData={formData}
+          onFormDataChange={setFormData}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setShowForm(false);
+            setFormData({
+              mealType: 'BREAKFAST',
+              time: '',
+              location: '',
+              description: '',
+              notes: ''
+            });
+          }}
+        />
+      ) : (
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Food Entries */}
+          <div className="lg:col-span-2 space-y-6">
               {/* Today's Summary */}
               <div className="bg-white rounded-lg p-4 shadow flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -214,9 +213,7 @@ export default function FoodLog() {
                   </div>
                 )}
               </div>
-            </>
-          )}
-        </div>
+          </div>
 
         {/* Right Column - Score and Recommendations */}
         <div className="space-y-6">
@@ -251,6 +248,7 @@ export default function FoodLog() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

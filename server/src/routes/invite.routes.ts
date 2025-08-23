@@ -1,6 +1,7 @@
 import { Router, Response, Request } from 'express';
 import { prisma } from '../db';
 import { requireAuth } from '../middleware/auth';
+import { requireAdmin } from '../middleware/roleAuth';
 import { AuthRequest } from '../types/auth.types';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
@@ -51,7 +52,7 @@ const createTransporter = () => {
 };
 
 // Send test user invite
-router.post('/send', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/send', requireAuth, requireAdmin, async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { email, role = 'PLAYER', teamCode, customMessage } = req.body;
     
@@ -282,7 +283,7 @@ router.get('/validate/:code', async (req: Request, res: Response): Promise<any> 
 });
 
 // Bulk invite for testing
-router.post('/bulk', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/bulk', requireAuth, requireAdmin, async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { emails, role = 'PLAYER', teamCode } = req.body;
     
@@ -337,7 +338,7 @@ router.post('/bulk', requireAuth, async (req: AuthRequest, res: Response): Promi
 });
 
 // Get all pending invites (admin only)
-router.get('/pending', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/pending', requireAuth, requireAdmin, async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const user = await prisma.user.findUnique({
       where: { clerkId: req.userId }

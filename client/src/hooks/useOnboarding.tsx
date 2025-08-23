@@ -43,8 +43,9 @@ export function useOnboarding() {
 
           if (response.ok) {
             const data = await response.json();
+            const user = data.data || data.user; // Handle both response formats
             
-            if (!data.user?.completedOnboarding) {
+            if (!user?.completedOnboarding) {
               // Redirect to onboarding
               navigate('/onboarding');
             } else {

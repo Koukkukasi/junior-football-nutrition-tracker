@@ -9,33 +9,29 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen animated-gradient-hero relative overflow-hidden">
-      {/* Animated background shapes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white opacity-5 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
-
-      <nav className="bg-gradient-to-r from-purple-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-sm shadow-2xl relative z-10 border-b-2 border-cyan-400/30">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Header/Navigation */}
+      <nav className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-lg">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">
-              JF
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+              <span className="text-white font-bold">JF</span>
             </div>
-            <span className="hidden sm:inline">Junior Football Nutrition Tracker</span>
-            <span className="sm:hidden">JFNT</span>
-          </h1>
-          <div className="flex items-center gap-2 md:gap-4">
+            <div>
+              <h1 className="text-xl font-bold text-white">Nutrition Tracker</h1>
+              <p className="text-xs text-white/70">Junior Football Edition</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
             <Link 
               to="/sign-in" 
-              className="px-4 py-2 md:px-6 md:py-3 text-gray-700 hover:text-gray-900 transition-all font-medium text-sm md:text-base min-h-[44px] flex items-center justify-center hover:bg-gray-50 rounded-lg"
+              className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium"
             >
               Sign In
             </Link>
             <Link 
               to="/sign-up" 
-              className="px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-105 text-sm md:text-base min-h-[44px] flex items-center justify-center"
+              className="px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg transition-all"
             >
               Get Started
             </Link>
@@ -43,93 +39,176 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8 md:py-16 relative z-10">
-        <header className={`text-center mb-12 md:mb-16 transform transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <div className="inline-block mb-4 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full text-white text-sm font-bold shadow-lg animate-pulse">
-            #1 NUTRITION APP FOR YOUNG ATHLETES
+      <div className="container mx-auto px-4 py-12">
+        {/* Hero Section */}
+        <header className={`text-center mb-16 transform transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <div className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full text-white text-sm font-bold shadow-lg">
+            FOR PLAYERS AGED 10-25
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Fuel Your<br className="md:hidden" /> Football Journey
+          <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            Fuel Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Football Journey</span>
           </h2>
-          <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto px-4">
-            Track nutrition, monitor performance, and reach your full potential as a junior football player
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Track nutrition, monitor performance, and reach your full potential with personalized insights for junior football players
           </p>
         </header>
 
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto mb-12 md:mb-16">
-          <div className={`bg-vibrant-green rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-emerald-400/30 neon-glow-green ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
-            <div className="w-16 h-16 mb-4 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-white to-emerald-100 rounded-lg shadow-inner"></div>
+        {/* Feature Cards */}
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
+          <div className={`bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
+            <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
             </div>
-            <h3 className="text-xl md:text-2xl font-bold mb-3 text-white">Smart Food Logging</h3>
-            <p className="text-white/90 mb-4 text-sm md:text-base">
-              Easy meal tracking with 5 daily meal types. Perfect for young athletes on the go.
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Food Logging</h3>
+            <p className="text-gray-600 mb-4">
+              Quick and easy meal tracking with instant nutrition scoring tailored for your age group
             </p>
-            <ul className="text-sm md:text-base text-white/80 space-y-2">
+            <ul className="text-sm text-gray-500 space-y-2">
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Quick entry system
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                5 daily meal types
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Location tracking
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                Real-time scoring
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Meal notes
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                Age-specific recommendations
               </li>
             </ul>
           </div>
 
-          <div className={`bg-vibrant-orange rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-amber-400/30 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
-            <div className="w-16 h-16 mb-4 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-white to-amber-100 rounded-lg shadow-inner"></div>
+          <div className={`bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
+            <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
             </div>
-            <h3 className="text-xl md:text-2xl font-bold mb-3 text-white">Performance Metrics</h3>
-            <p className="text-white/90 mb-4 text-sm md:text-base">
-              Track energy levels, sleep, and training intensity to optimize your game.
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Performance Analytics</h3>
+            <p className="text-gray-600 mb-4">
+              Track energy levels, sleep quality, and training intensity to optimize your performance
             </p>
-            <ul className="text-sm md:text-base text-white/80 space-y-2">
+            <ul className="text-sm text-gray-500 space-y-2">
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Daily energy tracking
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                Energy monitoring
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Sleep monitoring
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                Sleep tracking
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Training logs
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                Training correlation
               </li>
             </ul>
           </div>
 
-          <div className={`bg-vibrant-purple rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-purple-400/30 neon-glow-purple ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '600ms' }}>
-            <div className="w-16 h-16 mb-4 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-white to-purple-100 rounded-lg shadow-inner"></div>
+          <div className={`bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '600ms' }}>
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
             </div>
-            <h3 className="text-xl md:text-2xl font-bold mb-3 text-white">Team Insights</h3>
-            <p className="text-white/90 mb-4 text-sm md:text-base">
-              Coaches can monitor team nutrition and identify areas for improvement.
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Team Management</h3>
+            <p className="text-gray-600 mb-4">
+              Coaches can monitor team nutrition, track progress, and provide personalized guidance
             </p>
-            <ul className="text-sm md:text-base text-white/80 space-y-2">
+            <ul className="text-sm text-gray-500 space-y-2">
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Team dashboard
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                Team dashboard
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Individual reports
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                Player insights
               </li>
               <li className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div> Performance trends
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                Progress reports
               </li>
             </ul>
           </div>
         </div>
 
-        <div className={`text-center transform transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '800ms' }}>
+        {/* Stats Section */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-16 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">95%</div>
+              <p className="text-gray-600 mt-2">Improved nutrition habits</p>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">4.8/5</div>
+              <p className="text-gray-600 mt-2">Average energy increase</p>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-orange-600">500+</div>
+              <p className="text-gray-600 mt-2">Active players</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Age Groups Section */}
+        <div className="mb-16">
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">Tailored for Every Age Group</h3>
+          <div className="grid md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-indigo-600 mb-2">10-12 Years</div>
+              <p className="text-sm text-gray-600">Growth & Development Focus</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-purple-600 mb-2">13-15 Years</div>
+              <p className="text-sm text-gray-600">Energy & Growth Support</p>
+            </div>
+            <div className="bg-gradient-to-br from-pink-50 to-orange-50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-pink-600 mb-2">16-18 Years</div>
+              <p className="text-sm text-gray-600">Performance Optimization</p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 text-center">
+              <div className="text-lg font-bold text-orange-600 mb-2">19-25 Years</div>
+              <p className="text-sm text-gray-600">Professional Standards</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className={`text-center bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl p-12 shadow-xl transform transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '800ms' }}>
+          <h3 className="text-3xl font-bold text-white mb-4">Ready to Level Up Your Game?</h3>
+          <p className="text-white/90 mb-8 max-w-2xl mx-auto">
+            Join hundreds of junior football players who are already tracking their nutrition and improving their performance
+          </p>
           <Link 
             to="/sign-up" 
-            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-white text-lg md:text-xl px-8 py-4 md:px-12 md:py-5 rounded-full font-bold hover:shadow-2xl transition-all transform hover:scale-105 shadow-xl min-h-[56px] group border-2 border-white/30"
+            className="inline-flex items-center justify-center bg-white text-purple-600 text-lg px-8 py-4 rounded-lg font-bold hover:shadow-lg transition-all transform hover:scale-105"
           >
-            <span>START FREE TRIAL</span>
+            Start Free Trial
           </Link>
-          <p className="mt-6 text-white/90 text-sm md:text-base">No credit card required • For players aged 10-25</p>
+          <p className="mt-4 text-white/70 text-sm">No credit card required • Free for 30 days</p>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600">
+              © {new Date().getFullYear()} Junior Football Nutrition Tracker. All rights reserved.
+            </div>
+            <div className="flex gap-6 text-sm">
+              <Link to="/terms" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                Terms of Service
+              </Link>
+              <Link to="/privacy" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                Privacy Policy
+              </Link>
+              <a href="mailto:support@juniorfootballnutrition.com" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                Contact
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   )

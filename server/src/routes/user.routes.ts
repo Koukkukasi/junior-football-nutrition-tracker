@@ -9,6 +9,7 @@ const router = Router();
 router.post('/onboarding', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { 
+      role,
       ageGroup, 
       position, 
       goals, 
@@ -31,7 +32,7 @@ router.post('/onboarding', requireAuth, async (req: AuthRequest, res: Response) 
           email: clerkUser.emailAddresses?.[0]?.emailAddress || '',
           name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Player',
           age: 16, // Default age, will be updated based on ageGroup
-          role: 'PLAYER',
+          role: role || 'PLAYER',
           ageGroup,
           position,
           goals: goals || [],
@@ -45,6 +46,7 @@ router.post('/onboarding', requireAuth, async (req: AuthRequest, res: Response) 
       user = await prisma.user.update({
         where: { clerkId: req.userId },
         data: {
+          role: role || 'PLAYER',
           ageGroup,
           position,
           goals: goals || [],
@@ -125,7 +127,7 @@ router.get('/profile', requireAuth, async (req: AuthRequest, res: Response): Pro
 
     return res.json({ 
       success: true, 
-      user 
+      data: user 
     });
   } catch (error) {
     console.error('Profile fetch error:', error);

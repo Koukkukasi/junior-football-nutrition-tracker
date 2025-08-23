@@ -1,243 +1,346 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react';
+import { useUserProfile } from '../contexts/UserContext';
+import API from '../lib/api';
+
+interface Team {
+  id: string;
+  name: string;
+  description?: string;
+  inviteCode: string;
+  memberRole: string;
+  joinedAt: string;
+  _count: {
+    members: number;
+  };
+}
+
+interface TeamDetails extends Team {
+  members: Array<{
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      age?: number;
+      position?: string;
+      ageGroup?: string;
+    };
+    role: string;
+    joinedAt: string;
+  }>;
+  userRole: string;
+}
 
 export default function Team() {
-  const [teamCode, setTeamCode] = useState('')
-  const [hasTeam, setHasTeam] = useState(false)
+  const { profile } = useUserProfile();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<TeamDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [joiningTeam, setJoiningTeam] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleJoinTeam = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  useEffect(() => {
+    if (selectedTeam) {
+      fetchTeamDetails(selectedTeam.id);
+    }
+  }, [selectedTeam?.id]);
+
+  const fetchTeams = async () => {
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${API_BASE}/api/v1/teams/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
-        },
-        body: JSON.stringify({ code: teamCode })
-      })
-      
-      if (response.ok) {
-        setHasTeam(true)
-        alert('Successfully joined team!')
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Failed to join team. Please check the code and try again.')
+      const response = await API.teams.getMyTeams();
+      if (response.success) {
+        setTeams(response.data);
+        if (response.data.length > 0 && !selectedTeam) {
+          fetchTeamDetails(response.data[0].id);
+        }
       }
     } catch (error) {
-      console.error('Error joining team:', error)
-      alert('Network error. Please try again.')
+      console.error('Failed to fetch teams:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const fetchTeamDetails = async (teamId: string) => {
+    try {
+      const response = await API.teams.getDetails(teamId);
+      if (response.success) {
+        setSelectedTeam(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch team details:', error);
+    }
+  };
+
+  const handleJoinTeam = async () => {
+    if (!inviteCode.trim()) {
+      setError('Please enter an invite code');
+      return;
+    }
+
+    setError('');
+    try {
+      const response = await API.teams.join(inviteCode);
+      if (response.success) {
+        setSuccess(response.message || 'Successfully joined team!');
+        setInviteCode('');
+        setJoiningTeam(false);
+        await fetchTeams();
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to join team');
+    }
+  };
+
+  const handleLeaveTeam = async (teamId: string) => {
+    if (!confirm('Are you sure you want to leave this team?')) return;
+
+    try {
+      const response = await API.teams.leave(teamId);
+      if (response.success) {
+        setSuccess('Successfully left the team');
+        setSelectedTeam(null);
+        await fetchTeams();
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to leave team');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
   }
 
-  if (!hasTeam) {
-    return (
-      <div className="max-w-3xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Team Management</h1>
-          <p className="text-gray-600 mt-2">Join your team to share progress with coaches</p>
-        </div>
+  const isCoachOrAdmin = profile?.role === 'COACH' || profile?.role === 'ADMIN';
 
-        <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-purple-500">
-          <div className="text-center mb-8">
-            <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-5xl">👥</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">You're not in a team yet</h2>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Ask your coach for the team code to join and start sharing your nutrition data
-            </p>
-          </div>
-
-          <form onSubmit={handleJoinTeam} className="space-y-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Team Code
-              </label>
-              <input
-                type="text"
-                value={teamCode}
-                onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-digit code"
-                maxLength={6}
-                className="w-full px-4 py-3 text-center text-2xl font-mono border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                required
-              />
+              <h1 className="text-3xl font-bold text-gray-900">My Teams</h1>
+              <p className="text-gray-600 mt-1">View your teams and connect with teammates</p>
             </div>
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all"
-            >
-              Join Team
-            </button>
-          </form>
-
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
-              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <span className="text-xl">🏆</span>
-                Are you a coach?
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Create a team to monitor your players' nutrition and performance
-              </p>
-              <button className="text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-1">
-                <span>Create a new team</span>
-                <span>→</span>
+            <div className="flex gap-3">
+              {isCoachOrAdmin && (
+                <a
+                  href="/coach-dashboard"
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all"
+                >
+                  Coach Dashboard
+                </a>
+              )}
+              <button
+                onClick={() => setJoiningTeam(true)}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
+              >
+                Join Team
               </button>
             </div>
           </div>
         </div>
-      </div>
-    )
-  }
 
-  return (
-    <div>
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">FC Junior Squad</h1>
-            <p className="text-gray-600 mt-2">Team code: <span className="font-mono font-bold text-purple-600">FCJ123</span></p>
+        {/* Success/Error Messages */}
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+            {success}
           </div>
-          <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-all font-medium">
-            Leave Team
-          </button>
-        </div>
-      </div>
+        )}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
 
-      {/* Team Stats Cards */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Team Size</p>
-              <p className="text-3xl font-bold text-gray-800">12</p>
-              <p className="text-sm text-gray-600 mt-1">Active Members</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <span className="text-2xl">👥</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Meal Tracking</p>
-              <p className="text-3xl font-bold text-gray-800">85%</p>
-              <p className="text-sm text-gray-600 mt-1">Avg Completion</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <span className="text-2xl">🍽️</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Team Energy</p>
-              <p className="text-3xl font-bold text-gray-800">4.1<span className="text-xl text-gray-500">/5</span></p>
-              <p className="text-sm text-gray-600 mt-1">Average Level</p>
-            </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <span className="text-2xl">⚡</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Team Members List */}
-      <div className="bg-white rounded-xl shadow-lg">
-        <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-800">Team Members</h2>
-            <span className="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">
-              12 Players
-            </span>
-          </div>
-        </div>
-        <div className="divide-y">
-          <div className="px-6 py-5 hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-white font-bold">JD</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Teams List */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Teams</h2>
+              {teams.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 mb-3">No teams yet</p>
+                  <button
+                    onClick={() => setJoiningTeam(true)}
+                    className="text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    Join your first team
+                  </button>
                 </div>
-                <div>
-                  <div className="font-semibold text-gray-800">John Doe</div>
-                  <div className="text-sm text-gray-500">Forward • #10</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2 justify-end mb-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-green-600">Active now</span>
-                </div>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className={`w-2 h-4 rounded-full ${i <= 5 ? 'bg-yellow-400' : 'bg-gray-200'}`} />
+              ) : (
+                <div className="space-y-3">
+                  {teams.map((team) => (
+                    <div
+                      key={team.id}
+                      onClick={() => fetchTeamDetails(team.id)}
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        selectedTeam?.id === team.id
+                          ? 'border-indigo-600 bg-indigo-50'
+                          : 'border-gray-200 hover:border-indigo-300'
+                      }`}
+                    >
+                      <h3 className="font-semibold text-gray-900">{team.name}</h3>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                          {team._count.members} members
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          team.memberRole === 'COACH' ? 'bg-purple-100 text-purple-700' :
+                          team.memberRole === 'ASSISTANT' ? 'bg-blue-100 text-blue-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {team.memberRole}
+                        </span>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          <div className="px-6 py-5 hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-white font-bold">SM</span>
+          {/* Team Details */}
+          <div className="lg:col-span-2">
+            {selectedTeam ? (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedTeam.name}</h2>
+                    {selectedTeam.description && (
+                      <p className="text-gray-600 mt-1">{selectedTeam.description}</p>
+                    )}
+                    <div className="flex items-center gap-3 mt-3">
+                      <span className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+                        Invite Code: <span className="font-mono font-bold">{selectedTeam.inviteCode}</span>
+                      </span>
+                      <span className={`text-sm px-3 py-1 rounded-full ${
+                        selectedTeam.userRole === 'COACH' ? 'bg-purple-100 text-purple-700' :
+                        selectedTeam.userRole === 'ASSISTANT' ? 'bg-blue-100 text-blue-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        Your Role: {selectedTeam.userRole}
+                      </span>
+                    </div>
+                  </div>
+                  {selectedTeam.userRole !== 'COACH' && (
+                    <button
+                      onClick={() => handleLeaveTeam(selectedTeam.id)}
+                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all"
+                    >
+                      Leave Team
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <div className="font-semibold text-gray-800">Sarah Miller</div>
-                  <div className="text-sm text-gray-500">Midfielder • #8</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2 justify-end mb-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-green-600">Active today</span>
-                </div>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className={`w-2 h-4 rounded-full ${i <= 4 ? 'bg-yellow-400' : 'bg-gray-200'}`} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="px-6 py-5 hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-white font-bold">TJ</span>
-                </div>
+                {/* Team Members */}
                 <div>
-                  <div className="font-semibold text-gray-800">Tom Johnson</div>
-                  <div className="text-sm text-gray-500">Goalkeeper • #1</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Team Members ({selectedTeam.members.length})</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedTeam.members.map((member) => (
+                      <div key={member.user.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-gray-900">{member.user.name}</p>
+                            <p className="text-sm text-gray-600">{member.user.email}</p>
+                            {member.user.position && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {member.user.position} • Age Group: {member.user.ageGroup}
+                              </p>
+                            )}
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            member.role === 'COACH' ? 'bg-purple-100 text-purple-700' :
+                            member.role === 'ASSISTANT' ? 'bg-blue-100 text-blue-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {member.role}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2 justify-end mb-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-500">2 days ago</span>
+            ) : (
+              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
                 </div>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className={`w-2 h-4 rounded-full ${i <= 3 ? 'bg-yellow-400' : 'bg-gray-200'}`} />
-                  ))}
-                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Select a Team</h3>
+                <p className="text-gray-600">Choose a team from the list to view details and members</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
+
+        {/* Join Team Modal */}
+        {joiningTeam && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Join a Team</h3>
+              <p className="text-gray-600 mb-4">Enter the invite code provided by your coach</p>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="inviteCode" className="block text-sm font-medium text-gray-700 mb-1">
+                    Invite Code
+                  </label>
+                  <input
+                    id="inviteCode"
+                    type="text"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center text-lg"
+                    placeholder="XXXXXXXX"
+                    maxLength={8}
+                  />
+                </div>
+                {error && (
+                  <div className="text-red-600 text-sm">{error}</div>
+                )}
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setJoiningTeam(false);
+                    setInviteCode('');
+                    setError('');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleJoinTeam}
+                  disabled={!inviteCode.trim()}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Join Team
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
