@@ -1,4 +1,4 @@
-import { HTMLAttributes } from 'react'
+import type { HTMLAttributes } from 'react'
 
 interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'text' | 'circular' | 'rectangular' | 'card'

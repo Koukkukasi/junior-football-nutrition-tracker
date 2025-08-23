@@ -134,7 +134,7 @@ export default function Layout() {
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-lg lg:hidden z-50">
         <div className="grid grid-cols-4 h-16">
-          {navItems.map((item) => (
+          {navItems.slice(0, 4).map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -144,7 +144,7 @@ export default function Layout() {
                 }`
               }
             >
-              <div className={`w-6 h-6 rounded bg-gradient-to-r ${item.color} ${isActive ? 'opacity-100' : 'opacity-50'}`}></div>
+              <div className={`w-6 h-6 rounded bg-gradient-to-r ${item.color}`}></div>
               <span className="text-xs font-medium">{item.label}</span>
             </NavLink>
           ))}
