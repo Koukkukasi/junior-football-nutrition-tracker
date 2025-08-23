@@ -126,6 +126,83 @@ h3 {
   background: linear-gradient(to right, #a855f7, #ec4899);
 }
 
+/* Animated Gradients */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient-hero {
+  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #fda085, #fccb90);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+.animated-gradient-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 10s ease infinite;
+}
+
+/* Vibrant Color Palette */
+.bg-vibrant-purple {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-vibrant-pink {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bg-vibrant-orange {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.bg-vibrant-blue {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bg-vibrant-green {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.bg-vibrant-sunset {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 30%, #fccb90 60%, #d57eeb 100%);
+}
+
+/* Glassmorphism Effects */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+/* Neon Glow Effects */
+.neon-glow-purple {
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.5),
+              0 0 40px rgba(147, 51, 234, 0.3),
+              0 0 60px rgba(147, 51, 234, 0.1);
+}
+
+.neon-glow-blue {
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.5),
+              0 0 40px rgba(37, 99, 235, 0.3),
+              0 0 60px rgba(37, 99, 235, 0.1);
+}
+
+.neon-glow-green {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5),
+              0 0 40px rgba(16, 185, 129, 0.3),
+              0 0 60px rgba(16, 185, 129, 0.1);
+}
+
 /* Nutrition Score Classes */
 .score-excellent {
   color: #059669;

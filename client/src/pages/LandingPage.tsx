@@ -9,7 +9,7 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-400 to-green-400 relative overflow-hidden">
+    <div className="min-h-screen animated-gradient-hero relative overflow-hidden">
       {/* Animated background shapes */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full animate-pulse"></div>
@@ -57,7 +57,7 @@ export default function LandingPage() {
         </header>
 
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto mb-12 md:mb-16">
-          <div className={`bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-emerald-400/30 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
+          <div className={`bg-vibrant-green rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-emerald-400/30 neon-glow-green ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
             <div className="w-16 h-16 mb-4 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
               <div className="w-10 h-10 bg-gradient-to-br from-white to-emerald-100 rounded-lg shadow-inner"></div>
             </div>
@@ -78,7 +78,7 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          <div className={`bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-amber-400/30 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
+          <div className={`bg-vibrant-orange rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-amber-400/30 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
             <div className="w-16 h-16 mb-4 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
               <div className="w-10 h-10 bg-gradient-to-br from-white to-amber-100 rounded-lg shadow-inner"></div>
             </div>
@@ -99,7 +99,7 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          <div className={`bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-purple-400/30 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '600ms' }}>
+          <div className={`bg-vibrant-purple rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-purple-400/30 neon-glow-purple ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '600ms' }}>
             <div className="w-16 h-16 mb-4 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
               <div className="w-10 h-10 bg-gradient-to-br from-white to-purple-100 rounded-lg shadow-inner"></div>
             </div>
