@@ -90,5 +90,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Export for Vercel
+// Export for Vercel serverless function
 module.exports = app;
+
+// Also export as default for Vercel
+module.exports.default = app;
