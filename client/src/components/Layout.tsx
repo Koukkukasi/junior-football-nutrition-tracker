@@ -1,6 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { UserButton, useUser } from '@clerk/clerk-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FeedbackWidget from './feedback/FeedbackWidget'
 import { useUserProfile } from '../contexts/UserContext'
 
@@ -8,6 +8,47 @@ export default function Layout() {
   const { user } = useUser()
   const { profile } = useUserProfile()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [todayStats, setTodayStats] = useState({
+    meals: 0,
+    score: 0,
+    energy: 0
+  })
+
+  // Fetch today's stats for sidebar
+  useEffect(() => {
+    const fetchTodayStats = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const token = await window.Clerk?.session?.getToken()
+        
+        if (!token) return
+        
+        const response = await fetch(`${API_BASE}/api/v1/users/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.stats) {
+            setTodayStats({
+              meals: data.stats.todayMeals || 0,
+              score: data.stats.nutritionScore || 0,
+              energy: Math.round(data.stats.weekAvgEnergy || 0)
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch sidebar stats:', error)
+      }
+    }
+    
+    fetchTodayStats()
+    // Refresh stats every 30 seconds
+    const interval = setInterval(fetchTodayStats, 30000)
+    return () => clearInterval(interval)
+  }, [])
   
   const isAdmin = profile?.role === 'ADMIN'
 
@@ -115,15 +156,15 @@ export default function Layout() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-white/70">Meals</span>
-                <span className="text-sm font-bold text-white">3/5</span>
+                <span className="text-sm font-bold text-white">{todayStats.meals}/5</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-white/70">Score</span>
-                <span className="text-sm font-bold text-white">75</span>
+                <span className="text-sm font-bold text-white">{todayStats.score}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-white/70">Energy</span>
-                <span className="text-sm font-bold text-white">4/5</span>
+                <span className="text-sm font-bold text-white">{todayStats.energy}/5</span>
               </div>
             </div>
           </div>

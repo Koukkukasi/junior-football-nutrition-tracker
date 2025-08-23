@@ -139,7 +139,44 @@ When working on this project, utilize specialized agents for different domains:
 - ✅ ALWAYS get agent approval before proceeding
 - ✅ ALWAYS include agent in problem-solving discussions
 
-### 2. Testing Agent 🧪
+### 2. Playwright Browser Automation Agent 🌐 **[PROACTIVE - Use for ALL browser tasks]**
+**⚠️ IMPORTANT: The Playwright Agent MUST be engaged for ALL browser automation and web interface tasks.**
+
+**Responsibilities**:
+- Automating browser interactions for deployment configurations
+- Navigating web interfaces (Vercel, Clerk, hosting platforms)
+- Updating environment variables and settings through web UIs
+- Capturing screenshots and monitoring deployment status
+- Automating repetitive web-based tasks
+- Testing live deployments and production environments
+
+**Usage Pattern**:
+```typescript
+// ALWAYS use Playwright Agent when:
+- Configuring deployment platforms (Vercel, Netlify, etc.)
+- Setting up authentication services (Clerk, Auth0, etc.)
+- Updating environment variables through web interfaces
+- Testing deployed applications
+- Automating any web-based workflow
+- Capturing deployment status and logs
+- Navigating dashboards and admin panels
+```
+
+**Mandatory Integration Workflow**:
+1. **Deployment Tasks**: ALWAYS use Playwright for deployment configurations
+2. **Environment Setup**: Automate environment variable updates via web UI
+3. **Live Testing**: Test production deployments with Playwright
+4. **Documentation**: Capture screenshots of configurations for reference
+5. **Monitoring**: Check deployment status and health checks
+
+**Best Practices**:
+- ✅ ALWAYS use Playwright instead of manual instructions for web tasks
+- ✅ Capture screenshots at key steps for documentation
+- ✅ Handle authentication flows programmatically
+- ✅ Wait for elements properly to ensure reliability
+- ✅ Use specific selectors and data-testid attributes when available
+
+### 3. Testing Agent 🧪
 **Responsibilities**:
 - Playwright test development and execution
 - E2E scenario creation and validation
@@ -155,7 +192,7 @@ When working on this project, utilize specialized agents for different domains:
 - Validating user workflows
 ```
 
-### 2. UI Agent 🎨
+### 4. UI Agent 🎨
 **Responsibilities**:
 - Frontend component development
 - Tailwind CSS styling and design compliance
@@ -171,7 +208,7 @@ When working on this project, utilize specialized agents for different domains:
 - Design system compliance
 ```
 
-### 3. Nutrition Agent 🥗
+### 5. Nutrition Agent 🥗
 **Responsibilities**:
 - Food database expansion and management
 - Nutrition scoring algorithms
@@ -190,10 +227,13 @@ When working on this project, utilize specialized agents for different domains:
 ### Agent Collaboration Example
 ```bash
 # Multi-agent workflow for new feature
-1. Testing Agent: Write E2E tests for feature
-2. UI Agent: Create frontend components
-3. Nutrition Agent: Implement scoring logic
-4. Testing Agent: Validate implementation
+1. Code Review Agent: Review implementation approach
+2. Playwright Agent: Set up deployment environment
+3. Testing Agent: Write E2E tests for feature
+4. UI Agent: Create frontend components
+5. Nutrition Agent: Implement scoring logic
+6. Testing Agent: Validate implementation
+7. Playwright Agent: Deploy and verify in production
 ```
 
 ## Playwright Testing Workflow
@@ -498,6 +538,26 @@ npm run build         # Build succeeds
 
 ## Deployment & Production
 
+### 🌐 Automated Deployment with Playwright
+**⚠️ MANDATORY: Use Playwright for ALL deployment tasks - NO manual instructions**
+
+When deploying or configuring services, ALWAYS use Playwright automation:
+
+```typescript
+// Example: Updating Vercel environment variables
+1. Navigate to Vercel dashboard
+2. Access project settings
+3. Update environment variables programmatically
+4. Trigger redeployment
+5. Verify deployment success
+
+// Example: Configuring Clerk authentication
+1. Access Clerk dashboard
+2. Retrieve API keys
+3. Update deployment configuration
+4. Test authentication flow
+```
+
 ### Build Process
 ```bash
 # Frontend build
@@ -510,10 +570,23 @@ cd server && npm run build
 cd server && npx prisma migrate deploy
 ```
 
+### Deployment Checklist with Playwright
+- [ ] Use Playwright to update Vercel environment variables
+- [ ] Use Playwright to configure Clerk authentication
+- [ ] Use Playwright to set up database connections
+- [ ] Use Playwright to verify deployment health
+- [ ] Use Playwright to test production endpoints
+
 ### Health Checks
 ```bash
 curl http://localhost:3001/health  # Backend health
 curl http://localhost:5173/       # Frontend health
+
+# Or use Playwright for automated health checks:
+- Navigate to production URL
+- Verify page loads correctly
+- Check for console errors
+- Test critical user flows
 ```
 
 ## Development Best Practices

@@ -4,6 +4,20 @@ import { useNavigate } from 'react-router-dom'
 import { useOnboarding } from '../hooks/useOnboarding'
 import { SkeletonDashboardCard } from '../components/ui/SkeletonLoader'
 
+// Helper function to format time ago
+function getTimeAgo(date: Date): string {
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const days = Math.floor(hours / 24)
+  
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  const minutes = Math.floor(diff / (1000 * 60))
+  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`
+  return 'Just now'
+}
+
 export default function Dashboard() {
   const { user } = useUser()
   const navigate = useNavigate()
@@ -15,13 +29,30 @@ export default function Dashboard() {
     trainingDays: 0,
     nutritionScore: 0
   })
+  const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [, setShowDemoData] = useState(false)
 
   useEffect(() => {
-    // Check if user is new and should see demo data
-    const isNewUser = localStorage.getItem('showDemoData') === 'true'
-    setShowDemoData(isNewUser)
+    // Fetch recent food entries for activity feed
+    const fetchRecentActivities = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${API_BASE}/api/v1/food?limit=3`, {
+          headers: {
+            'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.data) {
+            setRecentActivities(data.data)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch recent activities:', error)
+      }
+    }
     
     // Fetch actual stats from API
     const fetchStats = async () => {
@@ -36,32 +67,40 @@ export default function Dashboard() {
         
         if (response.ok) {
           const data = await response.json()
-          setStats(data.stats || {
-            todayMeals: 3,
-            weekAvgEnergy: 4.2,
-            sleepAvg: 7.5,
-            trainingDays: 4,
-            nutritionScore: 75
-          })
+          // Use the actual stats from the API response
+          if (data.success && data.stats) {
+            setStats(data.stats)
+          } else {
+            // Only use demo values if no real data exists
+            console.log('No real stats data, using defaults')
+            setStats({
+              todayMeals: 0,
+              weekAvgEnergy: 0,
+              sleepAvg: 0,
+              trainingDays: 0,
+              nutritionScore: 0
+            })
+          }
         } else {
-          // Use demo values if API fails
+          // Use zeros if API fails
+          console.error('API response not ok:', response.status)
           setStats({
-            todayMeals: 3,
-            weekAvgEnergy: 4.2,
-            sleepAvg: 7.5,
-            trainingDays: 4,
-            nutritionScore: 75
+            todayMeals: 0,
+            weekAvgEnergy: 0,
+            sleepAvg: 0,
+            trainingDays: 0,
+            nutritionScore: 0
           })
         }
       } catch (error) {
         console.error('Failed to fetch stats:', error)
-        // Use demo values on error
+        // Use zeros on error
         setStats({
-          todayMeals: 3,
-          weekAvgEnergy: 4.2,
-          sleepAvg: 7.5,
-          trainingDays: 4,
-          nutritionScore: 75
+          todayMeals: 0,
+          weekAvgEnergy: 0,
+          sleepAvg: 0,
+          trainingDays: 0,
+          nutritionScore: 0
         })
       } finally {
         setLoading(false)
@@ -69,6 +108,7 @@ export default function Dashboard() {
     }
     
     fetchStats()
+    fetchRecentActivities()
   }, [])
 
   const getScoreColor = (score: number) => {
@@ -152,7 +192,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-sm text-white/80 mt-4">
-            {5 - stats.todayMeals} more meals to log
+            {5 - stats.todayMeals > 0 ? `${5 - stats.todayMeals} more meals to log` : 'All meals logged!'}
           </p>
         </div>
 
@@ -248,44 +288,43 @@ export default function Dashboard() {
         <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold text-white mb-6">Recent Activity</h2>
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-green-600 rounded"></div>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity: any, index: number) => {
+                const mealTypeColors = {
+                  BREAKFAST: 'from-yellow-400 to-yellow-600',
+                  LUNCH: 'from-green-400 to-green-600',
+                  DINNER: 'from-blue-400 to-blue-600',
+                  SNACK: 'from-purple-400 to-purple-600',
+                  EVENING_SNACK: 'from-pink-400 to-pink-600'
+                }
+                const color = mealTypeColors[activity.mealType as keyof typeof mealTypeColors] || 'from-gray-400 to-gray-600'
+                const timeAgo = getTimeAgo(new Date(activity.createdAt || activity.date))
+                
+                return (
+                  <div key={activity.id || index} className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                      <div className={`w-6 h-6 bg-gradient-to-br ${color} rounded`}></div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-white">{activity.mealType} logged</p>
+                      <p className="text-xs text-white/70">
+                        {activity.description ? `${activity.description.substring(0, 30)}${activity.description.length > 30 ? '...' : ''}` : 'No description'} • {timeAgo}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-white/70 text-sm mb-4">No recent activity</p>
+                <button 
+                  onClick={() => navigate('/food')}
+                  className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium transition-all"
+                >
+                  Log your first meal
+                </button>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">Lunch logged</p>
-                <p className="text-xs text-white/70">Healthy choices • 2 hours ago</p>
-              </div>
-              <span className="text-xs font-semibold text-white bg-white/30 px-2 py-1 rounded-full">
-                +15 pts
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-blue-600 rounded"></div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">Energy level updated</p>
-                <p className="text-xs text-white/70">Feeling great! • This morning</p>
-              </div>
-              <span className="text-xs font-semibold text-white bg-white/30 px-2 py-1 rounded-full">
-                4/5
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded"></div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">Sleep tracked</p>
-                <p className="text-xs text-white/70">Good rest • Yesterday</p>
-              </div>
-              <span className="text-xs font-semibold text-white bg-white/30 px-2 py-1 rounded-full">
-                8h
-              </span>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -296,8 +335,9 @@ export default function Dashboard() {
           <div>
             <h3 className="text-xl font-bold mb-2">Keep up the great work!</h3>
             <p className="text-white/90">
-              You're on track to achieve your nutrition goals this week. 
-              Just {5 - stats.todayMeals} more meals to log today!
+              {stats.todayMeals > 0 
+                ? `You've logged ${stats.todayMeals} meal${stats.todayMeals > 1 ? 's' : ''} today. ${5 - stats.todayMeals > 0 ? `Just ${5 - stats.todayMeals} more to go!` : 'Great job completing all meals!'}` 
+                : 'Start logging your meals to track your nutrition progress!'}
             </p>
           </div>
           <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
