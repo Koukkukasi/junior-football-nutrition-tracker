@@ -88,11 +88,11 @@ export default function Dashboard() {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Welcome back, {user?.firstName || 'Athlete'}! 👋
+      <div className="mb-8 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
+        <h1 className="text-3xl font-bold mb-2">
+          Welcome back, {user?.firstName || 'Athlete'}!
         </h1>
-        <p className="text-gray-600">
+        <p className="text-white/90">
           Here's your performance overview for today
         </p>
       </div>
@@ -109,13 +109,13 @@ export default function Dashboard() {
         ) : (
           <>
             {/* Nutrition Score Card */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+              <p className="text-sm font-medium text-white/80 uppercase tracking-wider">
                 Nutrition Score
               </p>
-              <p className="text-3xl font-bold text-gray-800 mt-2">
+              <p className="text-3xl font-bold text-white mt-2">
                 {stats.nutritionScore}
               </p>
             </div>
@@ -137,38 +137,38 @@ export default function Dashboard() {
         </div>
 
         {/* Meals Logged Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+        <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+              <p className="text-sm font-medium text-white/80 uppercase tracking-wider">
                 Meals Today
               </p>
-              <p className="text-3xl font-bold text-gray-800 mt-2">
+              <p className="text-3xl font-bold text-white mt-2">
                 {stats.todayMeals}/5
               </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <span className="text-2xl">🍽️</span>
+            <div className="p-3 bg-white/20 rounded-lg">
+              <div className="w-8 h-8 bg-white rounded-lg"></div>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mt-4">
+          <p className="text-sm text-white/80 mt-4">
             {5 - stats.todayMeals} more meals to log
           </p>
         </div>
 
         {/* Energy Level Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+        <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+              <p className="text-sm font-medium text-white/80 uppercase tracking-wider">
                 Avg Energy
               </p>
-              <p className="text-3xl font-bold text-gray-800 mt-2">
+              <p className="text-3xl font-bold text-white mt-2">
                 {stats.weekAvgEnergy}
               </p>
             </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <span className="text-2xl">⚡</span>
+            <div className="p-3 bg-white/20 rounded-lg">
+              <div className="w-8 h-8 bg-white rounded-lg"></div>
             </div>
           </div>
           <div className="flex gap-1 mt-4">
@@ -177,8 +177,8 @@ export default function Dashboard() {
                 key={level}
                 className={`h-2 flex-1 rounded-full ${
                   level <= Math.round(stats.weekAvgEnergy)
-                    ? 'bg-yellow-400'
-                    : 'bg-gray-200'
+                    ? 'bg-white'
+                    : 'bg-white/30'
                 }`}
               />
             ))}
@@ -186,21 +186,21 @@ export default function Dashboard() {
         </div>
 
         {/* Sleep Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+              <p className="text-sm font-medium text-white/80 uppercase tracking-wider">
                 Avg Sleep
               </p>
-              <p className="text-3xl font-bold text-gray-800 mt-2">
+              <p className="text-3xl font-bold text-white mt-2">
                 {stats.sleepAvg}h
               </p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <span className="text-2xl">😴</span>
+            <div className="p-3 bg-white/20 rounded-lg">
+              <div className="w-8 h-8 bg-white rounded-lg"></div>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mt-4">
+          <p className="text-sm text-white/80 mt-4">
             {stats.sleepAvg >= 8 ? 'Great sleep!' : 'Try to get more rest'}
           </p>
         </div>
@@ -211,78 +211,78 @@ export default function Dashboard() {
       {/* Action Cards */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+        <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => navigate('/food')}
-              className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-md transition-all group"
+              className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">🍎</span>
-              <span className="text-sm font-medium text-gray-700">Log Meal</span>
+              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <span className="text-sm font-medium text-white">Log Meal</span>
             </button>
             <button
               onClick={() => navigate('/performance')}
-              className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:shadow-md transition-all group"
+              className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">📊</span>
-              <span className="text-sm font-medium text-gray-700">Track Performance</span>
+              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <span className="text-sm font-medium text-white">Track Performance</span>
             </button>
             <button
               onClick={() => navigate('/team')}
-              className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg hover:shadow-md transition-all group"
+              className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">👥</span>
-              <span className="text-sm font-medium text-gray-700">Team View</span>
+              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <span className="text-sm font-medium text-white">Team View</span>
             </button>
             <button
-              className="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg hover:shadow-md transition-all group"
+              className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">📈</span>
-              <span className="text-sm font-medium text-gray-700">View Reports</span>
+              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <span className="text-sm font-medium text-white">View Reports</span>
             </button>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
+        <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-white mb-6">Recent Activity</h2>
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">🥗</span>
+            <div className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-green-600 rounded"></div>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">Lunch logged</p>
-                <p className="text-xs text-gray-500">Healthy choices • 2 hours ago</p>
+                <p className="text-sm font-medium text-white">Lunch logged</p>
+                <p className="text-xs text-white/70">Healthy choices • 2 hours ago</p>
               </div>
-              <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <span className="text-xs font-semibold text-white bg-white/30 px-2 py-1 rounded-full">
                 +15 pts
               </span>
             </div>
             
-            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">⚡</span>
+            <div className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-blue-600 rounded"></div>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">Energy level updated</p>
-                <p className="text-xs text-gray-500">Feeling great! • This morning</p>
+                <p className="text-sm font-medium text-white">Energy level updated</p>
+                <p className="text-xs text-white/70">Feeling great! • This morning</p>
               </div>
-              <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+              <span className="text-xs font-semibold text-white bg-white/30 px-2 py-1 rounded-full">
                 4/5
               </span>
             </div>
             
-            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">😴</span>
+            <div className="flex items-center gap-4 p-3 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded"></div>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">Sleep tracked</p>
-                <p className="text-xs text-gray-500">Good rest • Yesterday</p>
+                <p className="text-sm font-medium text-white">Sleep tracked</p>
+                <p className="text-xs text-white/70">Good rest • Yesterday</p>
               </div>
-              <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+              <span className="text-xs font-semibold text-white bg-white/30 px-2 py-1 rounded-full">
                 8h
               </span>
             </div>
@@ -291,17 +291,17 @@ export default function Dashboard() {
       </div>
 
       {/* Motivational Card */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold mb-2">Keep up the great work! 🏆</h3>
-            <p className="text-blue-100">
+            <h3 className="text-xl font-bold mb-2">Keep up the great work!</h3>
+            <p className="text-white/90">
               You're on track to achieve your nutrition goals this week. 
               Just {5 - stats.todayMeals} more meals to log today!
             </p>
           </div>
-          <div className="text-6xl opacity-20">
-            🎯
+          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-white rounded-lg"></div>
           </div>
         </div>
       </div>
