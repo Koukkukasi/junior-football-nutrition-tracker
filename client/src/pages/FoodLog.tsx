@@ -7,9 +7,11 @@ import { useState, useEffect } from 'react';
 import { Plus, Calendar, Info } from 'lucide-react';
 import { analyzeFoodQuality, totalKeywordCount } from '../lib/food-database';
 import { useUserProfile } from '../contexts/UserContext';
+import { useToast } from '../hooks/useToast';
 import { FoodEntryForm } from '../components/food/FoodEntryForm';
 import { FoodEntryCard } from '../components/food/FoodEntryCard';
 import { NutritionScoreDisplay } from '../components/food/NutritionScoreDisplay';
+import { SkeletonFoodEntry } from '../components/ui/SkeletonLoader';
 import { 
   getMealTiming, 
   calculateNutritionScore, 
@@ -20,6 +22,7 @@ import API from '../lib/api';
 
 export default function FoodLog() {
   const { profile } = useUserProfile();
+  const { success, error } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [todayEntries, setTodayEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,8 +67,9 @@ export default function FoodLog() {
         }));
         setTodayEntries(todayData);
       }
-    } catch (error) {
-      console.error('Failed to fetch food entries:', error);
+    } catch (err) {
+      console.error('Failed to fetch food entries:', err);
+      error('Failed to load meals', 'Please try refreshing the page');
     } finally {
       setLoading(false);
     }
@@ -98,6 +102,16 @@ export default function FoodLog() {
         
         setTodayEntries([...todayEntries, newEntry]);
         
+        // Show success toast with quality feedback
+        const qualityMessages = {
+          excellent: 'Excellent choice! Keep it up! 🌟',
+          good: 'Good meal! Well done! 👍',
+          fair: 'Decent choice. Consider adding more nutritious foods.',
+          poor: 'Try to make healthier choices next time.'
+        };
+        
+        success('Meal saved successfully!', qualityMessages[analysis.quality]);
+        
         // Reset form and close
         setFormData({
           mealType: 'BREAKFAST',
@@ -108,10 +122,11 @@ export default function FoodLog() {
         });
         setShowForm(false);
       } else {
-        console.error('Failed to save food entry');
+        error('Failed to save meal', 'Please try again');
       }
-    } catch (error) {
-      console.error('Failed to save food entry:', error);
+    } catch (err) {
+      console.error('Failed to save food entry:', err);
+      error('Failed to save meal', 'Please check your connection and try again');
     }
   };
 
@@ -178,9 +193,11 @@ export default function FoodLog() {
               {/* Food Entries */}
               <div className="space-y-4">
                 {loading ? (
-                  <div className="bg-gray-50 rounded-lg p-8 text-center">
-                    <p className="text-gray-600">Loading food entries...</p>
-                  </div>
+                  <>
+                    <SkeletonFoodEntry />
+                    <SkeletonFoodEntry />
+                    <SkeletonFoodEntry />
+                  </>
                 ) : todayEntries.length > 0 ? (
                   todayEntries.map(entry => (
                     <FoodEntryCard key={entry.id} entry={entry} />

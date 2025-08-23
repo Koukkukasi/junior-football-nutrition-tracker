@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import { UserProvider } from './contexts/UserContext'
+import { ToastProvider } from './hooks/useToast'
 import './App.css'
 
 // Lazy load all protected pages for better performance
@@ -50,8 +51,9 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <UserProvider>
-        <Routes>
+      <ToastProvider>
+        <UserProvider>
+          <Routes>
         <Route path="/" element={isSignedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
         <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
@@ -124,7 +126,8 @@ function App() {
           {/* Test invite functionality now available in /admin/invite */}
         </Route>
       </Routes>
-    </UserProvider>
+        </UserProvider>
+      </ToastProvider>
     </ErrorBoundary>
   )
 }

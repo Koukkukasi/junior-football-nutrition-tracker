@@ -2,18 +2,20 @@ import { useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOnboarding } from '../hooks/useOnboarding'
+import { SkeletonDashboardCard } from '../components/ui/SkeletonLoader'
 
 export default function Dashboard() {
   const { user } = useUser()
   const navigate = useNavigate()
   useOnboarding() // Just run the hook for its side effects
   const [stats, setStats] = useState({
-    todayMeals: 3,
-    weekAvgEnergy: 4.2,
-    sleepAvg: 7.5,
-    trainingDays: 4,
-    nutritionScore: 75
+    todayMeals: 0,
+    weekAvgEnergy: 0,
+    sleepAvg: 0,
+    trainingDays: 0,
+    nutritionScore: 0
   })
+  const [loading, setLoading] = useState(true)
   const [, setShowDemoData] = useState(false)
 
   useEffect(() => {
@@ -23,6 +25,7 @@ export default function Dashboard() {
     
     // Fetch actual stats from API
     const fetchStats = async () => {
+      setLoading(true)
       try {
         const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
         const response = await fetch(`${API_BASE}/api/v1/users/stats`, {
@@ -34,32 +37,34 @@ export default function Dashboard() {
         if (response.ok) {
           const data = await response.json()
           setStats(data.stats || {
-            todayMeals: 0,
-            weekAvgEnergy: 0,
-            sleepAvg: 0,
-            trainingDays: 0,
-            nutritionScore: 0
+            todayMeals: 3,
+            weekAvgEnergy: 4.2,
+            sleepAvg: 7.5,
+            trainingDays: 4,
+            nutritionScore: 75
           })
         } else {
-          // Use default values if API fails
+          // Use demo values if API fails
           setStats({
-            todayMeals: 0,
-            weekAvgEnergy: 0,
-            sleepAvg: 0,
-            trainingDays: 0,
-            nutritionScore: 0
+            todayMeals: 3,
+            weekAvgEnergy: 4.2,
+            sleepAvg: 7.5,
+            trainingDays: 4,
+            nutritionScore: 75
           })
         }
       } catch (error) {
         console.error('Failed to fetch stats:', error)
-        // Use default values on error
+        // Use demo values on error
         setStats({
-          todayMeals: 0,
-          weekAvgEnergy: 0,
-          sleepAvg: 0,
-          trainingDays: 0,
-          nutritionScore: 0
+          todayMeals: 3,
+          weekAvgEnergy: 4.2,
+          sleepAvg: 7.5,
+          trainingDays: 4,
+          nutritionScore: 75
         })
+      } finally {
+        setLoading(false)
       }
     }
     
@@ -94,8 +99,17 @@ export default function Dashboard() {
 
       {/* Modern KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Nutrition Score Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+        {loading ? (
+          <>
+            <SkeletonDashboardCard />
+            <SkeletonDashboardCard />
+            <SkeletonDashboardCard />
+            <SkeletonDashboardCard />
+          </>
+        ) : (
+          <>
+            {/* Nutrition Score Card */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
@@ -190,6 +204,8 @@ export default function Dashboard() {
             {stats.sleepAvg >= 8 ? 'Great sleep!' : 'Try to get more rest'}
           </p>
         </div>
+          </>
+        )}
       </div>
 
       {/* Action Cards */}
