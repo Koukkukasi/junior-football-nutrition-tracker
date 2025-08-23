@@ -1,27 +1,17 @@
-// Vercel serverless function handler for the Express backend
+// Vercel serverless function handler - Simplified for production
 const express = require('express');
 const cors = require('cors');
-const compression = require('compression');
-const helmet = require('helmet');
-const morgan = require('morgan');
 
 // Create Express app
 const app = express();
 
-// Middleware
-app.use(helmet());
+// Basic middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'https://junior-nutrition-tracker-prod.vercel.app',
   credentials: true
 }));
-app.use(compression());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Disable Morgan logging in production Vercel environment
-if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev'));
-}
+app.use(express.urlencoded({ extended: true }))
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
