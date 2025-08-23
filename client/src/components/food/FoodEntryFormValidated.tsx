@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, FileText, TrendingUp, AlertCircle, CheckCircle, XCircle, Check, X, AlertTriangle } from 'lucide-react';
+import { Clock, MapPin, FileText, TrendingUp, AlertCircle, CheckCircle, XCircle, Check, AlertTriangle } from 'lucide-react';
 import { analyzeFoodQuality } from '../../lib/food-database';
 import { getMealTiming } from '../../utils/foodUtils';
 import { useUserProfile } from '../../contexts/UserContext';

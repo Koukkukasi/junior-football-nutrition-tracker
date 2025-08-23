@@ -132,7 +132,7 @@ export default function Profile() {
                 Role
               </label>
               <div className="inline-block px-4 py-2 bg-gray-100 rounded-lg">
-                {profile.role === 'player' ? '⚽ Player' : '📋 Coach'}
+                {profile.role === 'PLAYER' ? '⚽ Player' : profile.role === 'COACH' ? '📋 Coach' : '👑 Admin'}
               </div>
             </div>
           </div>
