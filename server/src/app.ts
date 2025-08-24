@@ -17,6 +17,7 @@ import testInviteRoutes from './routes/test-invite.routes';
 import testRoutes from './routes/test.routes';
 import adminRoutes from './routes/admin.routes';
 import teamRoutes from './routes/team.routes';
+import webhookRoutes from './routes/webhook.routes';
 
 const app: Application = express();
 
@@ -75,6 +76,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
+
+// Webhook routes (before other routes, no auth required)
+app.use('/api/webhooks', webhookRoutes);
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);

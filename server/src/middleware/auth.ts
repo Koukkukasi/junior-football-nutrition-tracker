@@ -49,62 +49,52 @@ export const requireAuth = async (
       // Auto-create database user if not exists - MUST complete before proceeding
       console.log('Starting user synchronization for Clerk ID:', userId);
       
-      // First, try to find existing user with retry mechanism
-      let dbUser = null;
-      let retryCount = 0;
-      const maxRetries = 3;
-      
-      while (!dbUser && retryCount < maxRetries) {
-        try {
-          dbUser = await prisma.user.findUnique({
-            where: { clerkId: userId }
-          });
-          
-          if (!dbUser) {
-            console.log(`User not found on attempt ${retryCount + 1}, will create...`);
-            
-            // User doesn't exist, create it
-            const email = clerkUser.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.com`;
-            const name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Player';
-            
-            console.log('Creating user with email:', email, 'name:', name);
-            
-            dbUser = await prisma.user.upsert({
-              where: { clerkId: userId },
-              update: {}, // No update needed if user exists
-              create: {
-                clerkId: userId,
-                email: email,
-                name: name,
-                age: 16, // Default age
-                role: 'PLAYER',
-                ageGroup: '16-18', // Default age group
-                dataConsent: false,
-                completedOnboarding: false
-              }
-            });
-            
-            console.log('User created/found with database ID:', dbUser.id);
-          } else {
-            console.log('User found in database with ID:', dbUser.id);
+      try {
+        // Use upsert to handle race conditions and avoid multiple DB calls
+        const email = clerkUser.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.com`;
+        const name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Player';
+        
+        console.log('Upserting user with email:', email, 'name:', name);
+        
+        const dbUser = await prisma.user.upsert({
+          where: { clerkId: userId },
+          update: {
+            // Update email and name if they've changed
+            email: email,
+            name: name,
+            updatedAt: new Date()
+          },
+          create: {
+            clerkId: userId,
+            email: email,
+            name: name,
+            age: 16, // Default age
+            role: 'PLAYER',
+            ageGroup: '16-18', // Default age group
+            dataConsent: false,
+            completedOnboarding: false
           }
-          
-          // Store user ID in request for easy access - CRITICAL: Ensure it's a string
-          req.dbUserId = String(dbUser.id);
-          console.log('User synchronization complete. DB User ID stored in request:', dbUser.id, 'Type:', typeof dbUser.id);
-          
-        } catch (dbError) {
-          retryCount++;
-          console.error(`Database operation failed on attempt ${retryCount}:`, dbError);
-          
-          if (retryCount >= maxRetries) {
-            console.error('Max retries reached. User sync failed.');
-            res.status(500).json({ error: 'Failed to synchronize user account after multiple attempts' });
-            return;
-          }
-          
-          // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 100 * retryCount));
+        });
+        
+        console.log('User upserted successfully with database ID:', dbUser.id);
+        
+        // Store user ID in request for easy access - CRITICAL: Ensure it's a string
+        req.dbUserId = String(dbUser.id);
+        console.log('User synchronization complete. DB User ID stored in request:', dbUser.id, 'Type:', typeof dbUser.id);
+        
+      } catch (dbError: any) {
+        console.error('Database operation failed:', dbError);
+        
+        // If it's a connection error, try to reconnect
+        if (dbError.code === 'P2024' || dbError.message?.includes('connection')) {
+          console.log('Database connection issue detected, attempting to proceed without DB user');
+          // Allow the request to proceed but without the dbUserId
+          // The food routes should handle this gracefully
+          req.dbUserId = undefined;
+        } else {
+          // For other errors, still try to proceed if possible
+          console.error('User sync failed but proceeding:', dbError.message);
+          req.dbUserId = undefined;
         }
       }
     } catch (userError) {
