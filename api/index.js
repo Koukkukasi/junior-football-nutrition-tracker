@@ -7,11 +7,18 @@ const app = express();
 
 // Basic middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://junior-nutrition-tracker-prod.vercel.app',
+  origin: process.env.FRONTEND_URL || 'https://junior-football-nutrition-tracker.vercel.app',
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+
+// Temporary in-memory storage (will reset on each deployment)
+// This is for demo purposes - production should use a database
+const storage = {
+  foodEntries: [],
+  performanceData: []
+};
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -22,36 +29,115 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// User routes (simplified for now)
+// User routes (demo mode - returns mock data)
 app.get('/api/v1/users/profile', async (req, res) => {
-  // This would normally use Clerk authentication and Prisma
-  // For now, return a mock response
-  res.status(401).json({
-    error: 'Authentication required',
-    message: 'Please sign in to access your profile'
+  // Return mock user profile for demo
+  res.json({
+    success: true,
+    data: {
+      id: 'demo-user',
+      name: 'Demo Player',
+      age: 16,
+      ageGroup: '16-18',
+      position: 'Midfielder',
+      team: 'Demo Team'
+    }
   });
 });
 
-// Food entries routes
-app.get('/api/v1/food-entries', async (req, res) => {
-  res.status(401).json({
-    error: 'Authentication required',
-    message: 'Please sign in to view food entries'
+app.post('/api/v1/users/onboarding', async (req, res) => {
+  // Mock onboarding completion
+  res.json({
+    success: true,
+    message: 'Onboarding completed successfully'
   });
 });
 
-app.post('/api/v1/food-entries', async (req, res) => {
-  res.status(401).json({
-    error: 'Authentication required',
-    message: 'Please sign in to create food entries'
+// Food entries routes (using /api/v1/food to match client)
+app.get('/api/v1/food', async (req, res) => {
+  // Return stored entries (demo mode - no auth required)
+  res.json({
+    success: true,
+    data: storage.foodEntries
   });
 });
 
-// Performance metrics routes
-app.get('/api/v1/performance-metrics', async (req, res) => {
-  res.status(401).json({
-    error: 'Authentication required',
-    message: 'Please sign in to view performance metrics'
+app.post('/api/v1/food', async (req, res) => {
+  // Store food entry (demo mode - no auth required)
+  const entry = {
+    id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  storage.foodEntries.push(entry);
+  
+  res.json({
+    success: true,
+    data: entry
+  });
+});
+
+app.put('/api/v1/food/:id', async (req, res) => {
+  const { id } = req.params;
+  const index = storage.foodEntries.findIndex(e => e.id === id);
+  
+  if (index !== -1) {
+    storage.foodEntries[index] = {
+      ...storage.foodEntries[index],
+      ...req.body,
+      updatedAt: new Date().toISOString()
+    };
+    res.json({
+      success: true,
+      data: storage.foodEntries[index]
+    });
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'Food entry not found'
+    });
+  }
+});
+
+app.delete('/api/v1/food/:id', async (req, res) => {
+  const { id } = req.params;
+  const initialLength = storage.foodEntries.length;
+  storage.foodEntries = storage.foodEntries.filter(e => e.id !== id);
+  
+  if (storage.foodEntries.length < initialLength) {
+    res.json({
+      success: true,
+      message: 'Food entry deleted'
+    });
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'Food entry not found'
+    });
+  }
+});
+
+// Performance metrics routes (matching client's /api/v1/performance)
+app.get('/api/v1/performance', async (req, res) => {
+  // Return stored performance data (demo mode - no auth required)
+  res.json({
+    success: true,
+    data: storage.performanceData
+  });
+});
+
+app.post('/api/v1/performance', async (req, res) => {
+  // Store performance data (demo mode - no auth required)
+  const entry = {
+    id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  storage.performanceData.push(entry);
+  
+  res.json({
+    success: true,
+    data: entry
   });
 });
 

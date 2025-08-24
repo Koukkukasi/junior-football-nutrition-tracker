@@ -54,13 +54,17 @@ export default function Team() {
     try {
       const response = await API.teams.getMyTeams();
       if (response.success) {
-        setTeams(response.data);
-        if (response.data.length > 0 && !selectedTeam) {
-          fetchTeamDetails(response.data[0].id);
+        // Handle nested data structure from API
+        const teamsData = response.data?.data || response.data || [];
+        const teamsList = Array.isArray(teamsData) ? teamsData : [];
+        setTeams(teamsList);
+        if (teamsList.length > 0 && !selectedTeam) {
+          fetchTeamDetails(teamsList[0].id);
         }
       }
     } catch (error) {
       console.error('Failed to fetch teams:', error);
+      setTeams([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -70,7 +74,9 @@ export default function Team() {
     try {
       const response = await API.teams.getDetails(teamId);
       if (response.success) {
-        setSelectedTeam(response.data);
+        // Handle nested data structure from API
+        const teamData = response.data?.data || response.data;
+        setSelectedTeam(teamData);
       }
     } catch (error) {
       console.error('Failed to fetch team details:', error);

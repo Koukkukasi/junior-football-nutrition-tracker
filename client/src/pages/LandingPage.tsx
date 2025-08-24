@@ -1,5 +1,17 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { 
+  UtensilsCrossed, 
+  TrendingUp, 
+  Users, 
+  Zap, 
+  Moon, 
+  Activity,
+  CheckCircle,
+  Target,
+  Trophy,
+  Rocket
+} from 'lucide-react'
 
 export default function LandingPage() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -28,13 +40,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <Link 
               to="/sign-in" 
-              className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium"
+              className="px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium active:bg-white/20 touch-manipulation"
             >
               Sign In
             </Link>
             <Link 
               to="/sign-up" 
-              className="px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105"
+              className="px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105 active:scale-100 touch-manipulation"
             >
               Get Started
             </Link>
@@ -74,13 +86,13 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Link 
                 to="/sign-up" 
-                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 hover:-translate-y-1"
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 hover:-translate-y-1 active:scale-100 active:translate-y-0 touch-manipulation"
               >
                 Start Free Trial
               </Link>
               <Link 
                 to="/sign-in" 
-                className="px-8 py-4 bg-white/80 backdrop-blur-sm text-purple-600 rounded-lg font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 hover:-translate-y-1 border-2 border-purple-200"
+                className="px-8 py-4 bg-white/80 backdrop-blur-sm text-purple-600 rounded-lg font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 hover:-translate-y-1 border-2 border-purple-200 active:scale-100 active:translate-y-0 touch-manipulation"
               >
                 Sign In
               </Link>
@@ -95,7 +107,7 @@ export default function LandingPage() {
             <div className={`bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-8 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 hover:scale-105 transform duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                  <div className="w-10 h-10 bg-white rounded"></div>
+                  <UtensilsCrossed className="w-10 h-10 text-white" />
                 </div>
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
                   Core Feature
@@ -108,19 +120,19 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">5 daily meal types</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Real-time scoring</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Age-specific recommendations</span>
                 </div>
@@ -131,7 +143,7 @@ export default function LandingPage() {
             <div className={`bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-8 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 hover:scale-105 transform duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                  <div className="w-10 h-10 bg-white rounded"></div>
+                  <TrendingUp className="w-10 h-10 text-white" />
                 </div>
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
                   Analytics
@@ -144,19 +156,19 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <Zap className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Energy monitoring</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <Moon className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Sleep tracking</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <Activity className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Training correlation</span>
                 </div>
@@ -167,7 +179,7 @@ export default function LandingPage() {
             <div className={`bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-8 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 hover:scale-105 transform duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '600ms' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                  <div className="w-10 h-10 bg-white rounded"></div>
+                  <Users className="w-10 h-10 text-white" />
                 </div>
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
                   Pro Feature
@@ -180,19 +192,19 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <TrendingUp className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Team dashboard</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <Target className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Player insights</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <Trophy className="w-3 h-3 text-white" />
                   </div>
                   <span className="text-sm">Progress reports</span>
                 </div>
@@ -236,7 +248,7 @@ export default function LandingPage() {
                   <div className="text-2xl font-bold mb-2">10-12 Years</div>
                   <p className="text-white/90">Growth & Development Focus</p>
                   <div className="mt-4 p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <div className="w-6 h-6 mx-auto bg-white rounded"></div>
+                    <Target className="w-6 h-6 mx-auto text-white" />
                   </div>
                 </div>
               </div>
@@ -246,7 +258,7 @@ export default function LandingPage() {
                   <div className="text-2xl font-bold mb-2">13-15 Years</div>
                   <p className="text-white/90">Energy & Growth Support</p>
                   <div className="mt-4 p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <div className="w-6 h-6 mx-auto bg-white rounded"></div>
+                    <Target className="w-6 h-6 mx-auto text-white" />
                   </div>
                 </div>
               </div>
@@ -256,7 +268,7 @@ export default function LandingPage() {
                   <div className="text-2xl font-bold mb-2">16-18 Years</div>
                   <p className="text-white/90">Performance Optimization</p>
                   <div className="mt-4 p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <div className="w-6 h-6 mx-auto bg-white rounded"></div>
+                    <Target className="w-6 h-6 mx-auto text-white" />
                   </div>
                 </div>
               </div>
@@ -266,7 +278,7 @@ export default function LandingPage() {
                   <div className="text-2xl font-bold mb-2">19-25 Years</div>
                   <p className="text-white/90">Professional Standards</p>
                   <div className="mt-4 p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <div className="w-6 h-6 mx-auto bg-white rounded"></div>
+                    <Target className="w-6 h-6 mx-auto text-white" />
                   </div>
                 </div>
               </div>
@@ -299,19 +311,19 @@ export default function LandingPage() {
               <div className="flex flex-wrap justify-center gap-6 text-white/90">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                   <span>No credit card required</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                   <span>Free for 30 days</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-white/30 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                   <span>Cancel anytime</span>
                 </div>
