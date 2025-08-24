@@ -26,7 +26,8 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'clerk': ['@clerk/clerk-react'],
           'query': ['@tanstack/react-query', 'axios'],
-          'ui-icons': ['lucide-react'],
+          // Remove lucide-react from manual chunks to prevent tree-shaking issues
+          // 'ui-icons': ['lucide-react'],
           // Feature chunks
           'food-database': ['./src/lib/food-database.ts'],
           'admin': ['./src/pages/AdminInvite.tsx', './src/pages/AdminMonitor.tsx']
@@ -47,6 +48,6 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', '@clerk/clerk-react', '@tanstack/react-query']
+    include: ['react', 'react-dom', '@clerk/clerk-react', '@tanstack/react-query', 'lucide-react']
   }
 })
