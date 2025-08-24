@@ -27,6 +27,7 @@ app.use(cors({
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'https://juniorfootballnutrition.com', // Production custom domain
     'https://www.juniorfootballnutrition.com', // Production www subdomain
+    'https://junior-nutrition-tracker-prod.vercel.app', // Current production Vercel URL
     'https://junior-football-nutrition-tracker.vercel.app', // Production Vercel URL
     'https://junior-football-nutrition-tracker-*.vercel.app', // Preview deployments
     'http://localhost:5173', // Vite default port
@@ -38,7 +39,8 @@ app.use(cors({
     'http://192.168.68.104:5176', // Your local network IP
     /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow any local network IP with any port
     /^http:\/\/172\.26\.\d+\.\d+:\d+$/, // Allow WSL network
-    /^https:\/\/junior-football-nutrition-tracker-.*\.vercel\.app$/ // Regex for preview deployments
+    /^https:\/\/junior-football-nutrition-tracker-.*\.vercel\.app$/, // Regex for preview deployments
+    /^https:\/\/junior-nutrition-tracker-.*\.vercel\.app$/ // Regex for new production deployment pattern
   ],
   credentials: true,
 }));
