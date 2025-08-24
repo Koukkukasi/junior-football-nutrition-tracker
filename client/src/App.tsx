@@ -23,6 +23,7 @@ const AdminMonitor = lazy(() => import('./pages/AdminMonitor'))
 const CoachDashboard = lazy(() => import('./pages/CoachDashboard'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TeamAccess = lazy(() => import('./pages/TeamAccess'))
 // TestInvite page removed - functionality merged into AdminInvite
 
 // Loading component
@@ -71,6 +72,12 @@ function App() {
         <Route path="/privacy" element={
           <Suspense fallback={<PageLoader />}>
             <PrivacyPolicy />
+          </Suspense>
+        } />
+        
+        <Route path="/team-access" element={
+          <Suspense fallback={<PageLoader />}>
+            <TeamAccess />
           </Suspense>
         } />
         

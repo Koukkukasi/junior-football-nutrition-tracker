@@ -84,6 +84,13 @@ export default function LandingPage() {
             {/* CTA Buttons - Dashboard Style */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Link 
+                to="/team-access" 
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 hover:-translate-y-1 active:scale-100 active:translate-y-0 touch-manipulation flex items-center justify-center gap-2"
+              >
+                <Users className="w-5 h-5" />
+                Team Access (No Email)
+              </Link>
+              <Link 
                 to="/sign-up" 
                 className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:shadow-xl transition-all hover:scale-105 hover:-translate-y-1 active:scale-100 active:translate-y-0 touch-manipulation"
               >
@@ -97,7 +104,7 @@ export default function LandingPage() {
               </Link>
             </div>
             
-            <p className="text-gray-600">No credit card required • Free for 30 days</p>
+            <p className="text-gray-600">Perfect for teams • No email required for players</p>
           </div>
 
           {/* Modern Feature Cards - Dashboard Style */}
