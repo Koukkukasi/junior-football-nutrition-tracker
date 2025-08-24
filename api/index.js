@@ -1,10 +1,7 @@
 // Serverless API handler for Vercel
 // This file handles all API routes under /api/*
 
-// First, ensure environment variables are loaded
-require('dotenv').config({ path: '../server/.env' });
-
-// Import the Express app
+// Import the Express app directly - it handles its own environment variables
 const app = require('../server/dist/app').default;
 
 // Export for Vercel serverless function
