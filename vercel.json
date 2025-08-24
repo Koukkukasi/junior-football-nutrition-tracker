@@ -10,11 +10,7 @@
   },
   "rewrites": [
     {
-      "source": "/api/v1/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/api/(.*)",
+      "source": "/api/:path*",
       "destination": "/api"
     },
     {

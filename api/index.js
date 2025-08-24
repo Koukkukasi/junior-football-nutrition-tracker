@@ -34,8 +34,21 @@ module.exports = (req, res) => {
     return;
   }
   
+  // For Vercel serverless functions, we need to handle the path correctly
+  // The rewrite sends /api/* to this function, but req.url will be the path after /api
+  // So /api/v1/health becomes just /v1/health in req.url
+  // And /api/health becomes just /health
+  
   // Log incoming requests for debugging
   console.log(`[API] ${req.method} ${req.url}`);
+  console.log(`[API] Original path from x-now-route: ${req.headers['x-now-route']}`);
+  
+  // If the URL is just / (from /api), route it to /health
+  if (req.url === '/' || req.url === '') {
+    req.url = '/health';
+  }
+  
+  console.log(`[API] Final URL: ${req.url}`);
   
   // Pass the request to Express app
   return app(req, res);
