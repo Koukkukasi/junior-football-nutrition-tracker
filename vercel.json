@@ -4,18 +4,8 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
-    }
-  }
+  ]
 }
