@@ -26,6 +26,7 @@ export default function FoodLog() {
   const [showForm, setShowForm] = useState(false);
   const [todayEntries, setTodayEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FoodFormData>({
     mealType: 'BREAKFAST',
     time: '',
@@ -78,6 +79,9 @@ export default function FoodLog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Show loading state, NOT success
+    setIsSubmitting(true);
+    
     const timing = getMealTiming(formData.mealType, formData.time);
     const analysis = analyzeFoodQuality(
       formData.description, 
@@ -93,13 +97,15 @@ export default function FoodLog() {
         date: new Date().toISOString()
       });
       
-      if (response.success) {
+      // WAIT for actual backend confirmation with proper validation
+      if (response.success && response.data?.id) {
         const newEntry: FoodEntry = {
-          id: response.data?.id || Date.now().toString(),
+          id: response.data.id, // Use REAL backend ID, not fallback
           ...formData,
           quality: analysis.quality
         };
         
+        // Only update UI after confirmed backend success
         setTodayEntries([...todayEntries, newEntry]);
         
         // Show success toast with quality feedback
@@ -112,7 +118,7 @@ export default function FoodLog() {
         
         success('Meal saved successfully!', qualityMessages[analysis.quality]);
         
-        // Reset form and close
+        // Reset form and close only after success
         setFormData({
           mealType: 'BREAKFAST',
           time: '',
@@ -122,11 +128,17 @@ export default function FoodLog() {
         });
         setShowForm(false);
       } else {
-        error('Failed to save meal', 'Please try again');
+        // Show specific error message from backend if available
+        const errorMessage = response.error || 'Please try again';
+        error('Failed to save meal', errorMessage);
+        console.error('Save failed - Backend returned:', response);
       }
     } catch (err) {
       console.error('Failed to save food entry:', err);
       error('Failed to save meal', 'Please check your connection and try again');
+    } finally {
+      // Always reset loading state
+      setIsSubmitting(false);
     }
   };
 
@@ -157,6 +169,7 @@ export default function FoodLog() {
           formData={formData}
           onFormDataChange={setFormData}
           onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
           onCancel={() => {
             setShowForm(false);
             setFormData({

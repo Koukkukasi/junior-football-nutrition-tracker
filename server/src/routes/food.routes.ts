@@ -85,26 +85,21 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     console.log('Request body:', req.body);
 
     if (!clerkId) {
-      res.status(401).json({ error: 'User not authenticated' });
-      return;
-    }
-
-    // Look up the user by Clerk ID to get the database user ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
-    console.log('Found user:', user ? { id: user.id, name: user.name } : 'null');
-
-    if (!user) {
-      res.status(404).json({ error: 'User not found in database' });
+      res.status(401).json({ 
+        success: false,
+        error: 'User not authenticated',
+        code: 'NOT_AUTHENTICATED'
+      });
       return;
     }
 
     // Validation
     if (!mealType || !time || !location || !description) {
       res.status(400).json({ 
+        success: false,
         error: 'Missing required fields',
-        required: ['mealType', 'time', 'location', 'description']
+        required: ['mealType', 'time', 'location', 'description'],
+        code: 'MISSING_FIELDS'
       });
       return;
     }
@@ -113,28 +108,30 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     const validMealTypes = ['BREAKFAST', 'SNACK', 'LUNCH', 'DINNER', 'EVENING_SNACK'];
     if (!validMealTypes.includes(mealType)) {
       res.status(400).json({ 
+        success: false,
         error: 'Invalid meal type',
-        validTypes: validMealTypes
+        validTypes: validMealTypes,
+        code: 'INVALID_MEAL_TYPE'
       });
       return;
     }
 
     // Parse date or use today
     const entryDate = date ? new Date(date) : new Date();
-    
-    console.log('Creating food entry with data:', {
-      userId: user.id,
-      mealType,
-      time,
-      location,
-      description,
-      notes: notes || null,
-      date: entryDate
-    });
-    
-    // Create food entry
-    const foodEntry = await prisma.foodEntry.create({
-      data: {
+
+    // Use transaction for atomic operations
+    const result = await prisma.$transaction(async (tx) => {
+      // Verify user exists in transaction
+      const user = await tx.user.findUnique({
+        where: { clerkId }
+      });
+      console.log('Found user:', user ? { id: user.id, name: user.name } : 'null');
+
+      if (!user) {
+        throw new Error('User not found in database');
+      }
+      
+      console.log('Creating food entry with data:', {
         userId: user.id,
         mealType,
         time,
@@ -142,20 +139,47 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
         description,
         notes: notes || null,
         date: entryDate
-      }
+      });
+
+      // Create food entry within transaction
+      const foodEntry = await tx.foodEntry.create({
+        data: {
+          userId: user.id,
+          mealType,
+          time,
+          location,
+          description,
+          notes: notes || null,
+          date: entryDate
+        }
+      });
+
+      return foodEntry;
     });
 
     res.status(201).json({
       success: true,
-      data: foodEntry,
+      data: result,
       message: 'Food entry created successfully'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating food entry:', error);
-    res.status(500).json({ 
-      error: 'Failed to create food entry',
-      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-    });
+    
+    // Proper error responses
+    if (error.message === 'User not found in database') {
+      res.status(404).json({ 
+        success: false,
+        error: 'User not found in database',
+        code: 'USER_NOT_FOUND'
+      });
+    } else {
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to create food entry',
+        code: 'DATABASE_ERROR',
+        message: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
   }
 });
 

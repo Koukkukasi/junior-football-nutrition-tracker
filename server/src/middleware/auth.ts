@@ -85,17 +85,15 @@ export const requireAuth = async (
       } catch (dbError: any) {
         console.error('Database operation failed:', dbError);
         
-        // If it's a connection error, try to reconnect
-        if (dbError.code === 'P2024' || dbError.message?.includes('connection')) {
-          console.log('Database connection issue detected, attempting to proceed without DB user');
-          // Allow the request to proceed but without the dbUserId
-          // The food routes should handle this gracefully
-          req.dbUserId = undefined;
-        } else {
-          // For other errors, still try to proceed if possible
-          console.error('User sync failed but proceeding:', dbError.message);
-          req.dbUserId = undefined;
-        }
+        // FAIL FAST - Don't allow request to continue without proper user sync
+        res.status(503).json({ 
+          success: false,
+          error: 'User synchronization failed', 
+          message: 'Please try again in a moment',
+          code: 'USER_SYNC_ERROR',
+          details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+        });
+        return;
       }
     } catch (userError) {
       console.error('Could not fetch user from Clerk:', userError);

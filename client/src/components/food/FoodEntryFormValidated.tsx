@@ -15,6 +15,7 @@ interface FoodEntryFormValidatedProps {
   onFormDataChange: (data: FoodFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
 interface ValidationErrors {
@@ -35,7 +36,8 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
   formData,
   onFormDataChange,
   onSubmit,
-  onCancel
+  onCancel,
+  isSubmitting: parentIsSubmitting = false
 }) => {
   const { profile } = useUserProfile();
   const [liveScore, setLiveScore] = useState<number>(0);
@@ -50,8 +52,6 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
     location: false,
     description: false
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   const mealTypes: { value: MealType; label: string; color: string }[] = [
     { value: 'BREAKFAST', label: 'Breakfast', color: 'from-yellow-400 to-orange-500' },
@@ -190,15 +190,8 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
       return;
     }
     
-    setIsSubmitting(true);
-    setShowSuccessAnimation(true);
-    
-    // Show success animation before submitting
-    setTimeout(() => {
-      onSubmit(e);
-      setIsSubmitting(false);
-      setShowSuccessAnimation(false);
-    }, 1500);
+    // Let parent handle the actual submission and loading state
+    onSubmit(e);
   };
 
   const getScoreColor = (quality: string) => {
@@ -240,19 +233,6 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
     <div className="grid lg:grid-cols-3 gap-6">
       {/* Main Form */}
       <form onSubmit={handleSubmitWithValidation} className="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg relative">
-        {/* Success Animation Overlay */}
-        {showSuccessAnimation && (
-          <div className="absolute inset-0 bg-white/95 rounded-xl flex items-center justify-center z-50 animate-fade-in">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center animate-bounce">
-                <Check className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Meal Saved!</h3>
-              <p className="text-gray-600">Great job tracking your nutrition!</p>
-            </div>
-          </div>
-        )}
-        
         <h3 className="text-xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Log Your Meal
         </h3>
@@ -425,14 +405,14 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
         <div className="flex gap-3">
           <button
             type="submit"
-            disabled={!isFormValid || isSubmitting}
+            disabled={!isFormValid || parentIsSubmitting}
             className={`flex-1 py-3 px-4 rounded-lg font-semibold shadow-lg transition-all transform ${
-              isFormValid && !isSubmitting
+              isFormValid && !parentIsSubmitting
                 ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-105'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {isSubmitting ? (
+            {parentIsSubmitting ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Saving...
@@ -444,7 +424,7 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            disabled={isSubmitting}
+            disabled={parentIsSubmitting}
             className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
           >
             Cancel
