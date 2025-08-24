@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOnboarding } from '../hooks/useOnboarding'
 import { SkeletonDashboardCard } from '../components/ui/SkeletonLoader'
+import { Trophy, UtensilsCrossed, Zap, Moon, Plus, TrendingUp, Users, FileText, Target } from 'lucide-react'
 
 // Helper function to format time ago
 function getTimeAgo(date: Date): string {
@@ -159,9 +160,7 @@ export default function Dashboard() {
                 {stats.nutritionScore}
               </p>
             </div>
-            <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${getScoreColor(stats.nutritionScore)}`}>
-              {getScoreLabel(stats.nutritionScore)}
-            </div>
+            <Trophy className="w-8 h-8 text-white/80" />
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
@@ -188,7 +187,7 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="p-3 bg-white/20 rounded-lg">
-              <div className="w-8 h-8 bg-white rounded-lg"></div>
+              <UtensilsCrossed className="w-8 h-8 text-white" />
             </div>
           </div>
           <p className="text-sm text-white/80 mt-4">
@@ -208,7 +207,7 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="p-3 bg-white/20 rounded-lg">
-              <div className="w-8 h-8 bg-white rounded-lg"></div>
+              <Zap className="w-8 h-8 text-white" />
             </div>
           </div>
           <div className="flex gap-1 mt-4">
@@ -237,7 +236,7 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="p-3 bg-white/20 rounded-lg">
-              <div className="w-8 h-8 bg-white rounded-lg"></div>
+              <Moon className="w-8 h-8 text-white" />
             </div>
           </div>
           <p className="text-sm text-white/80 mt-4">
@@ -258,27 +257,27 @@ export default function Dashboard() {
               onClick={() => navigate('/food')}
               className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <Plus className="w-10 h-10 mb-2 text-white group-hover:scale-110 transition-transform mx-auto" />
               <span className="text-sm font-medium text-white">Log Meal</span>
             </button>
             <button
               onClick={() => navigate('/performance')}
               className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <TrendingUp className="w-10 h-10 mb-2 text-white group-hover:scale-110 transition-transform mx-auto" />
               <span className="text-sm font-medium text-white">Track Performance</span>
             </button>
             <button
               onClick={() => navigate('/team')}
               className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <Users className="w-10 h-10 mb-2 text-white group-hover:scale-110 transition-transform mx-auto" />
               <span className="text-sm font-medium text-white">Team View</span>
             </button>
             <button
               className="p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all group border border-white/30"
             >
-              <div className="w-10 h-10 mb-2 bg-white rounded-lg group-hover:scale-110 transition-transform mx-auto"></div>
+              <FileText className="w-10 h-10 mb-2 text-white group-hover:scale-110 transition-transform mx-auto" />
               <span className="text-sm font-medium text-white">View Reports</span>
             </button>
           </div>
@@ -341,7 +340,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-            <div className="w-12 h-12 bg-white rounded-lg"></div>
+            <Target className="w-12 h-12 text-white" />
           </div>
         </div>
       </div>

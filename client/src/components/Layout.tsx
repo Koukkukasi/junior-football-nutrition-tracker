@@ -3,6 +3,7 @@ import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState, useEffect } from 'react'
 import FeedbackWidget from './feedback/FeedbackWidget'
 import { useUserProfile } from '../contexts/UserContext'
+import { Menu, X, Home, UtensilsCrossed, TrendingUp, BarChart3, Users, User, Shield } from 'lucide-react'
 
 export default function Layout() {
   const { user } = useUser()
@@ -53,12 +54,12 @@ export default function Layout() {
   const isAdmin = profile?.role === 'ADMIN'
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', color: 'from-blue-500 to-cyan-500' },
-    { path: '/food', label: 'Food Log', color: 'from-emerald-500 to-green-500' },
-    { path: '/performance', label: 'Performance', color: 'from-amber-500 to-orange-500' },
-    { path: '/analytics', label: 'Analytics', color: 'from-purple-500 to-pink-500' },
-    { path: '/team', label: 'Team', color: 'from-indigo-500 to-purple-500' },
-    { path: '/profile', label: 'Profile', color: 'from-gray-500 to-gray-600' },
+    { path: '/dashboard', label: 'Dashboard', color: 'from-blue-500 to-cyan-500', icon: Home },
+    { path: '/food', label: 'Food Log', color: 'from-emerald-500 to-green-500', icon: UtensilsCrossed },
+    { path: '/performance', label: 'Performance', color: 'from-amber-500 to-orange-500', icon: TrendingUp },
+    { path: '/analytics', label: 'Analytics', color: 'from-purple-500 to-pink-500', icon: BarChart3 },
+    { path: '/team', label: 'Team', color: 'from-indigo-500 to-purple-500', icon: Users },
+    { path: '/profile', label: 'Profile', color: 'from-gray-500 to-gray-600', icon: User },
   ]
 
   return (
@@ -70,12 +71,9 @@ export default function Layout() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-lg hover:bg-white/10 text-white"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                      d={sidebarOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-              </svg>
+              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             
             {/* Logo and App Name */}
@@ -125,7 +123,7 @@ export default function Layout() {
                 }
               >
                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${item.color} opacity-80 flex items-center justify-center`}>
-                  <div className="w-4 h-4 bg-white rounded"></div>
+                  <item.icon className="w-4 h-4 text-white" />
                 </div>
                 <span className="font-medium">{item.label}</span>
               </NavLink>
@@ -143,7 +141,7 @@ export default function Layout() {
                 }
               >
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 opacity-80 flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded"></div>
+                  <Shield className="w-4 h-4 text-white" />
                 </div>
                 <span className="font-medium">Admin</span>
               </NavLink>
@@ -207,7 +205,7 @@ export default function Layout() {
                 }`
               }
             >
-              <div className={`w-6 h-6 rounded bg-gradient-to-r ${item.color}`}></div>
+              <item.icon className="w-6 h-6 text-current" />
               <span className="text-xs font-medium">{item.label}</span>
             </NavLink>
           ))}
