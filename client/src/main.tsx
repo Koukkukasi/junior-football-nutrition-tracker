@@ -13,6 +13,26 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key")
 }
 
+// Force Clerk to use the correct domain for test keys
+const getClerkFrontendApi = () => {
+  if (PUBLISHABLE_KEY.startsWith('pk_test_')) {
+    // Extract instance from test key and use default clerk.accounts.dev domain
+    const keyParts = PUBLISHABLE_KEY.split('_')
+    if (keyParts.length >= 3) {
+      const instancePart = keyParts[2]
+      // Decode base64 to get the actual instance name
+      try {
+        const decoded = atob(instancePart)
+        const instanceName = decoded.replace(/\$$/, '') // Remove trailing $
+        return `https://${instanceName}`
+      } catch (e) {
+        console.warn('Could not decode Clerk instance from key, using default')
+      }
+    }
+  }
+  return undefined // Let Clerk use default behavior for live keys
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -22,9 +42,14 @@ const queryClient = new QueryClient({
   },
 })
 
+const frontendApi = getClerkFrontendApi()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY}
+      frontendApi={frontendApi}
+    >
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
