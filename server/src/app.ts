@@ -25,6 +25,8 @@ app.use(helmet());
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://juniorfootballnutrition.com', // Production custom domain
+    'https://www.juniorfootballnutrition.com', // Production www subdomain
     'https://junior-football-nutrition-tracker.vercel.app', // Production Vercel URL
     'https://junior-football-nutrition-tracker-*.vercel.app', // Preview deployments
     'http://localhost:5173', // Vite default port
