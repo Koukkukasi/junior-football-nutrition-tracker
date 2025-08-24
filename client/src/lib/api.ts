@@ -41,7 +41,29 @@ export async function apiRequest<T = any>(
       body: options.body ? JSON.stringify(options.body) : undefined
     });
 
-    const data = await response.json();
+    // Check if response is HTML (Vercel deployment protection)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      console.error('API returned HTML instead of JSON - likely deployment protection is enabled');
+      return {
+        success: false,
+        error: 'API access blocked by deployment protection',
+        message: 'The API is currently protected. Please check deployment settings or try again later.'
+      };
+    }
+
+    // Try to parse JSON response
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error('Failed to parse API response as JSON:', jsonError);
+      return {
+        success: false,
+        error: 'Invalid API response format',
+        message: 'The server returned an unexpected response. Please try again.'
+      };
+    }
 
     if (!response.ok) {
       return {
