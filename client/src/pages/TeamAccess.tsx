@@ -32,12 +32,6 @@ export default function TeamAccess() {
     navigate('/dashboard');
   };
 
-  const handleCoachAccess = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Regular email sign-in for coaches
-    navigate('/auth/sign-in');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
