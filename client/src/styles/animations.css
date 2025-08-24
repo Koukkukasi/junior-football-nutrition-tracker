@@ -169,10 +169,10 @@ button, a, input, textarea, select {
   animation: shimmer 2s infinite;
 }
 
-/* Smooth scroll behavior */
-html {
+/* Smooth scroll behavior - Disabled due to odd scrolling issues */
+/* html {
   scroll-behavior: smooth;
-}
+} */
 
 /* Reduced motion for accessibility */
 @media (prefers-reduced-motion: reduce) {

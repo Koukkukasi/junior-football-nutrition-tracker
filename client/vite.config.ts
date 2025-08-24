@@ -15,22 +15,39 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        // Keep function names for better debugging
+        keep_fnames: true
       }
     } as any,
     // Better code splitting
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'clerk': ['@clerk/clerk-react'],
-          'query': ['@tanstack/react-query', 'axios'],
-          // Remove lucide-react from manual chunks to prevent tree-shaking issues
-          // 'ui-icons': ['lucide-react'],
-          // Feature chunks
-          'food-database': ['./src/lib/food-database.ts'],
-          'admin': ['./src/pages/AdminInvite.tsx', './src/pages/AdminMonitor.tsx']
+        manualChunks: (id) => {
+          // Ensure lucide-react icons are bundled properly
+          if (id.includes('lucide-react')) {
+            return 'icons';
+          }
+          // React and related
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            return 'react-vendor';
+          }
+          // Clerk auth
+          if (id.includes('@clerk')) {
+            return 'clerk';
+          }
+          // Query and data fetching
+          if (id.includes('@tanstack') || id.includes('axios')) {
+            return 'query';
+          }
+          // Food database
+          if (id.includes('food-database')) {
+            return 'food-database';
+          }
+          // Admin pages
+          if (id.includes('AdminInvite') || id.includes('AdminMonitor')) {
+            return 'admin';
+          }
         },
         // Better chunk naming
         chunkFileNames: (chunkInfo) => {

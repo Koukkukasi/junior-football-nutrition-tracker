@@ -9,8 +9,7 @@ import {
   Activity,
   CheckCircle,
   Target,
-  Trophy,
-  Rocket
+  Trophy
 } from 'lucide-react'
 
 export default function LandingPage() {
