@@ -14,7 +14,7 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: false, // Keep console logs for debugging
         drop_debugger: true,
         // Keep function names for better debugging
         keep_fnames: true
@@ -24,9 +24,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Ensure lucide-react icons are bundled properly
+          // Bundle lucide-react icons with main bundle for better loading
           if (id.includes('lucide-react')) {
-            return 'icons';
+            return undefined; // Include in main bundle
           }
           // React and related
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
@@ -65,6 +65,10 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', '@clerk/clerk-react', '@tanstack/react-query', 'lucide-react']
+    include: ['react', 'react-dom', '@clerk/clerk-react', '@tanstack/react-query', 'lucide-react'],
+    // Force ESM transformation for lucide-react
+    esbuildOptions: {
+      target: 'es2020'
+    }
   }
 })

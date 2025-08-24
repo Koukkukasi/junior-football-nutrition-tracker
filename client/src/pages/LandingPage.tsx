@@ -106,7 +106,7 @@ export default function LandingPage() {
             <div className={`bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-8 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 hover:scale-105 transform duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                  <UtensilsCrossed className="w-10 h-10 text-white" />
+                  <UtensilsCrossed size={40} color="white" />
                 </div>
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
                   Core Feature

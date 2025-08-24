@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { UserProvider } from './contexts/UserContext'
 import { ToastProvider } from './hooks/useToast'
 import { AdminOnly, CoachOrAdmin } from './components/auth/RoleGuard'
+import IconTest from './components/IconTest'
 import './App.css'
 
 // Lazy load all protected pages for better performance
@@ -59,6 +60,7 @@ function App() {
         <UserProvider>
           <Routes>
         <Route path="/" element={isSignedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+        <Route path="/test-icons" element={<IconTest />} />
         <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
         <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
         <Route path="/terms" element={
