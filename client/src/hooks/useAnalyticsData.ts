@@ -110,7 +110,7 @@ export function useAnalyticsData(period: Period) {
       setError(null);
       
       try {
-        const token = session?.access_token;
+        const token = session?.access_token ?? null;
         await Promise.all([
           fetchNutritionTrends(token),
           fetchCorrelations(token),

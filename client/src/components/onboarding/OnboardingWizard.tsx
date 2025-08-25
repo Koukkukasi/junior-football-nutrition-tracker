@@ -15,7 +15,7 @@ interface OnboardingData {
 
 export default function OnboardingWizard() {
   const navigate = useNavigate();
-  const { user } = useSupabaseAuth(); // For authentication check
+  useSupabaseAuth(); // For authentication check
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

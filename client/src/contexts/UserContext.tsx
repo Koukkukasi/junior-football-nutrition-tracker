@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useSupabaseAuth } from './SupabaseAuthContext';
 import { supabase } from '../lib/supabase';
-import API from '../lib/api';
 
 interface UserProfile {
   id: string;
