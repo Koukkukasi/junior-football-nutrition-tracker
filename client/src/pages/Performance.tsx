@@ -5,6 +5,11 @@ export default function Performance() {
   const [formData, setFormData] = useState({
     energyLevel: 3,
     sleepHours: 8,
+    bedTime: '22:00',
+    wakeTime: '06:00',
+    recoveryLevel: 3,
+    hadRecoveryMeal: false,
+    recoveryNotes: '',
     isTrainingDay: false,
     trainingType: '',
     notes: ''
@@ -16,6 +21,35 @@ export default function Performance() {
     trainingDays: 0
   })
   const [loading, setLoading] = useState(true)
+
+  // Calculate sleep hours from bed and wake times
+  const calculateSleepHours = (bedTime: string, wakeTime: string): number => {
+    const [bedHour, bedMinute] = bedTime.split(':').map(Number)
+    const [wakeHour, wakeMinute] = wakeTime.split(':').map(Number)
+    
+    let totalMinutes = 0
+    
+    if (wakeHour < bedHour || (wakeHour === bedHour && wakeMinute < bedMinute)) {
+      // Wake time is next day
+      totalMinutes = (24 - bedHour) * 60 - bedMinute + wakeHour * 60 + wakeMinute
+    } else {
+      // Wake time is same day
+      totalMinutes = (wakeHour - bedHour) * 60 + (wakeMinute - bedMinute)
+    }
+    
+    return Math.round((totalMinutes / 60) * 10) / 10
+  }
+
+  // Update sleep hours when bed or wake time changes
+  useEffect(() => {
+    const hours = calculateSleepHours(formData.bedTime, formData.wakeTime)
+    setFormData(prev => {
+      if (prev.sleepHours !== hours) {
+        return { ...prev, sleepHours: hours }
+      }
+      return prev
+    })
+  }, [formData.bedTime, formData.wakeTime])
 
   // Fetch performance data on mount
   useEffect(() => {
@@ -36,6 +70,11 @@ export default function Performance() {
           date: new Date(entry.date),
           energyLevel: entry.energyLevel,
           sleepHours: entry.sleepHours,
+          bedTime: entry.bedTime,
+          wakeTime: entry.wakeTime,
+          recoveryLevel: entry.recoveryLevel,
+          hadRecoveryMeal: entry.hadRecoveryMeal,
+          recoveryNotes: entry.recoveryNotes,
           isTrainingDay: entry.isTrainingDay,
           trainingType: entry.trainingType,
           notes: entry.notes
@@ -69,7 +108,16 @@ export default function Performance() {
     
     try {
       const response = await API.performance.submit({
-        ...formData,
+        energyLevel: formData.energyLevel,
+        sleepHours: formData.sleepHours,
+        bedTime: formData.bedTime,
+        wakeTime: formData.wakeTime,
+        recoveryLevel: formData.recoveryLevel,
+        hadRecoveryMeal: formData.hadRecoveryMeal,
+        recoveryNotes: formData.recoveryNotes,
+        isTrainingDay: formData.isTrainingDay,
+        trainingType: formData.trainingType,
+        notes: formData.notes,
         matchDay: false // Add missing field
       })
       
@@ -78,6 +126,11 @@ export default function Performance() {
         setFormData({
           energyLevel: 3,
           sleepHours: 8,
+          bedTime: '22:00',
+          wakeTime: '06:00',
+          recoveryLevel: 3,
+          hadRecoveryMeal: false,
+          recoveryNotes: '',
           isTrainingDay: false,
           trainingType: '',
           notes: ''
@@ -138,20 +191,31 @@ export default function Performance() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 uppercase tracking-wider mb-3">
-                Sleep Hours
+                Sleep Schedule
               </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="4"
-                  max="12"
-                  step="0.5"
-                  value={formData.sleepHours}
-                  onChange={(e) => setFormData({...formData, sleepHours: parseFloat(e.target.value)})}
-                  className="flex-1"
-                />
-                <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg">
-                  <span className="text-lg font-bold">{formData.sleepHours}h</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Bed Time</label>
+                  <input
+                    type="time"
+                    value={formData.bedTime}
+                    onChange={(e) => setFormData({...formData, bedTime: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Wake Time</label>
+                  <input
+                    type="time"
+                    value={formData.wakeTime}
+                    onChange={(e) => setFormData({...formData, wakeTime: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                </div>
+              </div>
+              <div className="mt-2 text-center">
+                <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg inline-block">
+                  <span className="text-lg font-bold">💤 {formData.sleepHours}h sleep</span>
                 </div>
               </div>
             </div>
@@ -189,6 +253,54 @@ export default function Performance() {
                 </select>
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 uppercase tracking-wider mb-3">
+                Recovery Status
+              </label>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500 font-medium">Sore</span>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setFormData({...formData, recoveryLevel: level})}
+                        className={`w-10 h-10 rounded-lg font-bold transition-all transform hover:scale-110 ${
+                          formData.recoveryLevel >= level
+                            ? 'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-500 font-medium">Recovered</span>
+                </div>
+                
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={formData.hadRecoveryMeal}
+                    onChange={(e) => setFormData({...formData, hadRecoveryMeal: e.target.checked})}
+                    className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Had post-practice recovery meal 🏃🥗
+                  </span>
+                </label>
+                
+                <textarea
+                  value={formData.recoveryNotes}
+                  onChange={(e) => setFormData({...formData, recoveryNotes: e.target.value})}
+                  placeholder="Recovery notes (muscle soreness, fatigue, etc.)"
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -310,7 +422,19 @@ export default function Performance() {
                             <span className="flex items-center gap-1">
                               <span>😴</span>
                               <span className="font-medium">{entry.sleepHours}h</span>
+                              {entry.bedTime && entry.wakeTime && (
+                                <span className="text-xs text-gray-500">({entry.bedTime}-{entry.wakeTime})</span>
+                              )}
                             </span>
+                            {entry.recoveryLevel && (
+                              <>
+                                <span className="text-gray-400">•</span>
+                                <span className="flex items-center gap-1">
+                                  <span>💪</span>
+                                  <span className="font-medium">{entry.recoveryLevel}/5</span>
+                                </span>
+                              </>
+                            )}
                           </div>
                           {entry.isTrainingDay && (
                             <div className="mt-2">
@@ -325,6 +449,16 @@ export default function Performance() {
                                 🌴 Rest Day
                               </span>
                             </div>
+                          )}
+                          {entry.hadRecoveryMeal && (
+                            <div className="mt-2">
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
+                                ✅ Recovery Meal
+                              </span>
+                            </div>
+                          )}
+                          {entry.recoveryNotes && (
+                            <p className="text-xs text-gray-600 mt-2 italic">Recovery: {entry.recoveryNotes}</p>
                           )}
                           {entry.notes && (
                             <p className="text-xs text-gray-600 mt-2 italic">{entry.notes}</p>

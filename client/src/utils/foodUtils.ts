@@ -10,6 +10,11 @@ import type { MealType, MealTiming, NutritionScore, FoodEntry } from '../types/f
 export function getMealTiming(mealType: MealType, time: string): MealTiming {
   const hour = parseInt(time.split(':')[0]);
   
+  // Special handling for after-practice meals
+  if (mealType === 'AFTER_PRACTICE') {
+    return 'after-practice';
+  }
+  
   // Assume games are typically in afternoon (14:00-18:00)
   if (mealType === 'LUNCH' && hour >= 11 && hour <= 13) {
     return 'pre-game'; // Lunch before afternoon game
@@ -92,7 +97,8 @@ export function formatMealType(mealType: MealType): string {
     'SNACK': 'Morning Snack',
     'LUNCH': 'Lunch',
     'DINNER': 'Dinner',
-    'EVENING_SNACK': 'Evening Snack'
+    'EVENING_SNACK': 'Evening Snack',
+    'AFTER_PRACTICE': '🏃 After Practice'
   };
   
   return formats[mealType] || mealType;

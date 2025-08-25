@@ -26,6 +26,7 @@ enum MealType {
   LUNCH
   DINNER
   EVENING_SNACK
+  AFTER_PRACTICE
 }
 
 model User {
@@ -124,10 +125,15 @@ model PerformanceMetric {
   user           User     @relation(fields: [userId], references: [id])
   date           DateTime
   energyLevel    Int      // 1-5 scale
-  sleepHours     Float
+  sleepHours     Float    // Auto-calculated from bedTime and wakeTime
+  bedTime        String?  // Time when went to bed (e.g., "22:30")
+  wakeTime       String?  // Time when woke up (e.g., "06:45")
   isTrainingDay  Boolean  @default(false)
   trainingType   String?
   matchDay       Boolean  @default(false)
+  recoveryLevel  Int?     // 1-5 scale: 1=very sore, 5=fully recovered
+  hadRecoveryMeal Boolean @default(false) // Track if had post-practice meal
+  recoveryNotes  String?  // Notes about recovery (muscle soreness, fatigue, etc)
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

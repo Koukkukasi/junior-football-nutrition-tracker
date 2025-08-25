@@ -25,7 +25,8 @@ export const FoodEntryForm: React.FC<FoodEntryFormProps> = ({
     { value: 'SNACK', label: 'Morning Snack' },
     { value: 'LUNCH', label: 'Lunch' },
     { value: 'DINNER', label: 'Dinner' },
-    { value: 'EVENING_SNACK', label: 'Evening Snack' }
+    { value: 'EVENING_SNACK', label: 'Evening Snack' },
+    { value: 'AFTER_PRACTICE', label: '🏃 After Practice (Recovery)' }
   ];
 
   return (

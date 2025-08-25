@@ -13,7 +13,7 @@ import { timingBasedFoods } from './food-data/timing-foods';
 import { getAgeSpecificBonus, getAgeHydrationReminder, type AgeGroup } from './food-data/age-specific';
 
 export type FoodQuality = 'poor' | 'fair' | 'good' | 'excellent';
-export type MealTiming = 'pre-game' | 'post-game' | 'regular';
+export type MealTiming = 'pre-game' | 'post-game' | 'after-practice' | 'regular';
 
 export interface FoodAnalysis {
   quality: FoodQuality;
@@ -67,6 +67,31 @@ export function analyzeFoodQuality(
       timingSuggestions.push('Excellent recovery meal!');
     } else {
       timingSuggestions.push('Add protein for better recovery');
+    }
+  } else if (mealTiming === 'after-practice') {
+    // Special scoring for after-practice meals - prioritize protein
+    const proteinFoods = ['protein', 'chicken', 'fish', 'eggs', 'milk', 'yogurt', 'cheese', 
+                         'tuna', 'salmon', 'beef', 'turkey', 'beans', 'nuts', 'shake', 
+                         'smoothie', 'recovery', 'whey', 'cottage cheese'];
+    const carbohydrateFoods = ['banana', 'rice', 'pasta', 'bread', 'potato', 'oatmeal', 
+                               'granola', 'fruit', 'juice'];
+    
+    const proteinMatches = proteinFoods.filter(food => desc.includes(food)).length;
+    const carbMatches = carbohydrateFoods.filter(food => desc.includes(food)).length;
+    
+    if (proteinMatches > 0 && carbMatches > 0) {
+      timingBonus = 20; // Extra bonus for ideal recovery combo
+      timingSuggestions.push('🌟 Perfect recovery meal with protein and carbs!');
+    } else if (proteinMatches > 0) {
+      timingBonus = 15;
+      timingSuggestions.push('✅ Good protein for muscle recovery!');
+      if (carbMatches === 0) {
+        timingSuggestions.push('Add some carbs (banana, rice) for better energy replenishment');
+      }
+    } else {
+      timingBonus = -5; // Penalty for missing protein after practice
+      timingSuggestions.push('⚠️ Important: Add protein within 30 minutes after practice!');
+      timingSuggestions.push('Try: Chocolate milk, protein shake, or turkey sandwich');
     }
   }
   
