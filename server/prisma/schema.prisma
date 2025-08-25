@@ -32,6 +32,7 @@ enum MealType {
 model User {
   id                   String           @id @default(uuid())
   clerkId              String           @unique
+  supabaseId           String?          @unique  // New field for Supabase authentication
   email                String           @unique
   name                 String
   age                  Int

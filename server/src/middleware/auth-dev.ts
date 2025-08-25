@@ -92,25 +92,80 @@ export const requireAuth = async (
 
     // CRITICAL: Ensure user exists in database and get database ID
     try {
-      const dbUser = await prisma.user.upsert({
-        where: { 
-          clerkId: userId // Using clerkId field for Supabase ID (field name kept for compatibility)
-        },
-        update: {
-          email: userEmail || undefined,
-          updatedAt: new Date()
-        },
-        create: {
-          clerkId: userId, // Store Supabase user ID here
-          email: userEmail || `${userId}@example.com`,
-          name: userEmail?.split('@')[0] || 'Player',
-          age: 16,
-          role: 'PLAYER',
-          ageGroup: '16-18',
-          dataConsent: false,
-          completedOnboarding: false
+      console.log('Attempting to sync user with Supabase ID:', userId, 'Email:', userEmail);
+      
+      let dbUser = null;
+      
+      // Strategy 1: Find by supabaseId (new field)
+      if (!dbUser) {
+        dbUser = await prisma.user.findUnique({
+          where: { supabaseId: userId }
+        });
+        if (dbUser) {
+          console.log('Found user by supabaseId');
         }
-      });
+      }
+      
+      // Strategy 2: Find by email and update supabaseId
+      if (!dbUser && userEmail) {
+        dbUser = await prisma.user.findUnique({
+          where: { email: userEmail }
+        });
+        
+        if (dbUser) {
+          console.log('Found existing user by email, updating supabaseId');
+          // Update the supabaseId for this user
+          dbUser = await prisma.user.update({
+            where: { id: dbUser.id },
+            data: {
+              supabaseId: userId,
+              updatedAt: new Date()
+            }
+          });
+        }
+      }
+      
+      // Strategy 3: Legacy - find by clerkId (for backwards compatibility)
+      if (!dbUser) {
+        dbUser = await prisma.user.findUnique({
+          where: { clerkId: userId }
+        });
+        
+        if (dbUser) {
+          console.log('Found user by legacy clerkId, migrating to supabaseId');
+          // Migrate from clerkId to supabaseId
+          dbUser = await prisma.user.update({
+            where: { id: dbUser.id },
+            data: {
+              supabaseId: userId,
+              updatedAt: new Date()
+            }
+          });
+        }
+      }
+      
+      // Strategy 4: Create new user
+      if (!dbUser) {
+        console.log('Creating new user with supabaseId:', userId);
+        
+        // Generate a unique clerkId for legacy compatibility
+        const legacyClerkId = `supabase_${userId}_${Date.now()}`;
+        
+        dbUser = await prisma.user.create({
+          data: {
+            clerkId: legacyClerkId, // Legacy field with unique value
+            supabaseId: userId,     // New Supabase ID field
+            email: userEmail || `${userId}@example.com`,
+            name: userEmail?.split('@')[0] || 'Player',
+            age: 16,
+            role: 'PLAYER',
+            ageGroup: '16-18',
+            dataConsent: false,
+            completedOnboarding: false
+          }
+        });
+        console.log('New user created successfully');
+      }
 
       // CRITICAL: Always set dbUserId - this prevents foreign key failures
       req.dbUserId = String(dbUser.id);
@@ -124,10 +179,13 @@ export const requireAuth = async (
 
     } catch (dbError: any) {
       console.error('Database operation failed:', dbError);
+      console.error('Error code:', dbError.code);
+      console.error('Error message:', dbError.message);
       
       // Check for specific database errors
       if (dbError.code === 'P2002') {
         // Unique constraint violation - try to find existing user
+        console.log('Handling unique constraint violation, attempting to find existing user');
         try {
           const existingUser = await prisma.user.findFirst({
             where: {
@@ -149,14 +207,51 @@ export const requireAuth = async (
         } catch (retryError) {
           console.error('Retry failed:', retryError);
         }
+      } else if (dbError.code === 'P2025') {
+        console.error('Record not found for update - will try to create new user');
+        // Try to create a new user
+        try {
+          const newUser = await prisma.user.create({
+            data: {
+              clerkId: userId,
+              email: userEmail || `${userId}@example.com`,
+              name: userEmail?.split('@')[0] || 'Player',
+              age: 16,
+              role: 'PLAYER',
+              ageGroup: '16-18',
+              dataConsent: false,
+              completedOnboarding: false
+            }
+          });
+          
+          req.dbUserId = String(newUser.id);
+          req.user = newUser as any;
+          console.log('Created new user after P2025 error:', newUser.id);
+          console.log('=== AUTH MIDDLEWARE COMPLETE ===');
+          next();
+          return;
+        } catch (createError) {
+          console.error('Failed to create new user:', createError);
+        }
       }
       
-      res.status(503).json({ 
+      // Return detailed error in development, generic in production
+      const errorResponse = {
         success: false,
         error: 'User synchronization failed',
         message: 'Database connection issue. Please try again.',
-        code: 'DB_SYNC_ERROR'
-      });
+        code: 'DB_SYNC_ERROR',
+        ...(process.env.NODE_ENV === 'development' ? {
+          details: {
+            errorCode: dbError.code,
+            errorMessage: dbError.message,
+            userId: userId,
+            email: userEmail
+          }
+        } : {})
+      };
+      
+      res.status(503).json(errorResponse);
       return;
     }
 
@@ -216,16 +311,48 @@ export const optionalAuth = async (
         req.userId = userId;
         
         try {
-          // Try to find existing user first
+          // Try to find existing user by supabaseId first
           let dbUser = await prisma.user.findUnique({
-            where: { clerkId: userId }
+            where: { supabaseId: userId }
           });
+          
+          // If not found, try by email
+          if (!dbUser && userEmail) {
+            dbUser = await prisma.user.findUnique({
+              where: { email: userEmail }
+            });
+            
+            // Update supabaseId if found by email
+            if (dbUser) {
+              dbUser = await prisma.user.update({
+                where: { id: dbUser.id },
+                data: { supabaseId: userId }
+              });
+            }
+          }
+          
+          // Try legacy clerkId
+          if (!dbUser) {
+            dbUser = await prisma.user.findUnique({
+              where: { clerkId: userId }
+            });
+            
+            // Migrate to supabaseId if found
+            if (dbUser) {
+              dbUser = await prisma.user.update({
+                where: { id: dbUser.id },
+                data: { supabaseId: userId }
+              });
+            }
+          }
           
           // Create user if doesn't exist (for optional auth routes)
           if (!dbUser && userEmail) {
+            const legacyClerkId = `supabase_${userId}_${Date.now()}`;
             dbUser = await prisma.user.create({
               data: {
-                clerkId: userId,
+                clerkId: legacyClerkId,
+                supabaseId: userId,
                 email: userEmail,
                 name: userEmail.split('@')[0] || 'Player',
                 age: 16,
