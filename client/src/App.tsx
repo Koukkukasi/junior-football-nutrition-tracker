@@ -27,6 +27,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TeamAccess = lazy(() => import('./pages/TeamAccess'))
 const FCInterSignup = lazy(() => import('./pages/FCInterSignup'))
+const AdminSignup = lazy(() => import('./pages/AdminSignup'))
 
 // Loading component
 function PageLoader() {
@@ -69,6 +70,11 @@ function App() {
         <Route path="/fc-inter-signup" element={
           <Suspense fallback={<PageLoader />}>
             <FCInterSignup />
+          </Suspense>
+        } />
+        <Route path="/admin-signup" element={
+          <Suspense fallback={<PageLoader />}>
+            <AdminSignup />
           </Suspense>
         } />
         <Route path="/terms" element={
