@@ -25,7 +25,11 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
     const clerkId = req.userId;
 
     if (!clerkId) {
-      res.status(401).json({ error: 'User not authenticated' });
+      res.status(401).json({ 
+        success: false,
+        error: 'User not authenticated',
+        code: 'NO_AUTH'
+      });
       return;
     }
 
@@ -35,7 +39,11 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found in database' });
+      res.status(404).json({ 
+        success: false,
+        error: 'User not found in database',
+        code: 'USER_NOT_FOUND'
+      });
       return;
     }
 
@@ -71,8 +79,10 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Error fetching food entries:', error);
     res.status(500).json({ 
+      success: false,
       error: 'Failed to fetch food entries',
-      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
+      code: 'FETCH_ERROR'
     });
   }
 });
@@ -200,7 +210,11 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     const clerkId = req.userId;
 
     if (!clerkId) {
-      res.status(401).json({ error: 'User not authenticated' });
+      res.status(401).json({ 
+        success: false,
+        error: 'User not authenticated',
+        code: 'NO_AUTH'
+      });
       return;
     }
 
@@ -210,7 +224,11 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found in database' });
+      res.status(404).json({ 
+        success: false,
+        error: 'User not found in database',
+        code: 'USER_NOT_FOUND'
+      });
       return;
     }
 
@@ -250,8 +268,10 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Error updating food entry:', error);
     res.status(500).json({ 
+      success: false,
       error: 'Failed to update food entry',
-      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
+      code: 'UPDATE_ERROR'
     });
   }
 });
@@ -263,7 +283,11 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     const clerkId = req.userId;
 
     if (!clerkId) {
-      res.status(401).json({ error: 'User not authenticated' });
+      res.status(401).json({ 
+        success: false,
+        error: 'User not authenticated',
+        code: 'NO_AUTH'
+      });
       return;
     }
 
@@ -273,7 +297,11 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found in database' });
+      res.status(404).json({ 
+        success: false,
+        error: 'User not found in database',
+        code: 'USER_NOT_FOUND'
+      });
       return;
     }
 
@@ -304,8 +332,10 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Error deleting food entry:', error);
     res.status(500).json({ 
+      success: false,
       error: 'Failed to delete food entry',
-      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
+      code: 'DELETE_ERROR'
     });
   }
 });
@@ -317,7 +347,11 @@ router.get('/summary', requireAuth, async (req: AuthRequest, res: Response) => {
     const clerkId = req.userId;
 
     if (!clerkId) {
-      res.status(401).json({ error: 'User not authenticated' });
+      res.status(401).json({ 
+        success: false,
+        error: 'User not authenticated',
+        code: 'NO_AUTH'
+      });
       return;
     }
 
@@ -327,7 +361,11 @@ router.get('/summary', requireAuth, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found in database' });
+      res.status(404).json({ 
+        success: false,
+        error: 'User not found in database',
+        code: 'USER_NOT_FOUND'
+      });
       return;
     }
 
@@ -391,8 +429,10 @@ router.get('/summary', requireAuth, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Error fetching food summary:', error);
     res.status(500).json({ 
+      success: false,
       error: 'Failed to fetch food summary',
-      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
+      code: 'SUMMARY_ERROR'
     });
   }
 });

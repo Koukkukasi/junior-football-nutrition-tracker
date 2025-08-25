@@ -21,10 +21,6 @@ services:
       - path: /*
         name: X-XSS-Protection
         value: 1; mode=block
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
 
   # Backend Express API
   - type: web

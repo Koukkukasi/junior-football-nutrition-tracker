@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types/auth.types';
-import prisma from '../utils/db';
+import prisma from '../db';
 import { clerkClient } from '@clerk/clerk-sdk-node';
 
 export const authController = {

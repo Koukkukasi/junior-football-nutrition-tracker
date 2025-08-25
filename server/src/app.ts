@@ -25,27 +25,37 @@ const app: Application = express();
 app.use(helmet());
 app.use(cors({
   origin: [
+    // Production URLs
     process.env.FRONTEND_URL || 'http://localhost:5174',
-    'https://juniorfootballnutrition.com', // Production custom domain
-    'https://www.juniorfootballnutrition.com', // Production www subdomain
-    'https://junior-nutrition-tracker-prod.vercel.app', // Current production Vercel URL
-    'https://junior-football-nutrition-tracker.vercel.app', // Production Vercel URL
-    'https://junior-football-nutrition-tracker-*.vercel.app', // Preview deployments
+    'https://junior-football-nutrition-client.onrender.com', // Render production frontend
+    
+    // Development URLs
     'http://localhost:5173', // Vite default port
     'http://localhost:5174',
     'http://localhost:5175',
     'http://localhost:5176',
+    
+    // Local network IPs for development
     'http://192.168.68.104:5174',
     'http://192.168.68.104:5175',
-    'http://192.168.68.104:5176', // Your local network IP
+    'http://192.168.68.104:5176',
     /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow any local network IP with any port
     /^http:\/\/172\.26\.\d+\.\d+:\d+$/, // Allow WSL network
-    /^https:\/\/junior-football-nutrition-tracker-.*\.vercel\.app$/, // Regex for preview deployments
-    /^https:\/\/junior-nutrition-tracker-.*\.vercel\.app$/, // Regex for new production deployment pattern
+    /^http:\/\/localhost:\d+$/, // Allow any localhost port
+    
+    // Render deployments (production platform)
     /^https:\/\/.*\.onrender\.com$/, // Allow all Render deployments
-    /^https:\/\/junior-football-nutrition-.*\.onrender\.com$/ // Specific Render pattern
+    /^https:\/\/junior-football-nutrition-.*\.onrender\.com$/, // Specific Render pattern
+    
+    // Legacy Vercel URLs (if still needed)
+    'https://junior-football-nutrition-tracker.vercel.app',
+    /^https:\/\/junior-football-nutrition-tracker-.*\.vercel\.app$/
   ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Email'],
+  exposedHeaders: ['X-Total-Count'],
+  maxAge: 86400 // 24 hours
 }));
 app.use(compression());
 app.use(express.json());

@@ -102,8 +102,6 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
 
 // POST /api/v1/performance - Create new performance metrics
 router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
-  let userId: string | undefined;  // Declare at function scope for catch block access
-  
   try {
     const { 
       date, 
@@ -120,7 +118,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     console.log('Request body:', req.body);
 
     // Use the dbUserId that was already looked up in auth middleware
-    userId = req.dbUserId;
+    let userId: string = req.dbUserId || '';
     
     if (!userId) {
       console.error('No database user ID found in request! Auth middleware should have set this.');
@@ -181,61 +179,79 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     const entryDate = date ? new Date(date) : new Date();
     entryDate.setHours(0, 0, 0, 0); // Normalize to start of day
 
-    // Check if entry already exists for this date
-    const existingEntry = await prisma.performanceMetric.findUnique({
-      where: {
-        userId_date: {
-          userId,
-          date: entryDate
-        }
-      }
-    });
-
-    let performanceMetric;
+    // Ensure userId is defined before transaction
+    if (!userId) {
+      console.error('CRITICAL: userId is still undefined after all checks');
+      res.status(500).json({ 
+        success: false,
+        error: 'User ID could not be determined',
+        code: 'USER_ID_ERROR'
+      });
+      return;
+    }
     
-    if (existingEntry) {
-      // Update existing entry
-      performanceMetric = await prisma.performanceMetric.update({
+    // Use transaction for atomic operation
+    const result = await prisma.$transaction(async (tx) => {
+      // Check if entry already exists for this date within transaction
+      const existingEntry = await tx.performanceMetric.findUnique({
         where: {
           userId_date: {
-            userId,
+            userId: userId,
             date: entryDate
           }
-        },
-        data: {
-          energyLevel,
-          sleepHours,
-          isTrainingDay,
-          trainingType: trainingType || null,
-          matchDay,
-          notes: notes || null
         }
       });
-    } else {
-      // Create new entry
-      console.log('Creating new performance entry with userId:', userId, 'type:', typeof userId);
-      performanceMetric = await prisma.performanceMetric.create({
-        data: {
-          userId,
-          date: entryDate,
-          energyLevel,
-          sleepHours,
-          isTrainingDay,
-          trainingType: trainingType || null,
-          matchDay,
-          notes: notes || null
-        }
-      });
-      console.log('Successfully created performance entry:', performanceMetric.id);
-    }
+
+      let performanceMetric;
+      let isUpdate = false;
+      
+      if (existingEntry) {
+        // Update existing entry
+        console.log('Updating existing performance entry for date:', entryDate);
+        performanceMetric = await tx.performanceMetric.update({
+          where: {
+            userId_date: {
+              userId: userId,
+              date: entryDate
+            }
+          },
+          data: {
+            energyLevel,
+            sleepHours,
+            isTrainingDay,
+            trainingType: trainingType || null,
+            matchDay,
+            notes: notes || null
+          }
+        });
+        isUpdate = true;
+      } else {
+        // Create new entry
+        console.log('Creating new performance entry with userId:', userId, 'type:', typeof userId);
+        performanceMetric = await tx.performanceMetric.create({
+          data: {
+            userId: userId,
+            date: entryDate,
+            energyLevel,
+            sleepHours,
+            isTrainingDay,
+            trainingType: trainingType || null,
+            matchDay,
+            notes: notes || null
+          }
+        });
+      }
+      
+      return { performanceMetric, isUpdate };
+    });
 
     console.log('=== Performance entry created/updated successfully ===');
-    console.log('Entry ID:', performanceMetric.id);
+    console.log('Entry ID:', result.performanceMetric.id);
     
-    res.status(existingEntry ? 200 : 201).json({
+    res.status(result.isUpdate ? 200 : 201).json({
       success: true,
-      data: performanceMetric,
-      message: existingEntry ? 'Performance metrics updated successfully' : 'Performance metrics created successfully'
+      data: result.performanceMetric,
+      message: result.isUpdate ? 'Performance metrics updated successfully' : 'Performance metrics created successfully'
     });
   } catch (error) {
     console.error('=== ERROR creating performance metrics ===');
@@ -244,15 +260,16 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     
     if ((error as any).code === 'P2003') {
       console.error('Foreign key constraint failure - userId does not exist in User table');
-      console.error('Attempted userId:', userId);
+      console.error('Attempted userId from request:', req.dbUserId);
     }
     
     console.error('Full error:', error);
     
     res.status(500).json({ 
+      success: false,
       error: 'Failed to create performance metrics',
       message: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
-      details: process.env.NODE_ENV === 'development' ? error : undefined
+      code: 'PERFORMANCE_CREATE_ERROR'
     });
   }
 });
