@@ -107,14 +107,16 @@ export function getAgeSpecificBonus(
 export function getAgeHydrationReminder(
   age: number,
   description: string,
-  mealTiming?: 'pre-game' | 'post-game' | 'regular'
+  mealTiming?: 'pre-game' | 'post-game' | 'after-practice' | 'regular'
 ): string | null {
   const hasWater = description.includes('water') || description.includes('drink');
 
   if (age <= 12 && !hasWater) {
     return 'Remember to drink water with your meal!';
-  } else if (age >= 16 && mealTiming === 'post-game' && !hasWater) {
+  } else if (age >= 16 && (mealTiming === 'post-game' || mealTiming === 'after-practice') && !hasWater) {
     return 'Don\'t forget to rehydrate after training!';
+  } else if (mealTiming === 'after-practice' && !hasWater) {
+    return '💧 Important: Rehydrate after practice for better recovery!';
   }
 
   return null;
