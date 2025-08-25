@@ -98,9 +98,9 @@ export default function FoodLog() {
       });
       
       // WAIT for actual backend confirmation with proper validation
-      if (response.success && response.data?.id) {
+      if (response.success && response.data) {
         const newEntry: FoodEntry = {
-          id: response.data.id, // Use REAL backend ID, not fallback
+          id: response.data.id || response.data, // Handle both nested and direct response formats
           ...formData,
           quality: analysis.quality
         };

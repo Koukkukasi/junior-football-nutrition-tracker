@@ -93,17 +93,26 @@ model TeamMember {
 }
 
 model FoodEntry {
-  id          String    @id @default(uuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  date        DateTime
-  mealType    MealType
-  time        String
-  location    String?
-  description String
-  notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  date           DateTime
+  mealType       MealType
+  time           String
+  location       String?
+  description    String
+  notes          String?
+  
+  // Nutrition analysis fields
+  nutritionScore Int?      // 0-100 score
+  quality        String?   // 'poor' | 'fair' | 'good' | 'excellent'
+  calories       Int?      // Estimated calories
+  protein        Int?      // Grams of protein
+  carbs          Int?      // Grams of carbs
+  fats           Int?      // Grams of fats
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([userId, date])
   @@index([date])

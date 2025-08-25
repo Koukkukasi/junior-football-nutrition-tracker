@@ -25,7 +25,7 @@ const app: Application = express();
 app.use(helmet());
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
+    process.env.FRONTEND_URL || 'http://localhost:5174',
     'https://juniorfootballnutrition.com', // Production custom domain
     'https://www.juniorfootballnutrition.com', // Production www subdomain
     'https://junior-nutrition-tracker-prod.vercel.app', // Current production Vercel URL

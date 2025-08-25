@@ -28,8 +28,14 @@ export async function apiRequest<T = any>(
   const url = `${API_BASE}${endpoint}`;
   
   try {
-    // Get auth token if not provided
-    const token = options.token || await window.Clerk?.session?.getToken();
+    // Get auth token from Supabase
+    let token = options.token;
+    if (!token) {
+      // Try to get Supabase session
+      const { supabase } = await import('./supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      token = session?.access_token || null;
+    }
     
     const response = await fetch(url, {
       method: options.method || 'GET',

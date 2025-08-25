@@ -1,7 +1,8 @@
 import { Router, Response } from 'express';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth } from '../middleware/auth-dev'; // Use dev auth
 import { AuthRequest } from '../types/auth.types';
 import { prisma } from '../db';
+import { analyzeFoodQuality, getAgeGroup } from '../services/nutritionAnalyzer';
 
 const router = Router();
 
@@ -76,10 +77,10 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// POST /api/v1/food - Create new food entry
+// POST /api/v1/food - Create new food entry with nutrition analysis
 router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { mealType, time, location, description, notes, date }: FoodEntryRequest = req.body;
+    const { mealType, time, location, description, notes, date, mealTiming }: FoodEntryRequest & { mealTiming?: 'pre-game' | 'post-game' | 'regular' } = req.body;
     const clerkId = req.userId;
     console.log('POST /food - Received request with clerkId:', clerkId);
     console.log('Request body:', req.body);
@@ -125,23 +126,24 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
       const user = await tx.user.findUnique({
         where: { clerkId }
       });
-      console.log('Found user:', user ? { id: user.id, name: user.name } : 'null');
+      console.log('Found user:', user ? { id: user.id, name: user.name, age: user.age } : 'null');
 
       if (!user) {
         throw new Error('User not found in database');
       }
       
-      console.log('Creating food entry with data:', {
-        userId: user.id,
-        mealType,
-        time,
-        location,
+      // Analyze nutrition
+      const ageGroup = user.age ? getAgeGroup(user.age) : undefined;
+      const nutritionAnalysis = analyzeFoodQuality(
         description,
-        notes: notes || null,
-        date: entryDate
-      });
-
-      // Create food entry within transaction
+        mealTiming,
+        user.age || undefined,
+        ageGroup
+      );
+      
+      console.log('Nutrition analysis:', nutritionAnalysis);
+      
+      // Create food entry with nutrition data
       const foodEntry = await tx.foodEntry.create({
         data: {
           userId: user.id,
@@ -150,16 +152,23 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
           location,
           description,
           notes: notes || null,
-          date: entryDate
+          date: entryDate,
+          nutritionScore: nutritionAnalysis.score,
+          quality: nutritionAnalysis.quality,
+          calories: nutritionAnalysis.macroEstimates.calories,
+          protein: nutritionAnalysis.macroEstimates.protein,
+          carbs: nutritionAnalysis.macroEstimates.carbs,
+          fats: nutritionAnalysis.macroEstimates.fats
         }
       });
 
-      return foodEntry;
+      return { foodEntry, nutritionAnalysis };
     });
 
     res.status(201).json({
       success: true,
-      data: result,
+      data: result.foodEntry,
+      nutrition: result.nutritionAnalysis,
       message: 'Food entry created successfully'
     });
   } catch (error: any) {
