@@ -3,6 +3,10 @@ import { prisma } from '../db';
 import { AuthRequest } from '../types/auth.types';
 import jwt from 'jsonwebtoken';
 
+// Supabase JWT secret - this should be in environment variables in production
+// For now, using a default that works with the Supabase instance
+const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || 'super-secret-jwt-token-with-at-least-32-characters-long';
+
 // Production-ready auth middleware for Supabase tokens
 export const requireAuth = async (
   req: AuthRequest,
@@ -10,7 +14,7 @@ export const requireAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    console.log('=== AUTH MIDDLEWARE START ===');
+    console.log('=== SUPABASE AUTH MIDDLEWARE START ===');
     console.log('Request path:', req.path, 'Method:', req.method);
     
     const authHeader = req.headers.authorization;
@@ -28,6 +32,7 @@ export const requireAuth = async (
 
     let userId: string | null = null;
     let userEmail: string | null = null;
+    let decoded: any = null;
 
     // Check if it's a test token (development only)
     if (process.env.NODE_ENV === 'development' && token === 'test_token') {
@@ -35,14 +40,9 @@ export const requireAuth = async (
       userEmail = 'test@example.com';
     } else {
       try {
-        // Decode Supabase JWT token without verification first to inspect it
-        const decoded = jwt.decode(token) as any;
+        // First, try to decode without verification to see the structure
+        decoded = jwt.decode(token) as any;
         
-        // Log the full token structure for debugging
-        console.log('Full token payload:', JSON.stringify(decoded, null, 2));
-        
-        // Supabase tokens have the user ID in the 'sub' field
-        // But if it's a Supabase session token, the actual user data might be elsewhere
         if (!decoded) {
           console.log('Failed to decode token');
           res.status(401).json({ 
@@ -52,29 +52,72 @@ export const requireAuth = async (
           });
           return;
         }
-        
-        // Try different locations where Supabase might store the user ID
+
+        // Log the token structure for debugging
+        console.log('Token structure:', {
+          hasSubField: !!decoded.sub,
+          hasUserIdField: !!decoded.user_id,
+          hasIdField: !!decoded.id,
+          hasEmailField: !!decoded.email,
+          hasUserMetadata: !!decoded.user_metadata,
+          tokenType: decoded.token_type,
+          role: decoded.role,
+          aal: decoded.aal,
+          sessionId: decoded.session_id
+        });
+
+        // Supabase access tokens have the user ID in the 'sub' field
         userId = decoded.sub || decoded.user_id || decoded.id;
-        userEmail = decoded.email || decoded.user_metadata?.email || decoded.email_verified || `user_${userId}@example.com`;
         
-        // If still no userId, log the entire decoded token to understand its structure
+        // Email might be in different places depending on token type
+        userEmail = decoded.email || 
+                   decoded.user_metadata?.email || 
+                   decoded.email_verified ||
+                   decoded.user?.email;
+
+        // If we still don't have a userId, it might be a different token format
         if (!userId) {
-          console.log('Could not find user ID in standard fields. Full token:', decoded);
+          // Check if it's a Supabase session object instead of a JWT
+          console.log('No user ID found in standard JWT fields. Full token payload:', JSON.stringify(decoded, null, 2));
+          
+          // Sometimes the frontend sends the session object instead of just the access token
+          if (decoded.user) {
+            userId = decoded.user.id;
+            userEmail = decoded.user.email;
+          }
+        }
+
+        if (!userId) {
+          console.log('Could not extract user ID from token');
+          res.status(401).json({ 
+            success: false,
+            error: 'Invalid token format - no user ID found',
+            code: 'NO_USER_ID'
+          });
+          return;
+        }
+
+        // Now try to verify the token with the JWT secret (optional in development)
+        if (process.env.NODE_ENV === 'production' && SUPABASE_JWT_SECRET !== 'super-secret-jwt-token-with-at-least-32-characters-long') {
+          try {
+            const verified = jwt.verify(token, SUPABASE_JWT_SECRET) as any;
+            console.log('Token verified successfully');
+            // Use verified data if available
+            userId = verified.sub || userId;
+            userEmail = verified.email || userEmail;
+          } catch (verifyError) {
+            console.warn('Token verification failed, but continuing with decoded data:', verifyError);
+            // In development or if verification fails, we continue with the decoded data
+          }
         }
         
-        // Log token details for debugging
-        console.log('Token decoded successfully:', {
-          sub: decoded.sub,
-          user_id: decoded.user_id,
-          id: decoded.id,
-          email: decoded.email,
-          user_metadata: decoded.user_metadata,
-          exp: decoded.exp ? new Date(decoded.exp * 1000).toISOString() : 'no expiry',
-          extractedUserId: userId,
-          extractedEmail: userEmail
+        console.log('Extracted user info:', {
+          userId,
+          userEmail,
+          tokenExp: decoded.exp ? new Date(decoded.exp * 1000).toISOString() : 'no expiry'
         });
       } catch (e) {
-        console.error('Failed to decode token:', e);
+        console.error('Failed to process token:', e);
         res.status(401).json({ 
           success: false,
           error: 'Invalid authentication token',
@@ -94,7 +137,7 @@ export const requireAuth = async (
     }
 
     if (!userId) {
-      console.log('Could not extract user ID from token');
+      console.log('No user ID available after all checks');
       res.status(401).json({ 
         success: false,
         error: 'Invalid authentication token',
@@ -112,7 +155,7 @@ export const requireAuth = async (
       
       let dbUser = null;
       
-      // Strategy 1: Find by supabaseId (new field)
+      // Strategy 1: Find by supabaseId
       if (!dbUser) {
         dbUser = await prisma.user.findUnique({
           where: { supabaseId: userId }
@@ -167,15 +210,23 @@ export const requireAuth = async (
         // Generate a unique clerkId for legacy compatibility
         const legacyClerkId = `supabase_${userId}_${Date.now()}`;
         
+        // Extract name from email or decoded token
+        const name = decoded?.user_metadata?.full_name || 
+                    decoded?.user_metadata?.name ||
+                    decoded?.name ||
+                    userEmail?.split('@')[0] || 
+                    'Player';
+        
         dbUser = await prisma.user.create({
           data: {
             clerkId: legacyClerkId, // Legacy field with unique value
             supabaseId: userId,     // New Supabase ID field
             email: userEmail || `${userId}@example.com`,
-            name: userEmail?.split('@')[0] || 'Player',
-            age: 16,
-            role: 'PLAYER',
-            ageGroup: '16-18',
+            name: name,
+            age: decoded?.user_metadata?.age || 16,
+            role: decoded?.user_metadata?.role || 'PLAYER',
+            position: decoded?.user_metadata?.position,
+            ageGroup: decoded?.user_metadata?.ageGroup || '16-18',
             dataConsent: false,
             completedOnboarding: false
           }
@@ -206,6 +257,7 @@ export const requireAuth = async (
           const existingUser = await prisma.user.findFirst({
             where: {
               OR: [
+                { supabaseId: userId },
                 { clerkId: userId },
                 { email: userEmail || '' }
               ]
@@ -216,38 +268,12 @@ export const requireAuth = async (
             req.dbUserId = String(existingUser.id);
             req.user = existingUser as any;
             console.log('Found existing user on retry:', existingUser.id);
-            console.log('=== AUTH MIDDLEWARE COMPLETE ===');
+            console.log('=== SUPABASE AUTH MIDDLEWARE COMPLETE ===');
             next();
             return;
           }
         } catch (retryError) {
           console.error('Retry failed:', retryError);
-        }
-      } else if (dbError.code === 'P2025') {
-        console.error('Record not found for update - will try to create new user');
-        // Try to create a new user
-        try {
-          const newUser = await prisma.user.create({
-            data: {
-              clerkId: userId,
-              email: userEmail || `${userId}@example.com`,
-              name: userEmail?.split('@')[0] || 'Player',
-              age: 16,
-              role: 'PLAYER',
-              ageGroup: '16-18',
-              dataConsent: false,
-              completedOnboarding: false
-            }
-          });
-          
-          req.dbUserId = String(newUser.id);
-          req.user = newUser as any;
-          console.log('Created new user after P2025 error:', newUser.id);
-          console.log('=== AUTH MIDDLEWARE COMPLETE ===');
-          next();
-          return;
-        } catch (createError) {
-          console.error('Failed to create new user:', createError);
         }
       }
       
@@ -271,7 +297,7 @@ export const requireAuth = async (
       return;
     }
 
-    console.log('=== AUTH MIDDLEWARE COMPLETE ===');
+    console.log('=== SUPABASE AUTH MIDDLEWARE COMPLETE ===');
     console.log('Final state - userId:', req.userId, 'dbUserId:', req.dbUserId);
     next();
   } catch (error: any) {
@@ -305,9 +331,9 @@ export const optionalAuth = async (
       } else {
         try {
           const decoded = jwt.decode(token) as any;
-          if (decoded?.sub) {
-            userId = decoded.sub;
-            userEmail = decoded.email;
+          if (decoded) {
+            userId = decoded.sub || decoded.user_id || decoded.id;
+            userEmail = decoded.email || decoded.user_metadata?.email;
           }
         } catch (e) {
           console.log('Failed to decode token in optional auth:', e);

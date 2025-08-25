@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { requireAuth } from '../middleware/auth-dev'; // Use dev auth
+import { requireAuth } from '../middleware/supabase-auth'; // Use Supabase auth
 import { AuthRequest } from '../types/auth.types';
 import { prisma } from '../db';
 import { analyzeFoodQuality, getAgeGroup } from '../services/nutritionAnalyzer';
