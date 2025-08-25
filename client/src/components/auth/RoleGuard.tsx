@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import { useUserProfile } from '../../contexts/UserContext';
 
 interface RoleGuardProps {
@@ -10,15 +10,15 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ children, allowedRoles, fallbackPath = '/dashboard' }: RoleGuardProps) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const { profile, loading } = useUserProfile();
+  const { user, loading: authLoading } = useSupabaseAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (!isLoaded || loading) return;
+    if (authLoading || profileLoading) return;
 
-    if (!isSignedIn) {
+    if (!user) {
       navigate('/sign-in');
       return;
     }
@@ -34,9 +34,9 @@ export function RoleGuard({ children, allowedRoles, fallbackPath = '/dashboard' 
         setIsAuthorized(true);
       }
     }
-  }, [isLoaded, isSignedIn, profile, loading, allowedRoles, navigate, fallbackPath]);
+  }, [user, profile, authLoading, profileLoading, allowedRoles, navigate, fallbackPath]);
 
-  if (!isLoaded || loading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="spinner"></div>

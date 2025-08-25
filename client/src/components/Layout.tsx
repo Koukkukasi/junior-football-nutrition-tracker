@@ -1,12 +1,12 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState, useEffect } from 'react'
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext'
 import FeedbackWidget from './feedback/FeedbackWidget'
 import { useUserProfile } from '../contexts/UserContext'
-import { Menu, X, Home, UtensilsCrossed, TrendingUp, BarChart3, Users, User, Shield } from 'lucide-react'
+import { Menu, X, Home, UtensilsCrossed, TrendingUp, BarChart3, Users, User, Shield, LogOut } from 'lucide-react'
 
 export default function Layout() {
-  const { user } = useUser()
+  const { user, signOut } = useSupabaseAuth()
   const { profile } = useUserProfile()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [todayStats, setTodayStats] = useState({
@@ -20,7 +20,8 @@ export default function Layout() {
     const fetchTodayStats = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-        const token = await window.Clerk?.session?.getToken()
+        // For Supabase, we'll use the session token
+        const token = user?.id
         
         if (!token) return
         
@@ -92,13 +93,19 @@ export default function Layout() {
           <div className="flex items-center gap-4">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-white">
-                Welcome back, {user?.firstName || 'Athlete'}!
+                Welcome back, {user?.email?.split('@')[0] || 'Athlete'}!
               </p>
               <p className="text-xs text-white/70">
                 Keep up the great work
               </p>
             </div>
-            <UserButton afterSignOutUrl="/" />
+            <button
+              onClick={() => signOut()}
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>

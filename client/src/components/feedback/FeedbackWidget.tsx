@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Send, Bug, Lightbulb, Heart, AlertCircle } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 
 type FeedbackType = 'bug' | 'feature' | 'general' | 'praise';
 
@@ -14,7 +14,7 @@ interface FeedbackData {
 }
 
 export default function FeedbackWidget() {
-  useAuth(); // For authentication check
+  const { session } = useSupabaseAuth(); // For authentication check
   const [isOpen, setIsOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('general');
   const [message, setMessage] = useState('');
@@ -45,7 +45,7 @@ export default function FeedbackWidget() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+          'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify(feedbackData)
       });

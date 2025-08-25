@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import { ChevronRight, ChevronLeft, Trophy, Target, Users, Calendar, Shield, UserCheck, Heart } from 'lucide-react';
 import API from '../../lib/api';
 
@@ -15,7 +15,7 @@ interface OnboardingData {
 
 export default function OnboardingWizard() {
   const navigate = useNavigate();
-  useAuth(); // For authentication check
+  const { user } = useSupabaseAuth(); // For authentication check
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

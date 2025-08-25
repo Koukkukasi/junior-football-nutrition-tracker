@@ -3,11 +3,11 @@
  */
 
 import { useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import type { InviteResult, InviteFormData } from '../types/admin.types';
 
 export function useInviteManagement() {
-  const { getToken } = useAuth();
+  const { session } = useSupabaseAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [inviteResult, setInviteResult] = useState<InviteResult | null>(null);
   const [error, setError] = useState('');
@@ -18,7 +18,7 @@ export function useInviteManagement() {
     setInviteResult(null);
 
     try {
-      const token = await getToken();
+      const token = session?.access_token;
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_BASE}/api/v1/invites/send`, {
         method: 'POST',
@@ -63,7 +63,7 @@ export function useInviteManagement() {
     setInviteResult(null);
     
     try {
-      const token = await getToken();
+      const token = session?.access_token;
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_BASE}/api/v1/invites/bulk`, {
         method: 'POST',

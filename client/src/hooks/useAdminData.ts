@@ -3,13 +3,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import type { SystemStats, RecentActivity, PendingInvite } from '../types/admin.types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function useAdminData() {
-  const { getToken } = useAuth();
+  const { session } = useSupabaseAuth();
   const [stats, setStats] = useState<SystemStats>({
     totalUsers: 0,
     activeToday: 0,
@@ -26,7 +26,7 @@ export function useAdminData() {
 
   const fetchStats = async () => {
     try {
-      const token = await getToken();
+      const token = session?.access_token;
       
       // Fetch admin stats (all in one call)
       const adminStatsResponse = await fetch(`${API_BASE}/api/v1/admin/stats`, {

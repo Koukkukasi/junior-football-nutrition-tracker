@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, XCircle, Info, AlertCircle, X } from 'lucide-react'
+import { CheckCircle, XCircle, Info, AlertCircle } from 'lucide-react'
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning'
 
@@ -79,10 +79,10 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
       </div>
       <button
         onClick={handleClose}
-        className="flex-shrink-0 p-1 hover:bg-white/50 rounded transition-colors"
+        className="flex-shrink-0 p-1 hover:bg-white/50 rounded transition-colors text-current"
         aria-label="Close notification"
       >
-        <X className="w-4 h-4" />
+        <span className="text-lg leading-none">×</span>
       </button>
     </div>
   )

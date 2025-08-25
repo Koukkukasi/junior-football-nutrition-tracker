@@ -41,7 +41,9 @@ app.use(cors({
     /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow any local network IP with any port
     /^http:\/\/172\.26\.\d+\.\d+:\d+$/, // Allow WSL network
     /^https:\/\/junior-football-nutrition-tracker-.*\.vercel\.app$/, // Regex for preview deployments
-    /^https:\/\/junior-nutrition-tracker-.*\.vercel\.app$/ // Regex for new production deployment pattern
+    /^https:\/\/junior-nutrition-tracker-.*\.vercel\.app$/, // Regex for new production deployment pattern
+    /^https:\/\/.*\.onrender\.com$/, // Allow all Render deployments
+    /^https:\/\/junior-football-nutrition-.*\.onrender\.com$/ // Specific Render pattern
   ],
   credentials: true,
 }));

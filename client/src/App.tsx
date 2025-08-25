@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { SignIn, SignUp, useAuth } from '@clerk/clerk-react'
+import { useSupabaseAuth } from './contexts/SupabaseAuthContext'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -8,6 +8,8 @@ import { UserProvider } from './contexts/UserContext'
 import { ToastProvider } from './hooks/useToast'
 import { AdminOnly, CoachOrAdmin } from './components/auth/RoleGuard'
 import IconTest from './components/IconTest'
+import SignIn from './pages/SignIn'
+import SignUp from './pages/SignUp'
 import './App.css'
 
 // Lazy load all protected pages for better performance
@@ -24,7 +26,6 @@ const CoachDashboard = lazy(() => import('./pages/CoachDashboard'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TeamAccess = lazy(() => import('./pages/TeamAccess'))
-// TestInvite page removed - functionality merged into AdminInvite
 
 // Loading component
 function PageLoader() {
@@ -39,13 +40,13 @@ function PageLoader() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, isLoaded } = useAuth()
+  const { user, loading } = useSupabaseAuth()
   
-  if (!isLoaded) {
+  if (loading) {
     return <PageLoader />
   }
   
-  if (!isSignedIn) {
+  if (!user) {
     return <Navigate to="/" replace />
   }
   
@@ -53,17 +54,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { isSignedIn } = useAuth()
+  const { user } = useSupabaseAuth()
 
   return (
     <ErrorBoundary>
       <ToastProvider>
         <UserProvider>
           <Routes>
-        <Route path="/" element={isSignedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/test-icons" element={<IconTest />} />
-        <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
-        <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
         <Route path="/terms" element={
           <Suspense fallback={<PageLoader />}>
             <TermsOfService />
@@ -118,17 +119,17 @@ function App() {
               </Suspense>
             </ProtectedRoute>
           } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Suspense fallback={<PageLoader />}>
-                <Profile />
-              </Suspense>
-            </ProtectedRoute>
-          } />
           <Route path="/analytics" element={
             <ProtectedRoute>
               <Suspense fallback={<PageLoader />}>
                 <Analytics />
+              </Suspense>
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <Profile />
               </Suspense>
             </ProtectedRoute>
           } />
@@ -150,7 +151,7 @@ function App() {
               </AdminOnly>
             </ProtectedRoute>
           } />
-          <Route path="/coach-dashboard" element={
+          <Route path="/coach/dashboard" element={
             <ProtectedRoute>
               <CoachOrAdmin>
                 <Suspense fallback={<PageLoader />}>
@@ -159,7 +160,6 @@ function App() {
               </CoachOrAdmin>
             </ProtectedRoute>
           } />
-          {/* Test invite functionality now available in /admin/invite */}
         </Route>
       </Routes>
         </UserProvider>
@@ -168,4 +168,4 @@ function App() {
   )
 }
 
-export default App// Cache bust: 1756076704
+export default App

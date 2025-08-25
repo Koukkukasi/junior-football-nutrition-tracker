@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/clerk-react'
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOnboarding } from '../hooks/useOnboarding'
@@ -20,7 +20,7 @@ function getTimeAgo(date: Date): string {
 }
 
 export default function Dashboard() {
-  const { user } = useUser()
+  const { user, session } = useSupabaseAuth()
   const navigate = useNavigate()
   useOnboarding() // Just run the hook for its side effects
   const [stats, setStats] = useState({
@@ -40,7 +40,7 @@ export default function Dashboard() {
         const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
         const response = await fetch(`${API_BASE}/api/v1/food?limit=3`, {
           headers: {
-            'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+            'Authorization': `Bearer ${session?.access_token}`
           }
         })
         
@@ -62,7 +62,7 @@ export default function Dashboard() {
         const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
         const response = await fetch(`${API_BASE}/api/v1/users/stats`, {
           headers: {
-            'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+            'Authorization': `Bearer ${session?.access_token}`
           }
         })
         
@@ -117,7 +117,7 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="mb-8 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
         <h1 className="text-3xl font-bold mb-2">
-          Welcome back, {user?.firstName || 'Athlete'}!
+          Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Athlete'}!
         </h1>
         <p className="text-white/90">
           Here's your performance overview for today

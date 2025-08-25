@@ -1,0 +1,51 @@
+# Render Blueprint Specification
+# This file defines how to deploy the Junior Football Nutrition Tracker
+
+services:
+  # Frontend React Application
+  - type: web
+    name: junior-football-nutrition-client
+    runtime: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: client/dist
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Backend Express API
+  - type: web
+    name: junior-football-nutrition-server
+    runtime: node
+    buildCommand: cd server && npm install && npx prisma generate && npm run build
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false  # Set this in Render dashboard
+      - key: SUPABASE_URL
+        sync: false  # Set this in Render dashboard
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false  # Set this in Render dashboard
+      - key: FRONTEND_URL
+        sync: false  # Will be set to the client URL after deployment
+    healthCheckPath: /health

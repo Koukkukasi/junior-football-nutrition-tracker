@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import type {
   NutritionTrend,
   PerformanceCorrelation,
@@ -16,7 +16,7 @@ import type {
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function useAnalyticsData(period: Period) {
-  const { getToken } = useAuth();
+  const { session } = useSupabaseAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -110,7 +110,7 @@ export function useAnalyticsData(period: Period) {
       setError(null);
       
       try {
-        const token = await getToken();
+        const token = session?.access_token;
         await Promise.all([
           fetchNutritionTrends(token),
           fetchCorrelations(token),
@@ -125,7 +125,7 @@ export function useAnalyticsData(period: Period) {
     };
     
     loadData();
-  }, [period, getToken]);
+  }, [period, session?.access_token]);
 
   return {
     loading,

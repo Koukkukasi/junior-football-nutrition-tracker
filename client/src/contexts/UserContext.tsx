@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { useUser, useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from './SupabaseAuthContext';
+import { supabase } from '../lib/supabase';
 import API from '../lib/api';
 
 interface UserProfile {
@@ -77,31 +78,33 @@ const ageGroupRequirements: Record<string, NutritionRequirements> = {
 };
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { user, isLoaded } = useUser();
-  const { getToken } = useAuth();
+  const { user, loading: authLoading } = useSupabaseAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(true); // Add loading state for compatibility
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (isLoaded && user) {
+      if (!authLoading && user) {
         try {
-          // Try to fetch profile from API first
-          const response = await API.users.profile();
+          // Fetch profile from Supabase
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
           
-          if (response.success && response.data) {
-            const dbUser = response.data;
+          if (profileData && !error) {
             const userProfile: UserProfile = {
-              id: dbUser.id,
-              email: dbUser.email,
-              firstName: dbUser.name?.split(' ')[0] || user.firstName || undefined,
-              lastName: dbUser.name?.split(' ')[1] || user.lastName || undefined,
-              age: dbUser.age || 14,
-              ageGroup: dbUser.ageGroup || '13-15',
-              role: dbUser.role || 'PLAYER',
-              teamId: dbUser.teamId || undefined,
-              preferences: dbUser.preferences || {
+              id: profileData.id,
+              email: profileData.email,
+              firstName: profileData.full_name?.split(' ')[0] || undefined,
+              lastName: profileData.full_name?.split(' ')[1] || undefined,
+              age: profileData.age || 14,
+              ageGroup: determineAgeGroup(profileData.age || 14),
+              role: profileData.role || 'PLAYER',
+              teamId: profileData.team || undefined,
+              preferences: {
                 measurementUnit: 'metric',
                 language: 'en',
                 notifications: true
@@ -118,9 +121,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
               // Default profile for new users
               const defaultProfile: UserProfile = {
                 id: user.id,
-                email: user.primaryEmailAddress?.emailAddress || '',
-                firstName: user.firstName || undefined,
-                lastName: user.lastName || undefined,
+                email: user.email || '',
+                firstName: undefined,
+                lastName: undefined,
                 age: 14,
                 ageGroup: '13-15',
                 role: 'PLAYER',
@@ -148,30 +151,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
     };
 
     fetchProfile();
-  }, [isLoaded, user, getToken]);
+  }, [authLoading, user]);
+
+  const determineAgeGroup = (age: number): UserProfile['ageGroup'] => {
+    if (age >= 10 && age <= 12) return '10-12';
+    if (age >= 13 && age <= 15) return '13-15';
+    if (age >= 16 && age <= 18) return '16-18';
+    if (age >= 19 && age <= 25) return '19-25';
+    return age < 10 ? '10-12' : '19-25';
+  };
 
   const updateAge = (age: number) => {
     if (!profile) return;
 
-    // Determine age group
-    let ageGroup: UserProfile['ageGroup'];
-    if (age >= 10 && age <= 12) {
-      ageGroup = '10-12';
-    } else if (age >= 13 && age <= 15) {
-      ageGroup = '13-15';
-    } else if (age >= 16 && age <= 18) {
-      ageGroup = '16-18';
-    } else if (age >= 19 && age <= 25) {
-      ageGroup = '19-25';
-    } else {
-      // Default to closest valid group
-      ageGroup = age < 10 ? '10-12' : '19-25';
-    }
-
     const updatedProfile = {
       ...profile,
       age,
-      ageGroup
+      ageGroup: determineAgeGroup(age)
     };
     
     setProfile(updatedProfile);
