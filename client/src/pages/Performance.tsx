@@ -256,31 +256,136 @@ export default function Performance() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 uppercase tracking-wider mb-3">
-                Recovery Status
+                How Does Your Body Feel Today?
               </label>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 font-medium">Sore</span>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => setFormData({...formData, recoveryLevel: level})}
-                        className={`w-10 h-10 rounded-lg font-bold transition-all transform hover:scale-110 ${
-                          formData.recoveryLevel >= level
-                            ? 'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                        }`}
-                      >
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                  <span className="text-xs text-gray-500 font-medium">Recovered</span>
+                {/* Simple symptom checklist instead of abstract scale */}
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <p className="text-sm text-gray-600 mb-2">Check any that apply:</p>
+                  
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.recoveryNotes?.includes('legs_heavy') || false}
+                      onChange={(e) => {
+                        const notes = formData.recoveryNotes || '';
+                        const updated = e.target.checked 
+                          ? notes + ' legs_heavy' 
+                          : notes.replace(' legs_heavy', '');
+                        setFormData({...formData, recoveryNotes: updated.trim()});
+                      }}
+                      className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500"
+                    />
+                    <span className="text-sm">🦵 My legs feel heavy or tired</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.recoveryNotes?.includes('muscles_sore') || false}
+                      onChange={(e) => {
+                        const notes = formData.recoveryNotes || '';
+                        const updated = e.target.checked 
+                          ? notes + ' muscles_sore' 
+                          : notes.replace(' muscles_sore', '');
+                        setFormData({...formData, recoveryNotes: updated.trim()});
+                      }}
+                      className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500"
+                    />
+                    <span className="text-sm">💪 My muscles are sore</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.recoveryNotes?.includes('hard_to_run') || false}
+                      onChange={(e) => {
+                        const notes = formData.recoveryNotes || '';
+                        const updated = e.target.checked 
+                          ? notes + ' hard_to_run' 
+                          : notes.replace(' hard_to_run', '');
+                        setFormData({...formData, recoveryNotes: updated.trim()});
+                      }}
+                      className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500"
+                    />
+                    <span className="text-sm">🏃 It would be hard to run fast today</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.recoveryNotes?.includes('feel_great') || false}
+                      onChange={(e) => {
+                        const notes = formData.recoveryNotes || '';
+                        const updated = e.target.checked 
+                          ? notes + ' feel_great' 
+                          : notes.replace(' feel_great', '');
+                        setFormData({...formData, recoveryNotes: updated.trim()});
+                        // If feeling great, calculate better recovery level
+                        if (e.target.checked) {
+                          setFormData(prev => ({...prev, recoveryLevel: 5}));
+                        }
+                      }}
+                      className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                    />
+                    <span className="text-sm">✨ I feel great and ready to play!</span>
+                  </label>
                 </div>
                 
-                <label className="flex items-center gap-3">
+                {/* Calculate recovery level based on symptoms */}
+                {(() => {
+                  const notes = formData.recoveryNotes || '';
+                  let recoveryMessage = '';
+                  let recoveryColor = '';
+                  let recoveryEmoji = '';
+                  
+                  // Auto-calculate recovery level based on symptoms
+                  let calculatedLevel = 3; // Default
+                  
+                  if (notes.includes('feel_great')) {
+                    calculatedLevel = 5;
+                    recoveryMessage = 'Excellent recovery! You\'re ready to go!';
+                    recoveryColor = 'text-green-600 bg-green-50';
+                    recoveryEmoji = '🚀';
+                  } else if (notes.includes('legs_heavy') && notes.includes('muscles_sore')) {
+                    calculatedLevel = 2;
+                    recoveryMessage = 'Your body needs more recovery time';
+                    recoveryColor = 'text-orange-600 bg-orange-50';
+                    recoveryEmoji = '⚠️';
+                  } else if (notes.includes('hard_to_run')) {
+                    calculatedLevel = 2;
+                    recoveryMessage = 'Take it easy today, focus on light activity';
+                    recoveryColor = 'text-yellow-600 bg-yellow-50';
+                    recoveryEmoji = '🔋';
+                  } else if (notes.includes('legs_heavy') || notes.includes('muscles_sore')) {
+                    calculatedLevel = 3;
+                    recoveryMessage = 'Some recovery needed, but you can train lightly';
+                    recoveryColor = 'text-blue-600 bg-blue-50';
+                    recoveryEmoji = '💪';
+                  } else {
+                    recoveryMessage = 'Check the boxes that describe how you feel';
+                    recoveryColor = 'text-gray-600 bg-gray-50';
+                    recoveryEmoji = '📝';
+                  }
+                  
+                  // Update recovery level silently
+                  if (formData.recoveryLevel !== calculatedLevel && notes.length > 0) {
+                    setTimeout(() => {
+                      setFormData(prev => ({...prev, recoveryLevel: calculatedLevel}));
+                    }, 0);
+                  }
+                  
+                  return (
+                    <div className={`rounded-lg p-3 ${recoveryColor} border`}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{recoveryEmoji}</span>
+                        <span className="text-sm font-medium">{recoveryMessage}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.hadRecoveryMeal}
@@ -288,17 +393,9 @@ export default function Performance() {
                     className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
                   />
                   <span className="text-sm font-medium text-gray-700">
-                    Had post-practice recovery meal 🏃🥗
+                    I ate something with protein after training 🥛🥜
                   </span>
                 </label>
-                
-                <textarea
-                  value={formData.recoveryNotes}
-                  onChange={(e) => setFormData({...formData, recoveryNotes: e.target.value})}
-                  placeholder="Recovery notes (muscle soreness, fatigue, etc.)"
-                  rows={2}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                />
               </div>
             </div>
 
@@ -426,12 +523,17 @@ export default function Performance() {
                                 <span className="text-xs text-gray-500">({entry.bedTime}-{entry.wakeTime})</span>
                               )}
                             </span>
-                            {entry.recoveryLevel && (
+                            {entry.recoveryNotes && (
                               <>
                                 <span className="text-gray-400">•</span>
                                 <span className="flex items-center gap-1">
-                                  <span>💪</span>
-                                  <span className="font-medium">{entry.recoveryLevel}/5</span>
+                                  {entry.recoveryNotes.includes('feel_great') ? (
+                                    <><span>✨</span><span className="text-xs text-green-600">Great!</span></>
+                                  ) : entry.recoveryNotes.includes('muscles_sore') ? (
+                                    <><span>💪</span><span className="text-xs text-yellow-600">Sore</span></>
+                                  ) : entry.recoveryNotes.includes('legs_heavy') ? (
+                                    <><span>🦵</span><span className="text-xs text-orange-600">Tired</span></>
+                                  ) : null}
                                 </span>
                               </>
                             )}
@@ -457,7 +559,7 @@ export default function Performance() {
                               </span>
                             </div>
                           )}
-                          {entry.recoveryNotes && (
+                          {entry.recoveryNotes && !entry.recoveryNotes.includes('legs_heavy') && !entry.recoveryNotes.includes('muscles_sore') && !entry.recoveryNotes.includes('hard_to_run') && !entry.recoveryNotes.includes('feel_great') && (
                             <p className="text-xs text-gray-600 mt-2 italic">Recovery: {entry.recoveryNotes}</p>
                           )}
                           {entry.notes && (
