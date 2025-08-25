@@ -26,6 +26,7 @@ const CoachDashboard = lazy(() => import('./pages/CoachDashboard'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TeamAccess = lazy(() => import('./pages/TeamAccess'))
+const FCInterSignup = lazy(() => import('./pages/FCInterSignup'))
 
 // Loading component
 function PageLoader() {
@@ -65,6 +66,11 @@ function App() {
         <Route path="/test-icons" element={<IconTest />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/fc-inter-signup" element={
+          <Suspense fallback={<PageLoader />}>
+            <FCInterSignup />
+          </Suspense>
+        } />
         <Route path="/terms" element={
           <Suspense fallback={<PageLoader />}>
             <TermsOfService />
