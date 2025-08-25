@@ -3,9 +3,8 @@
 
 services:
   # Frontend React Application
-  - type: web
+  - type: static
     name: junior-football-nutrition-client
-    runtime: static
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: client/dist
     pullRequestPreviewsEnabled: true
