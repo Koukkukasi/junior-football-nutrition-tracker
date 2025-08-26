@@ -101,6 +101,28 @@ if (!clientBuildPath) {
         console.log('Now serving static files from:', clientBuildPath);
       } else {
         console.log('✗ No dist directory in client');
+        console.log('Attempting to build client now...');
+        
+        // Try to build the client if dist doesn't exist
+        const { execSync } = require('child_process');
+        try {
+          console.log('Installing client dependencies...');
+          execSync('npm install', { cwd: clientPath, stdio: 'inherit' });
+          console.log('Building client...');
+          execSync('npm run build', { cwd: clientPath, stdio: 'inherit' });
+          
+          // Check again for dist
+          if (fs.existsSync(distPath)) {
+            console.log('✓ Build successful! Found dist at:', distPath);
+            clientBuildPath = distPath;
+            app.use(express.static(clientBuildPath));
+            console.log('Now serving static files from:', clientBuildPath);
+          } else {
+            console.log('✗ Build completed but dist still not found');
+          }
+        } catch (buildError) {
+          console.error('Failed to build client:', buildError.message);
+        }
       }
     }
   } catch (e) {
