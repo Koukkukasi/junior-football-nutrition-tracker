@@ -3,10 +3,28 @@
  */
 
 // Use production backend URL when deployed
-const API_BASE = import.meta.env.VITE_API_URL || 
-  (window.location.hostname === 'junior-football-nutrition-client.onrender.com' 
-    ? 'https://junior-football-nutrition-server.onrender.com'
-    : 'http://localhost:3001');
+const getApiBase = () => {
+  // First check if VITE_API_URL is set
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Check if we're on the production client
+  if (window.location.hostname === 'junior-football-nutrition-client.onrender.com') {
+    return 'https://junior-football-nutrition-server.onrender.com';
+  }
+  
+  // For any localhost or development environment, use local backend
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:3001';
+  }
+  
+  // Default to localhost for other cases
+  return 'http://localhost:3001';
+};
+
+const API_BASE = getApiBase();
+console.log('Using API base URL:', API_BASE);
 const REQUEST_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000, 4000]; // 1s, 2s, 4s
