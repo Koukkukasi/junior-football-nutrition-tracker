@@ -20,48 +20,50 @@ import teamRoutes from './routes/team.routes';
 
 const app: Application = express();
 
+// CORS configuration for production
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'https://junior-football-nutrition-client.onrender.com',
+      'https://junior-football-nutrition-tracker.vercel.app',
+      'https://junior-football-nutrition.netlify.app'
+    ];
+    
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(null, true); // For now, allow all origins to debug
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Email'],
+  maxAge: 86400 // 24 hours
+};
+
 // Essential middleware - re-enabled for proper functionality
-app.use(helmet());
-app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
+app.use(cors(corsOptions));
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// TEMPORARILY DISABLE comprehensive request logging to test if it causes issues
-/*
+// Request logging for debugging production issues
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Use ALL output methods to ensure visibility
-  const requestInfo = {
-    method: req.method,
-    url: req.url,
-    path: req.path,
-    timestamp: new Date().toISOString()
-  };
-  
-  // Multiple output methods to catch any suppression
-  console.log('\n🚀 === INCOMING REQUEST ===');
-  console.error('🚀 === INCOMING REQUEST (stderr) ===');
-  console.info('🚀 === INCOMING REQUEST (info) ===');
-  process.stdout.write(`🚀 RAW STDOUT: ${JSON.stringify(requestInfo)}\n`);
-  process.stderr.write(`🚀 RAW STDERR: ${JSON.stringify(requestInfo)}\n`);
-  
-  console.log('Method:', req.method, 'URL:', req.url, 'Path:', req.path);
-  console.error('Method:', req.method, 'URL:', req.url, 'Path:', req.path);
-  
-  console.log('Headers:', {
-    authorization: req.headers.authorization ? 'Bearer [TOKEN]' : 'NONE',
-    'content-type': req.headers['content-type'],
-    'user-agent': req.headers['user-agent']?.substring(0, 50) + '...',
-    origin: req.headers.origin
+  // Simple logging for production debugging
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`, {
+    origin: req.headers.origin,
+    hasAuth: !!req.headers.authorization
   });
-  console.log('Body keys:', Object.keys(req.body || {}));
-  console.log('=== END REQUEST LOG ===\n');
-  
-  // Also add a header to prove middleware is executing
-  res.set('X-Request-Logged', 'true');
   next();
 });
-*/
 
 // Health check endpoints
 app.get('/health', (_req: Request, res: Response) => {
