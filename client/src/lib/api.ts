@@ -2,7 +2,11 @@
  * API utility functions and configuration with retry logic and timeout handling
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use production backend URL when deployed
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (window.location.hostname === 'junior-football-nutrition-client.onrender.com' 
+    ? 'https://junior-football-nutrition-server.onrender.com'
+    : 'http://localhost:3001');
 const REQUEST_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000, 4000]; // 1s, 2s, 4s

@@ -47,59 +47,36 @@ export default function FoodLog() {
   const fetchFoodEntries = async () => {
     try {
       setLoading(true);
-      // Use Supabase API directly to fetch entries
-      const response = await supabaseAPI.food.getEntries();
+      // Use backend API to fetch entries (properly configured)
+      const response = await API.food.entries();
       if (response.success && response.data) {
-        // Filter for today's entries and transform the data
+        const foodData = response.data.data || response.data;
         const today = new Date().toDateString();
-        const todayData = (Array.isArray(response.data) ? response.data : [])
-          .filter((entry: any) => {
-            // Handle created_at field from Supabase
-            return new Date(entry.created_at).toDateString() === today;
-          })
-          .map((entry: any) => ({
-            id: entry.id,
-            mealType: entry.meal_type, // Convert from snake_case
-            time: entry.time || '',
-            location: entry.location || '',
-            description: entry.description,
-            notes: entry.notes || '',
-            quality: analyzeFoodQuality(
-              entry.description, 
-              'regular',
-              profile?.age,
-              profile?.ageGroup
-            ).quality
-          }));
+        const todayData = (Array.isArray(foodData) ? foodData : []).filter((entry: any) => {
+          return new Date(entry.date || entry.created_at || entry.createdAt).toDateString() === today;
+        }).map((entry: any) => ({
+          id: entry.id,
+          mealType: entry.mealType || entry.meal_type,
+          time: entry.time || '',
+          location: entry.location || '',
+          description: entry.description,
+          notes: entry.notes || '',
+          quality: analyzeFoodQuality(
+            entry.description, 
+            'regular',
+            profile?.age,
+            profile?.ageGroup
+          ).quality
+        }));
         setTodayEntries(todayData);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch food entries:', err);
-      // Try fallback to API if Supabase fails
-      try {
-        const response = await API.food.entries();
-        if (response.success && response.data) {
-          const foodData = response.data.data || response.data;
-          const today = new Date().toDateString();
-          const todayData = (Array.isArray(foodData) ? foodData : []).filter((entry: any) => {
-            return new Date(entry.date || entry.created_at).toDateString() === today;
-          }).map((entry: any) => ({
-            id: entry.id,
-            mealType: entry.mealType || entry.meal_type,
-            time: entry.time || '',
-            location: entry.location || '',
-            description: entry.description,
-            notes: entry.notes || '',
-            quality: analyzeFoodQuality(
-              entry.description, 
-              'regular',
-              profile?.age,
-              profile?.ageGroup
-            ).quality
-          }));
-          setTodayEntries(todayData);
-        }
-      } catch (apiErr) {
+      // Check if it's an auth error
+      if (err.code === 'NO_TOKEN' || err.message?.includes('not authenticated')) {
+        // User might not be logged in, just show empty state
+        setTodayEntries([]);
+      } else {
         error('Failed to load meals', 'Please try refreshing the page');
       }
     } finally {
@@ -127,24 +104,25 @@ export default function FoodLog() {
       // let saveError = null; // Currently unused but might be needed for debugging
       
       try {
-        // Use Supabase directly for data persistence (primary method)
-        console.log('Attempting to save via Supabase...');
-        response = await supabaseAPI.food.create({
-          ...formData
+        // Use backend API for data persistence (properly configured with authentication)
+        console.log('Attempting to save via backend API...');
+        response = await API.food.create({
+          ...formData,
+          date: new Date().toISOString() // Add date field for backend
         });
-        console.log('Supabase save successful:', response);
-      } catch (supabaseError: any) {
-        console.error('Supabase save failed:', supabaseError);
+        console.log('Backend API save response:', response);
+      } catch (apiError: any) {
+        console.error('Backend API save failed:', apiError);
         
         // Check if it's an authentication error
-        if (supabaseError.message?.includes('not authenticated')) {
+        if (apiError.message?.includes('not authenticated') || apiError.code === 'NO_TOKEN') {
           error('Authentication Required', 'Please sign in to save your meals');
           navigate('/auth/signin');
           return;
         }
         
         // For other errors, show a generic message
-        throw new Error(supabaseError.message || 'Unable to save meal. Please try again.');
+        throw new Error(apiError.message || 'Unable to save meal. Please try again.');
       }
       
       // WAIT for actual confirmation with proper validation
