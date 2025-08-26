@@ -1,6 +1,7 @@
 // Production server that connects directly to Supabase (no Prisma/Docker required)
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -52,14 +53,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({ 
-    name: 'Junior Football Nutrition Tracker API',
-    status: 'running',
-    endpoints: ['/health', '/api/v1/health', '/api/v1/food']
-  });
-});
+// Serve static files from the React app build directory
+const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientBuildPath));
+console.log('Serving static files from:', clientBuildPath);
 
 // Health check endpoints
 app.get('/health', (req, res) => {
@@ -143,46 +140,12 @@ app.post('/api/v1/food', async (req, res) => {
     console.log('Data:', { mealType, time, description });
 
     // Convert mealType to match database constraint exactly
-    // Frontend sends: BREAKFAST, MORNING_SNACK, LUNCH, EVENING_SNACK, DINNER
-    // Database might expect specific values - let's check what was sent
+    // Frontend sends: BREAKFAST, SNACK, LUNCH, DINNER, PRE_GAME, POST_GAME
+    // Database expects: BREAKFAST, SNACK, LUNCH, DINNER, PRE_GAME, POST_GAME
     console.log('Raw mealType received from frontend:', mealType);
     
-    let normalizedMealType;
-    
-    if (!mealType) {
-      normalizedMealType = 'Breakfast'; // Try with capital first letter
-    } else {
-      // Try different formats to see what works
-      const upperMealType = mealType.toUpperCase();
-      
-      // Map to exact database format - use all lowercase with underscores
-      switch(upperMealType) {
-        case 'BREAKFAST':
-          normalizedMealType = 'breakfast';
-          break;
-        case 'MORNING_SNACK':
-        case 'MORNING SNACK':
-          normalizedMealType = 'morning_snack';
-          break;
-        case 'LUNCH':
-          normalizedMealType = 'lunch';
-          break;
-        case 'EVENING_SNACK':
-        case 'EVENING SNACK':
-          normalizedMealType = 'evening_snack';
-          break;
-        case 'DINNER':
-          normalizedMealType = 'dinner';
-          break;
-        case 'SNACK':
-          normalizedMealType = 'morning_snack';  // Default snack to morning
-          break;
-        default:
-          // If nothing matches, try the original value
-          normalizedMealType = 'breakfast';
-          console.warn('Unknown meal type:', mealType, '- defaulting to breakfast');
-      }
-    }
+    // The database expects uppercase values with underscores
+    const normalizedMealType = mealType ? mealType.toUpperCase() : 'BREAKFAST';
 
     // Combine today's date with the provided time for created_at
     const today = new Date();
@@ -228,13 +191,25 @@ app.post('/api/v1/food', async (req, res) => {
   }
 });
 
-// Catch all other routes - using simple function to avoid path-to-regexp issues
-app.use((req, res) => {
-  res.status(404).json({ 
-    error: 'Not found', 
-    message: `Route ${req.originalUrl} not found`,
-    availableEndpoints: ['/', '/health', '/api/v1/health', '/api/v1/food'] 
-  });
+// The "catchall" handler: for any request that doesn't match API routes,
+// send back the React app's index.html file.
+app.get('*', (req, res) => {
+  const indexPath = path.join(clientBuildPath, 'index.html');
+  const fs = require('fs');
+  
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // Fallback to API info if no frontend is built
+    res.status(404).json({ 
+      error: 'Frontend not found', 
+      message: 'Please ensure the client is built (npm run build)',
+      api: {
+        status: 'running',
+        endpoints: ['/health', '/api/v1/health', '/api/v1/food']
+      }
+    });
+  }
 });
 
 // Error handling middleware
