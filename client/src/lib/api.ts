@@ -9,9 +9,15 @@ const getApiBase = () => {
     return import.meta.env.VITE_API_URL;
   }
   
-  // Check if we're on the production client
-  if (window.location.hostname === 'junior-football-nutrition-client.onrender.com') {
-    return 'https://junior-football-nutrition-server.onrender.com';
+  // Check if we're on any Render deployment
+  if (window.location.hostname.includes('onrender.com')) {
+    // Use same origin - backend is served from same domain
+    return '';
+  }
+  
+  // Check if we're on Vercel or Netlify
+  if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('netlify.app')) {
+    return 'https://junior-football-nutrition-tracker.onrender.com';
   }
   
   // For any localhost or development environment, use local backend
@@ -19,8 +25,8 @@ const getApiBase = () => {
     return 'http://localhost:3001';
   }
   
-  // Default to localhost for other cases
-  return 'http://localhost:3001';
+  // Default to same origin for production
+  return '';
 };
 
 const API_BASE = getApiBase();
