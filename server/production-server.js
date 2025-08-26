@@ -184,8 +184,8 @@ app.post('/api/v1/food', async (req, res) => {
   }
 });
 
-// Catch all other routes
-app.use('*', (req, res) => {
+// Catch all other routes - using simple function to avoid path-to-regexp issues
+app.use((req, res) => {
   res.status(404).json({ 
     error: 'Not found', 
     message: `Route ${req.originalUrl} not found`,
