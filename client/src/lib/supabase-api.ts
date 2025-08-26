@@ -86,7 +86,10 @@ export const supabaseAPI = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase food.create error:', error);
+        throw error;
+      }
       return { success: true, data };
     },
 

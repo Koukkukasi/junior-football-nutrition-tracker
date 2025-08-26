@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Calendar, Info } from 'lucide-react';
 import { analyzeFoodQuality, totalKeywordCount } from '../lib/food-database';
 import { useUserProfile } from '../contexts/UserContext';
@@ -25,6 +26,7 @@ import { supabaseAPI } from '../lib/supabase-api';
 export default function FoodLog() {
   const { profile } = useUserProfile();
   const { success, error } = useToast();
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [todayEntries, setTodayEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,29 +127,24 @@ export default function FoodLog() {
       // let saveError = null; // Currently unused but might be needed for debugging
       
       try {
-        // Use Supabase directly for data persistence
+        // Use Supabase directly for data persistence (primary method)
         console.log('Attempting to save via Supabase...');
         response = await supabaseAPI.food.create({
           ...formData
         });
         console.log('Supabase save successful:', response);
-      } catch (supabaseError) {
-        console.log('Supabase failed:', supabaseError);
-        // saveError = supabaseError;
+      } catch (supabaseError: any) {
+        console.error('Supabase save failed:', supabaseError);
         
-        // Try backend API as fallback
-        try {
-          console.log('Attempting to save via backend API...');
-          response = await API.food.create({
-            ...formData
-          });
-          console.log('Backend API save successful:', response);
-          // saveError = null; // Clear error if backend succeeds
-        } catch (apiError) {
-          console.log('Backend API also failed:', apiError);
-          // Both methods failed
-          throw new Error('Unable to save meal. Please check your internet connection.');
+        // Check if it's an authentication error
+        if (supabaseError.message?.includes('not authenticated')) {
+          error('Authentication Required', 'Please sign in to save your meals');
+          navigate('/auth/signin');
+          return;
         }
+        
+        // For other errors, show a generic message
+        throw new Error(supabaseError.message || 'Unable to save meal. Please try again.');
       }
       
       // WAIT for actual confirmation with proper validation
