@@ -30,7 +30,7 @@ services:
   - type: web
     name: junior-football-nutrition-server
     runtime: node
-    buildCommand: cd server && npm install && npx prisma generate && npm run build
+    buildCommand: cd server && npm install && npm run build
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
