@@ -54,9 +54,35 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from the React app build directory
-const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
-app.use(express.static(clientBuildPath));
-console.log('Serving static files from:', clientBuildPath);
+// Try multiple possible paths since Render's structure might vary
+const possiblePaths = [
+  path.join(__dirname, '..', 'client', 'dist'),  // From server directory
+  path.join(__dirname, '..', '..', 'client', 'dist'),  // From deeper directory
+  path.join(process.cwd(), 'client', 'dist'),  // From working directory
+  '/opt/render/project/src/client/dist'  // Absolute Render path
+];
+
+let clientBuildPath = null;
+const fs = require('fs');
+
+for (const testPath of possiblePaths) {
+  console.log('Checking path:', testPath);
+  if (fs.existsSync(testPath)) {
+    clientBuildPath = testPath;
+    console.log('✓ Found client build at:', clientBuildPath);
+    break;
+  }
+}
+
+if (!clientBuildPath) {
+  console.error('✗ Client build directory not found in any of:', possiblePaths);
+  console.log('Current directory:', __dirname);
+  console.log('Working directory:', process.cwd());
+  console.log('Directory contents:', fs.readdirSync(process.cwd()));
+} else {
+  app.use(express.static(clientBuildPath));
+  console.log('Serving static files from:', clientBuildPath);
+}
 
 // Health check endpoints
 app.get('/health', (req, res) => {
@@ -194,16 +220,30 @@ app.post('/api/v1/food', async (req, res) => {
 // The "catchall" handler: for any request that doesn't match API routes,
 // send back the React app's index.html file.
 app.get('*', (req, res) => {
-  const indexPath = path.join(clientBuildPath, 'index.html');
-  const fs = require('fs');
-  
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
+  if (clientBuildPath) {
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).json({ 
+        error: 'index.html not found', 
+        message: `Build directory exists at ${clientBuildPath} but index.html is missing`,
+        api: {
+          status: 'running',
+          endpoints: ['/health', '/api/v1/health', '/api/v1/food']
+        }
+      });
+    }
   } else {
     // Fallback to API info if no frontend is built
     res.status(404).json({ 
       error: 'Frontend not found', 
       message: 'Please ensure the client is built (npm run build)',
+      debug: {
+        currentDir: __dirname,
+        workingDir: process.cwd(),
+        checkedPaths: possiblePaths
+      },
       api: {
         status: 'running',
         endpoints: ['/health', '/api/v1/health', '/api/v1/food']
