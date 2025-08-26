@@ -1,6 +1,6 @@
 import { Router, Response, Request } from 'express';
 import { prisma } from '../db';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth } from '../middleware/supabase-auth';
 import { requireAdmin } from '../middleware/roleAuth';
 import { AuthRequest } from '../types/auth.types';
 import nodemailer from 'nodemailer';

@@ -12,6 +12,7 @@ import { FoodEntryFormValidated } from '../components/food/FoodEntryFormValidate
 import { FoodEntryCard } from '../components/food/FoodEntryCard';
 import { NutritionScoreDisplay } from '../components/food/NutritionScoreDisplay';
 import { SkeletonFoodEntry } from '../components/ui/SkeletonLoader';
+import { calculateDailyXP } from '../lib/gamification';
 import { 
   getMealTiming, 
   calculateNutritionScore, 
@@ -19,6 +20,7 @@ import {
 } from '../utils/foodUtils';
 import type { FoodEntry, FoodFormData } from '../types/food.types';
 import API from '../lib/api';
+import { supabaseAPI } from '../lib/supabase-api';
 
 export default function FoodLog() {
   const { profile } = useUserProfile();
@@ -43,34 +45,61 @@ export default function FoodLog() {
   const fetchFoodEntries = async () => {
     try {
       setLoading(true);
-      const response = await API.food.entries();
+      // Use Supabase API directly to fetch entries
+      const response = await supabaseAPI.food.getEntries();
       if (response.success && response.data) {
-        // Handle the nested data structure
-        const foodData = response.data.data || response.data;
-        
-        // Filter for today's entries
+        // Filter for today's entries and transform the data
         const today = new Date().toDateString();
-        const todayData = (Array.isArray(foodData) ? foodData : []).filter((entry: any) => {
-          return new Date(entry.date).toDateString() === today;
-        }).map((entry: any) => ({
-          id: entry.id,
-          mealType: entry.mealType,
-          time: entry.time,
-          location: entry.location,
-          description: entry.description,
-          notes: entry.notes,
-          quality: analyzeFoodQuality(
-            entry.description, 
-            'regular',
-            profile?.age,
-            profile?.ageGroup
-          ).quality
-        }));
+        const todayData = (Array.isArray(response.data) ? response.data : [])
+          .filter((entry: any) => {
+            // Handle created_at field from Supabase
+            return new Date(entry.created_at).toDateString() === today;
+          })
+          .map((entry: any) => ({
+            id: entry.id,
+            mealType: entry.meal_type, // Convert from snake_case
+            time: entry.time || '',
+            location: entry.location || '',
+            description: entry.description,
+            notes: entry.notes || '',
+            quality: analyzeFoodQuality(
+              entry.description, 
+              'regular',
+              profile?.age,
+              profile?.ageGroup
+            ).quality
+          }));
         setTodayEntries(todayData);
       }
     } catch (err) {
       console.error('Failed to fetch food entries:', err);
-      error('Failed to load meals', 'Please try refreshing the page');
+      // Try fallback to API if Supabase fails
+      try {
+        const response = await API.food.entries();
+        if (response.success && response.data) {
+          const foodData = response.data.data || response.data;
+          const today = new Date().toDateString();
+          const todayData = (Array.isArray(foodData) ? foodData : []).filter((entry: any) => {
+            return new Date(entry.date || entry.created_at).toDateString() === today;
+          }).map((entry: any) => ({
+            id: entry.id,
+            mealType: entry.mealType || entry.meal_type,
+            time: entry.time || '',
+            location: entry.location || '',
+            description: entry.description,
+            notes: entry.notes || '',
+            quality: analyzeFoodQuality(
+              entry.description, 
+              'regular',
+              profile?.age,
+              profile?.ageGroup
+            ).quality
+          }));
+          setTodayEntries(todayData);
+        }
+      } catch (apiErr) {
+        error('Failed to load meals', 'Please try refreshing the page');
+      }
     } finally {
       setLoading(false);
     }
@@ -91,32 +120,72 @@ export default function FoodLog() {
     );
     
     try {
-      // Save to database
-      const response = await API.food.create({
-        ...formData,
-        date: new Date().toISOString()
-      });
+      // Try Supabase first, then backend API as fallback
+      let response;
+      let saveError = null;
       
-      // WAIT for actual backend confirmation with proper validation
-      if (response.success && response.data) {
+      try {
+        // Use Supabase directly for data persistence
+        console.log('Attempting to save via Supabase...');
+        response = await supabaseAPI.food.create({
+          ...formData,
+          mealType: formData.mealType,
+          date: new Date().toISOString()
+        });
+        console.log('Supabase save successful:', response);
+      } catch (supabaseError) {
+        console.log('Supabase failed:', supabaseError);
+        saveError = supabaseError;
+        
+        // Try backend API as fallback
+        try {
+          console.log('Attempting to save via backend API...');
+          response = await API.food.create({
+            ...formData,
+            date: new Date().toISOString()
+          });
+          console.log('Backend API save successful:', response);
+          saveError = null; // Clear error if backend succeeds
+        } catch (apiError) {
+          console.log('Backend API also failed:', apiError);
+          // Both methods failed
+          throw new Error('Unable to save meal. Please check your internet connection.');
+        }
+      }
+      
+      // WAIT for actual confirmation with proper validation
+      if (response && response.success && response.data) {
         const newEntry: FoodEntry = {
           id: response.data.id || response.data, // Handle both nested and direct response formats
           ...formData,
           quality: analysis.quality
         };
         
-        // Only update UI after confirmed backend success
+        // Only update UI after confirmed success
         setTodayEntries([...todayEntries, newEntry]);
         
-        // Show success toast with quality feedback
+        // Also refresh from database to ensure consistency
+        setTimeout(fetchFoodEntries, 500);
+        
+        // Calculate and update XP
+        const nutritionScoreData = calculateNutritionScore([...todayEntries, newEntry]);
+        const xpEarned = calculateDailyXP(nutritionScoreData.totalScore, todayEntries.length + 1);
+        
+        // Update user stats with XP (fire and forget, don't wait)
+        supabaseAPI.userStats.addXP(xpEarned, true, nutritionScoreData.totalScore >= 80).catch(err => {
+          // Silently fail if gamification isn't set up yet
+          console.log('Gamification not set up yet - run setup-gamification.sql in Supabase');
+        });
+        
+        // Show success toast with quality feedback and XP
         const qualityMessages = {
-          excellent: 'Excellent choice! Keep it up! 🌟',
-          good: 'Good meal! Well done! 👍',
-          fair: 'Decent choice. Consider adding more nutritious foods.',
-          poor: 'Try to make healthier choices next time.'
+          excellent: `Excellent choice! +${xpEarned} XP 🌟`,
+          good: `Good meal! +${xpEarned} XP 👍`,
+          fair: `Decent choice. +${xpEarned} XP`,
+          poor: `Try healthier choices. +${xpEarned} XP`
         };
         
-        success('Meal saved successfully!', qualityMessages[analysis.quality]);
+        success('Meal saved!', qualityMessages[analysis.quality]);
         
         // Reset form and close only after success
         setFormData({
@@ -142,7 +211,8 @@ export default function FoodLog() {
     }
   };
 
-  const nutritionScore = calculateNutritionScore(todayEntries);
+  const nutritionScoreData = calculateNutritionScore(todayEntries);
+  const nutritionScore = nutritionScoreData.totalScore || 0;
   const currentHour = new Date().getHours();
   const recommendations = getTimeBasedRecommendations(currentHour);
 
@@ -231,7 +301,7 @@ export default function FoodLog() {
         {/* Right Column - Score and Recommendations */}
         <div className="space-y-6">
           {/* Nutrition Score */}
-          <NutritionScoreDisplay score={nutritionScore} />
+          <NutritionScoreDisplay score={nutritionScoreData} />
           
           {/* Recommendations */}
           <div className="bg-white rounded-xl shadow-lg p-6">

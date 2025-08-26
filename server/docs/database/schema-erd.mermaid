@@ -1,0 +1,15 @@
+graph TD
+  User["<b>User</b><br/>id: String<br/>clerkId: String<br/>supabaseId: String<br/>email: String<br/>name: String<br/>age: Int<br/>role: UserRole<br/>position: PlayerPosition<br/>parentEmail: String<br/>dataConsent: Boolean<br/>teamId: String<br/>team: Team<br/>ageGroup: String<br/>goals: String[]<br/>trainingDaysPerWeek: Int<br/>completedOnboarding: Boolean<br/>onboardingDate: DateTime<br/>preferences: Json<br/>foodEntries: FoodEntry[]<br/>performanceMetrics: PerformanceMetric[]<br/>teams: TeamMember[]<br/>nutritionGoals: NutritionGoal[]<br/>achievements: Achievement[]<br/>createdAt: DateTime<br/>updatedAt: DateTime<br/>deletedAt: DateTime"]
+  Team["<b>Team</b><br/>id: String<br/>name: String<br/>inviteCode: String<br/>description: String<br/>coachId: String<br/>players: User[]<br/>members: TeamMember[]<br/>createdAt: DateTime<br/>updatedAt: DateTime"]
+  TeamMember["<b>TeamMember</b><br/>id: String<br/>userId: String<br/>user: User<br/>teamId: String<br/>team: Team<br/>role: String<br/>joinedAt: DateTime"]
+  FoodEntry["<b>FoodEntry</b><br/>id: String<br/>userId: String<br/>user: User<br/>date: DateTime<br/>mealType: MealType<br/>time: String<br/>location: String<br/>description: String<br/>notes: String<br/>nutritionScore: Int<br/>quality: String<br/>calories: Int<br/>protein: Int<br/>carbs: Int<br/>fats: Int<br/>createdAt: DateTime<br/>updatedAt: DateTime"]
+  PerformanceMetric["<b>PerformanceMetric</b><br/>id: String<br/>userId: String<br/>user: User<br/>date: DateTime<br/>energyLevel: Int<br/>sleepHours: Float<br/>bedTime: String<br/>wakeTime: String<br/>isTrainingDay: Boolean<br/>trainingType: String<br/>matchDay: Boolean<br/>recoveryLevel: Int<br/>hadRecoveryMeal: Boolean<br/>recoveryNotes: String<br/>notes: String<br/>createdAt: DateTime<br/>updatedAt: DateTime"]
+  NutritionGoal["<b>NutritionGoal</b><br/>id: String<br/>userId: String<br/>user: User<br/>goalType: String<br/>targetValue: Float<br/>unit: String<br/>startDate: DateTime<br/>endDate: DateTime<br/>isActive: Boolean<br/>progress: Float<br/>createdAt: DateTime<br/>updatedAt: DateTime"]
+  Achievement["<b>Achievement</b><br/>id: String<br/>userId: String<br/>user: User<br/>type: String<br/>name: String<br/>description: String<br/>icon: String<br/>earnedAt: DateTime<br/>metadata: Json"]
+  FoodLibrary["<b>FoodLibrary</b><br/>id: String<br/>name: String<br/>nameFi: String<br/>category: String<br/>subcategory: String<br/>nutritionData: Json<br/>servingSizes: Json<br/>isNordic: Boolean<br/>isVerified: Boolean<br/>tags: String[]<br/>barcode: String<br/>brand: String<br/>createdAt: DateTime<br/>updatedAt: DateTime"]
+  Model --- User
+  Model --- Team
+  Model --- User
+  Model --- User
+  Model --- User
+  Model --- User

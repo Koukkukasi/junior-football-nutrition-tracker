@@ -14,14 +14,18 @@ export const requireAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    console.log('=== SUPABASE AUTH MIDDLEWARE START ===');
-    console.log('Request path:', req.path, 'Method:', req.method);
+    // Force output to ensure we see logs
+    process.stdout.write(`\n=== SUPABASE AUTH MIDDLEWARE START ===\n`);
+    process.stdout.write(`Request path: ${req.path}, Method: ${req.method}\n`);
+    process.stdout.write(`NODE_ENV: ${process.env.NODE_ENV}\n`);
     
     const authHeader = req.headers.authorization;
     const token = authHeader?.replace('Bearer ', '');
+    process.stdout.write(`Auth header: ${authHeader}\n`);
+    process.stdout.write(`Token: ${token}\n`);
     
     if (!token) {
-      console.log('No authorization token provided');
+      process.stdout.write('No authorization token provided\n');
       res.status(401).json({ 
         success: false,
         error: 'No authorization token provided',
@@ -35,7 +39,24 @@ export const requireAuth = async (
     let decoded: any = null;
 
     // Check if it's a test token (development only)
-    if (process.env.NODE_ENV === 'development' && token === 'test_token') {
+    if (process.env.NODE_ENV === 'development' && token === 'test-supabase-123') {
+      // Use our test user created in the database
+      userId = 'test-supabase-123';
+      userEmail = 'testplayer@example.com';
+      
+      // Look up the test user in the database
+      const testUser = await prisma.user.findUnique({
+        where: { supabaseId: userId }
+      });
+      
+      if (testUser) {
+        req.userId = userId;
+        req.dbUserId = testUser.id;
+        console.log('Test token authenticated:', { supabaseId: userId, dbUserId: testUser.id });
+        next();
+        return;
+      }
+    } else if (process.env.NODE_ENV === 'development' && token === 'test_token') {
       userId = 'test_user_123';
       userEmail = 'test@example.com';
     } else {

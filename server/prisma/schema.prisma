@@ -31,8 +31,8 @@ enum MealType {
 
 model User {
   id                   String           @id @default(uuid())
-  clerkId              String           @unique
-  supabaseId           String?          @unique  // New field for Supabase authentication
+  clerkId              String?          @unique  // Legacy field, now optional
+  supabaseId           String?          @unique  // Primary authentication field for Supabase
   email                String           @unique
   name                 String
   age                  Int
@@ -55,6 +55,8 @@ model User {
   foodEntries          FoodEntry[]
   performanceMetrics   PerformanceMetric[]
   teams                TeamMember[]
+  nutritionGoals       NutritionGoal[]
+  achievements         Achievement[]
   
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
@@ -142,4 +144,61 @@ model PerformanceMetric {
   @@unique([userId, date])
   @@index([userId, date])
   @@index([date])
+}
+
+model NutritionGoal {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  goalType    String    // 'daily_calories', 'protein_intake', 'carbs_intake', 'water_intake'
+  targetValue Float     // Target value for the goal
+  unit        String    // 'calories', 'grams', 'liters', etc.
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  progress    Float     @default(0) // Current progress towards goal
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([goalType])
+  @@index([isActive])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // 'streak', 'nutrition_score', 'consistency', 'milestone'
+  name        String   // Achievement name
+  description String   // Achievement description
+  icon        String?  // Icon identifier for UI
+  earnedAt    DateTime @default(now())
+  metadata    Json?    // Additional achievement data (streak count, score, etc.)
+  
+  @@index([userId])
+  @@index([type])
+  @@index([earnedAt])
+}
+
+model FoodLibrary {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  nameFi        String?  // Finnish name
+  category      String   // 'protein', 'carbs', 'vegetables', 'fruits', 'dairy', 'snacks'
+  subcategory   String?  // More specific categorization
+  nutritionData Json     // Detailed nutrition info per 100g
+  servingSizes  Json?    // Common serving sizes
+  isNordic      Boolean  @default(false) // Nordic/Finnish food
+  isVerified    Boolean  @default(false) // Verified by nutritionist
+  tags          String[] // Tags for search and filtering
+  barcode       String?  // Product barcode if applicable
+  brand         String?  // Brand name if applicable
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@index([isNordic])
+  @@index([isVerified])
+  @@index([name])
 }

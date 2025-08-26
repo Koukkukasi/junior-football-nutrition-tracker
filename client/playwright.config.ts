@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5174',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -51,7 +51,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'npm run dev',
-      port: 5173,
+      port: 5174,
       reuseExistingServer: !process.env.CI,
       stdout: 'pipe',
       stderr: 'pipe',

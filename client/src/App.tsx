@@ -145,6 +145,13 @@ function App() {
               </Suspense>
             </ProtectedRoute>
           } />
+          <Route path="/coach-dashboard" element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <CoachDashboard />
+              </Suspense>
+            </ProtectedRoute>
+          } />
           <Route path="/admin/invite" element={
             <ProtectedRoute>
               <AdminOnly>

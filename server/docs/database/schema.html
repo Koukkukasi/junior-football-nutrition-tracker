@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Database Schema Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    h2 { color: #666; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    h3 { color: #888; }
+    table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    .check { color: green; }
+  </style>
+</head>
+<body>
+  <h1>Database Schema Documentation</h1>
+  <p>Generated: 2025-08-25T21:13:13.010Z</p>
+  <p>Version: 1.0.0</p>
+<h2>Models</h2><h3>User</h3><p>Represents a user in the system (player, coach, or admin)</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>clerkId</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td>clerkId</td>
+        </tr><tr>
+          <td>supabaseId</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td>supabaseId</td>
+        </tr><tr>
+          <td>email</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td>User email address</td>
+        </tr><tr>
+          <td>name</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Display name</td>
+        </tr><tr>
+          <td>age</td>
+          <td>Int</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>User age in years</td>
+        </tr><tr>
+          <td>role</td>
+          <td>UserRole</td>
+          <td></td>
+          <td></td>
+          <td>PLAYER</td>
+          <td>User role in the system</td>
+        </tr><tr>
+          <td>position</td>
+          <td>PlayerPosition</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>Player position on the field</td>
+        </tr><tr>
+          <td>parentEmail</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>parentEmail</td>
+        </tr><tr>
+          <td>dataConsent</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>dataConsent</td>
+        </tr><tr>
+          <td>teamId</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>Reference to team</td>
+        </tr><tr>
+          <td>team</td>
+          <td>Team</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>team</td>
+        </tr><tr>
+          <td>ageGroup</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>ageGroup</td>
+        </tr><tr>
+          <td>goals</td>
+          <td>String[]</td>
+          <td></td>
+          <td></td>
+          <td>[]</td>
+          <td>goals</td>
+        </tr><tr>
+          <td>trainingDaysPerWeek</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td>3</td>
+          <td>trainingDaysPerWeek</td>
+        </tr><tr>
+          <td>completedOnboarding</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>completedOnboarding</td>
+        </tr><tr>
+          <td>onboardingDate</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>onboardingDate</td>
+        </tr><tr>
+          <td>preferences</td>
+          <td>Json</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>preferences</td>
+        </tr><tr>
+          <td>foodEntries</td>
+          <td>FoodEntry[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>foodEntries</td>
+        </tr><tr>
+          <td>performanceMetrics</td>
+          <td>PerformanceMetric[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>performanceMetrics</td>
+        </tr><tr>
+          <td>teams</td>
+          <td>TeamMember[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>teams</td>
+        </tr><tr>
+          <td>nutritionGoals</td>
+          <td>NutritionGoal[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>nutritionGoals</td>
+        </tr><tr>
+          <td>achievements</td>
+          <td>Achievement[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>achievements</td>
+        </tr><tr>
+          <td>createdAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>Record creation timestamp</td>
+        </tr><tr>
+          <td>updatedAt</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Last update timestamp</td>
+        </tr><tr>
+          <td>deletedAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>deletedAt</td>
+        </tr></table><h3>Team</h3><p>Represents a football team</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>name</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Display name</td>
+        </tr><tr>
+          <td>inviteCode</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>cuid(</td>
+          <td>inviteCode</td>
+        </tr><tr>
+          <td>description</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>description</td>
+        </tr><tr>
+          <td>coachId</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>coachId</td>
+        </tr><tr>
+          <td>players</td>
+          <td>User[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>players</td>
+        </tr><tr>
+          <td>members</td>
+          <td>TeamMember[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>members</td>
+        </tr><tr>
+          <td>createdAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>Record creation timestamp</td>
+        </tr><tr>
+          <td>updatedAt</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Last update timestamp</td>
+        </tr></table><h3>TeamMember</h3><p>Junction table for user-team relationships</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>userId</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Reference to user</td>
+        </tr><tr>
+          <td>user</td>
+          <td>User</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>user</td>
+        </tr><tr>
+          <td>teamId</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Reference to team</td>
+        </tr><tr>
+          <td>team</td>
+          <td>Team</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>team</td>
+        </tr><tr>
+          <td>role</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td>"PLAYER"</td>
+          <td>User role in the system</td>
+        </tr><tr>
+          <td>joinedAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>joinedAt</td>
+        </tr></table><h3>FoodEntry</h3><p>Records food consumption entries with nutrition analysis</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>userId</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Reference to user</td>
+        </tr><tr>
+          <td>user</td>
+          <td>User</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>user</td>
+        </tr><tr>
+          <td>date</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Date of entry</td>
+        </tr><tr>
+          <td>mealType</td>
+          <td>MealType</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Type of meal</td>
+        </tr><tr>
+          <td>time</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>time</td>
+        </tr><tr>
+          <td>location</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>location</td>
+        </tr><tr>
+          <td>description</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>description</td>
+        </tr><tr>
+          <td>notes</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>notes</td>
+        </tr><tr>
+          <td>nutritionScore</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>Calculated nutrition score (0-100)</td>
+        </tr><tr>
+          <td>quality</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>quality</td>
+        </tr><tr>
+          <td>calories</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>calories</td>
+        </tr><tr>
+          <td>protein</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>protein</td>
+        </tr><tr>
+          <td>carbs</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>carbs</td>
+        </tr><tr>
+          <td>fats</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>fats</td>
+        </tr><tr>
+          <td>createdAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>Record creation timestamp</td>
+        </tr><tr>
+          <td>updatedAt</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Last update timestamp</td>
+        </tr></table><h3>PerformanceMetric</h3><p>Tracks daily performance and recovery metrics</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>userId</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Reference to user</td>
+        </tr><tr>
+          <td>user</td>
+          <td>User</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>user</td>
+        </tr><tr>
+          <td>date</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Date of entry</td>
+        </tr><tr>
+          <td>energyLevel</td>
+          <td>Int</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>energyLevel</td>
+        </tr><tr>
+          <td>sleepHours</td>
+          <td>Float</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>sleepHours</td>
+        </tr><tr>
+          <td>bedTime</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>bedTime</td>
+        </tr><tr>
+          <td>wakeTime</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>wakeTime</td>
+        </tr><tr>
+          <td>isTrainingDay</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>isTrainingDay</td>
+        </tr><tr>
+          <td>trainingType</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>trainingType</td>
+        </tr><tr>
+          <td>matchDay</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>matchDay</td>
+        </tr><tr>
+          <td>recoveryLevel</td>
+          <td>Int</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>recoveryLevel</td>
+        </tr><tr>
+          <td>hadRecoveryMeal</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>hadRecoveryMeal</td>
+        </tr><tr>
+          <td>recoveryNotes</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>recoveryNotes</td>
+        </tr><tr>
+          <td>notes</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>notes</td>
+        </tr><tr>
+          <td>createdAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>Record creation timestamp</td>
+        </tr><tr>
+          <td>updatedAt</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Last update timestamp</td>
+        </tr></table><h3>NutritionGoal</h3><p>NutritionGoal model</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>userId</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Reference to user</td>
+        </tr><tr>
+          <td>user</td>
+          <td>User</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>user</td>
+        </tr><tr>
+          <td>goalType</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>goalType</td>
+        </tr><tr>
+          <td>targetValue</td>
+          <td>Float</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>targetValue</td>
+        </tr><tr>
+          <td>unit</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>unit</td>
+        </tr><tr>
+          <td>startDate</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>startDate</td>
+        </tr><tr>
+          <td>endDate</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>endDate</td>
+        </tr><tr>
+          <td>isActive</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>true</td>
+          <td>isActive</td>
+        </tr><tr>
+          <td>progress</td>
+          <td>Float</td>
+          <td></td>
+          <td></td>
+          <td>0</td>
+          <td>progress</td>
+        </tr><tr>
+          <td>createdAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>Record creation timestamp</td>
+        </tr><tr>
+          <td>updatedAt</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Last update timestamp</td>
+        </tr></table><h3>Achievement</h3><p>Achievement model</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>userId</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Reference to user</td>
+        </tr><tr>
+          <td>user</td>
+          <td>User</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>user</td>
+        </tr><tr>
+          <td>type</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>type</td>
+        </tr><tr>
+          <td>name</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Display name</td>
+        </tr><tr>
+          <td>description</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>description</td>
+        </tr><tr>
+          <td>icon</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>icon</td>
+        </tr><tr>
+          <td>earnedAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>earnedAt</td>
+        </tr><tr>
+          <td>metadata</td>
+          <td>Json</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>metadata</td>
+        </tr></table><h3>FoodLibrary</h3><p>FoodLibrary model</p><table>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Unique</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr><tr>
+          <td>id</td>
+          <td>String</td>
+          <td></td>
+          <td><span class="check">✓</span></td>
+          <td>uuid(</td>
+          <td>Unique identifier</td>
+        </tr><tr>
+          <td>name</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td>Display name</td>
+        </tr><tr>
+          <td>nameFi</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>nameFi</td>
+        </tr><tr>
+          <td>category</td>
+          <td>String</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>category</td>
+        </tr><tr>
+          <td>subcategory</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>subcategory</td>
+        </tr><tr>
+          <td>nutritionData</td>
+          <td>Json</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>nutritionData</td>
+        </tr><tr>
+          <td>servingSizes</td>
+          <td>Json</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>servingSizes</td>
+        </tr><tr>
+          <td>isNordic</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>isNordic</td>
+        </tr><tr>
+          <td>isVerified</td>
+          <td>Boolean</td>
+          <td></td>
+          <td></td>
+          <td>false</td>
+          <td>isVerified</td>
+        </tr><tr>
+          <td>tags</td>
+          <td>String[]</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>tags</td>
+        </tr><tr>
+          <td>barcode</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>barcode</td>
+        </tr><tr>
+          <td>brand</td>
+          <td>String</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>brand</td>
+        </tr><tr>
+          <td>createdAt</td>
+          <td>DateTime</td>
+          <td></td>
+          <td></td>
+          <td>now(</td>
+          <td>Record creation timestamp</td>
+        </tr><tr>
+          <td>updatedAt</td>
+          <td>DateTime</td>
+          <td><span class="check">✓</span></td>
+          <td></td>
+          <td></td>
+          <td>Last update timestamp</td>
+        </tr></table></body></html>

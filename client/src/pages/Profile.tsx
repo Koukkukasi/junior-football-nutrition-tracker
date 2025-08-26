@@ -1,19 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useUserProfile } from '../contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
   const { profile, updateAge, getNutritionRequirements, getAgeSpecificMultiplier } = useUserProfile();
+  const navigate = useNavigate();
   const [age, setAge] = useState(profile?.age || 14);
+  const [role, setRole] = useState(profile?.role || 'PLAYER');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setAge(profile.age);
+      setRole(profile.role || 'PLAYER');
     }
   }, [profile]);
 
-  const handleAgeUpdate = () => {
-    updateAge(age);
+  const handleProfileUpdate = () => {
+    // Update age only if not a coach
+    if (role !== 'COACH') {
+      updateAge(age);
+    }
+    // Store role in localStorage for now (until backend implementation)
+    localStorage.setItem('userRole', role);
+    if (profile) {
+      profile.role = role;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -98,56 +110,103 @@ export default function Profile() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Age (10-25 years)
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  min="10"
-                  max="25"
-                  value={age}
-                  onChange={(e) => setAge(Math.min(25, Math.max(10, parseInt(e.target.value) || 10)))}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  onClick={handleAgeUpdate}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Update Age
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Age Group
-              </label>
-              <div className={`inline-block px-4 py-2 rounded-full border-2 font-semibold ${getAgeGroupColor(profile.ageGroup)}`}>
-                {profile.ageGroup} years
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Role
               </label>
-              <div className="inline-block px-4 py-2 bg-gray-100 rounded-lg">
-                {profile.role === 'PLAYER' ? '⚽ Player' : profile.role === 'COACH' ? '📋 Coach' : '👑 Admin'}
-              </div>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="PLAYER">⚽ Player</option>
+                <option value="COACH">📋 Coach</option>
+              </select>
+              {role === 'COACH' && (
+                <p className="mt-2 text-sm text-gray-600">
+                  As a coach, you don't need to enter your age
+                </p>
+              )}
             </div>
+
+            {role !== 'COACH' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Age (10-25 years)
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="number"
+                      min="10"
+                      max="25"
+                      value={age}
+                      onChange={(e) => setAge(Math.min(25, Math.max(10, parseInt(e.target.value) || 10)))}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Age Group
+                  </label>
+                  <div className={`inline-block px-4 py-2 rounded-full border-2 font-semibold ${getAgeGroupColor(profile.ageGroup)}`}>
+                    {profile.ageGroup} years
+                  </div>
+                </div>
+              </>
+            )}
+
+            <button
+              onClick={handleProfileUpdate}
+              className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Update Profile
+            </button>
           </div>
         </div>
 
         {/* Nutrition Requirements */}
         <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Age-Specific Nutrition</h2>
-            <span className="text-3xl">🎯</span>
+            <h2 className="text-xl font-bold text-gray-800">
+              {role === 'COACH' ? 'Coach Dashboard' : 'Age-Specific Nutrition'}
+            </h2>
+            <span className="text-3xl">{role === 'COACH' ? '📋' : '🎯'}</span>
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
+            {role === 'COACH' ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h3 className="font-semibold text-lg text-blue-800 mb-2">Coach Tools</h3>
+                  <p className="text-gray-700">As a coach, you can:</p>
+                  <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                    <li>• View team nutrition analytics</li>
+                    <li>• Monitor player meal logging compliance</li>
+                    <li>• Track team performance trends</li>
+                    <li>• Send nutrition recommendations to players</li>
+                  </ul>
+                </div>
+                <button
+                  onClick={() => navigate('/coach-dashboard')}
+                  className="w-full p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all text-center"
+                >
+                  <h3 className="font-semibold text-lg mb-1">Open Coach Dashboard</h3>
+                  <p className="text-sm text-white/90">
+                    View all players and their nutrition data
+                  </p>
+                </button>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <h3 className="font-semibold text-lg text-green-800 mb-2">Team Overview</h3>
+                  <p className="text-sm text-gray-600">
+                    Access the Team page to view your team settings and invite codes.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
                 <span className="font-medium text-gray-700">Daily Calories</span>
                 <span className="text-xl font-bold text-blue-600">{requirements.caloriesPerDay}</span>
               </div>
@@ -194,16 +253,19 @@ export default function Profile() {
               <h3 className="font-semibold text-gray-700 mb-2">Focus Area</h3>
               <p className="text-sm text-gray-600">{requirements.focus}</p>
             </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Scoring Bonus Information */}
-      <div className="mt-6 bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Age-Adjusted Scoring</h2>
-          <span className="text-3xl">🏆</span>
-        </div>
+      {/* Scoring Bonus Information - Only show for players */}
+      {role !== 'COACH' && (
+        <div className="mt-6 bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Age-Adjusted Scoring</h2>
+            <span className="text-3xl">🏆</span>
+          </div>
         
         <div className="grid md:grid-cols-2 gap-6">
           <div>
@@ -255,6 +317,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

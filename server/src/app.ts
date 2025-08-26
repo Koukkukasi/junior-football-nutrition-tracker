@@ -4,7 +4,7 @@ dotenv.config();
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
+// import morgan from 'morgan';
 import compression from 'compression';
 import authRoutes from './routes/auth.routes';
 import foodRoutes from './routes/food.routes';
@@ -17,59 +17,37 @@ import testInviteRoutes from './routes/test-invite.routes';
 import testRoutes from './routes/test.routes';
 import adminRoutes from './routes/admin.routes';
 import teamRoutes from './routes/team.routes';
-import webhookRoutes from './routes/webhook.routes';
 
 const app: Application = express();
 
-// Middleware
+// Essential middleware - re-enabled for proper functionality
 app.use(helmet());
-app.use(cors({
-  origin: [
-    // Production URLs
-    process.env.FRONTEND_URL || 'http://localhost:5174',
-    'https://junior-football-nutrition-client.onrender.com', // Render production frontend
-    
-    // Development URLs
-    'http://localhost:5173', // Vite default port
-    'http://localhost:5174',
-    'http://localhost:5175',
-    'http://localhost:5176',
-    
-    // Local network IPs for development
-    'http://192.168.68.104:5174',
-    'http://192.168.68.104:5175',
-    'http://192.168.68.104:5176',
-    /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow any local network IP with any port
-    /^http:\/\/172\.26\.\d+\.\d+:\d+$/, // Allow WSL network
-    /^http:\/\/localhost:\d+$/, // Allow any localhost port
-    
-    // Render deployments (production platform)
-    /^https:\/\/.*\.onrender\.com$/, // Allow all Render deployments
-    /^https:\/\/junior-football-nutrition-.*\.onrender\.com$/, // Specific Render pattern
-    
-    // Legacy Vercel URLs (if still needed)
-    'https://junior-football-nutrition-tracker.vercel.app',
-    /^https:\/\/junior-football-nutrition-tracker-.*\.vercel\.app$/
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-User-Email'],
-  exposedHeaders: ['X-Total-Count'],
-  maxAge: 86400 // 24 hours
-}));
+app.use(cors());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
 
-// CRITICAL: Add comprehensive request logging to track all incoming requests
+// TEMPORARILY DISABLE comprehensive request logging to test if it causes issues
+/*
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Test with multiple output methods to ensure visibility
-  console.log('=== INCOMING REQUEST ===');
-  console.error('=== INCOMING REQUEST (stderr) ===');
-  console.log('Method:', req.method);
-  console.log('URL:', req.url);
-  console.log('Path:', req.path);
+  // Use ALL output methods to ensure visibility
+  const requestInfo = {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Multiple output methods to catch any suppression
+  console.log('\n🚀 === INCOMING REQUEST ===');
+  console.error('🚀 === INCOMING REQUEST (stderr) ===');
+  console.info('🚀 === INCOMING REQUEST (info) ===');
+  process.stdout.write(`🚀 RAW STDOUT: ${JSON.stringify(requestInfo)}\n`);
+  process.stderr.write(`🚀 RAW STDERR: ${JSON.stringify(requestInfo)}\n`);
+  
+  console.log('Method:', req.method, 'URL:', req.url, 'Path:', req.path);
+  console.error('Method:', req.method, 'URL:', req.url, 'Path:', req.path);
+  
   console.log('Headers:', {
     authorization: req.headers.authorization ? 'Bearer [TOKEN]' : 'NONE',
     'content-type': req.headers['content-type'],
@@ -77,12 +55,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     origin: req.headers.origin
   });
   console.log('Body keys:', Object.keys(req.body || {}));
-  console.log('=== END REQUEST LOG ===');
+  console.log('=== END REQUEST LOG ===\n');
   
   // Also add a header to prove middleware is executing
   res.set('X-Request-Logged', 'true');
   next();
 });
+*/
 
 // Health check endpoints
 app.get('/health', (_req: Request, res: Response) => {
@@ -114,9 +93,8 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
 });
 
 // Webhook routes (before other routes, no auth required)
-app.use('/api/webhooks', webhookRoutes);
 
-// API Routes
+// Register all API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/food', foodRoutes);
 app.use('/api/v1/performance', performanceRoutes);
@@ -129,9 +107,15 @@ app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/teams', teamRoutes);
 
-// 404 handler
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({ error: 'Route not found' });
+// 404 handler for unmatched routes
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error handling middleware

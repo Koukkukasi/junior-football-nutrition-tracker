@@ -9,17 +9,25 @@ const router = Router();
 router.get('/nutrition-trends', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { period = '30d' } = req.query;
-    const clerkId = req.userId;
+    const supabaseId = req.userId;
+    const dbUserId = req.dbUserId;
 
-    if (!clerkId) {
+    if (!supabaseId && !dbUserId) {
       res.status(401).json({ error: 'User not authenticated' });
       return;
     }
 
-    // First get the user to get the database ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
+    // Use dbUserId if available (set by auth middleware), otherwise look up by supabaseId
+    let user;
+    if (dbUserId) {
+      user = await prisma.user.findUnique({
+        where: { id: dbUserId }
+      });
+    } else {
+      user = await prisma.user.findUnique({
+        where: { supabaseId }
+      });
+    }
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -137,17 +145,25 @@ router.get('/nutrition-trends', requireAuth, async (req: AuthRequest, res: Respo
 router.get('/performance-correlations', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { period = '30d' } = req.query;
-    const clerkId = req.userId;
+    const supabaseId = req.userId;
+    const dbUserId = req.dbUserId;
 
-    if (!clerkId) {
+    if (!supabaseId && !dbUserId) {
       res.status(401).json({ error: 'User not authenticated' });
       return;
     }
 
-    // First get the user to get the database ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
+    // Use dbUserId if available (set by auth middleware), otherwise look up by supabaseId
+    let user;
+    if (dbUserId) {
+      user = await prisma.user.findUnique({
+        where: { id: dbUserId }
+      });
+    } else {
+      user = await prisma.user.findUnique({
+        where: { supabaseId }
+      });
+    }
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -265,17 +281,25 @@ router.get('/performance-correlations', requireAuth, async (req: AuthRequest, re
 // GET /api/v1/analytics/recommendations - Get personalized recommendations
 router.get('/recommendations', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const clerkId = req.userId;
+    const supabaseId = req.userId;
+    const dbUserId = req.dbUserId;
 
-    if (!clerkId) {
+    if (!supabaseId && !dbUserId) {
       res.status(401).json({ error: 'User not authenticated' });
       return;
     }
 
-    // First get the user to get the database ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
+    // Use dbUserId if available (set by auth middleware), otherwise look up by supabaseId
+    let user;
+    if (dbUserId) {
+      user = await prisma.user.findUnique({
+        where: { id: dbUserId }
+      });
+    } else {
+      user = await prisma.user.findUnique({
+        where: { supabaseId }
+      });
+    }
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });

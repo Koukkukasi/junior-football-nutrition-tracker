@@ -24,15 +24,15 @@ This rule applies to ALL changes: single line edits, bug fixes, new features, co
 ### Technology Stack
 - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, React Router
 - **Backend**: Node.js, Express, TypeScript, Prisma ORM
-- **Database**: PostgreSQL 16 (Docker containerized)
-- **Authentication**: Clerk (OAuth, JWT tokens)
+- **Database**: PostgreSQL 16 (Docker containerized) + Supabase
+- **Authentication**: Supabase Auth
 - **Testing**: Playwright (E2E), Jest (unit tests)
-- **Deployment**: Docker Compose for development
+- **Deployment**: Docker Compose for development, Render for production
 
 ### Current Status (Week 1-2 Completed ✅)
 - ✅ Full project structure with monorepo architecture
 - ✅ PostgreSQL database with Prisma ORM and comprehensive schema
-- ✅ Clerk authentication integration with protected routes
+- ✅ Supabase authentication integration with protected routes
 - ✅ React frontend with modern UI components and Tailwind styling
 - ✅ Comprehensive Playwright test suite (22 auth scenarios)
 - ✅ Food database with 74+ keywords and age-specific scoring
@@ -144,7 +144,7 @@ When working on this project, utilize specialized agents for different domains:
 
 **Responsibilities**:
 - Automating browser interactions for deployment configurations
-- Navigating web interfaces (Vercel, Clerk, hosting platforms)
+- Navigating web interfaces (Render, Supabase, hosting platforms)
 - Updating environment variables and settings through web UIs
 - Capturing screenshots and monitoring deployment status
 - Automating repetitive web-based tasks
@@ -153,8 +153,8 @@ When working on this project, utilize specialized agents for different domains:
 **Usage Pattern**:
 ```typescript
 // ALWAYS use Playwright Agent when:
-- Configuring deployment platforms (Vercel, Netlify, etc.)
-- Setting up authentication services (Clerk, Auth0, etc.)
+- Configuring deployment platforms (Render, Netlify, etc.)
+- Setting up authentication services (Supabase, Auth0, etc.)
 - Updating environment variables through web interfaces
 - Testing deployed applications
 - Automating any web-based workflow
@@ -544,15 +544,15 @@ npm run build         # Build succeeds
 When deploying or configuring services, ALWAYS use Playwright automation:
 
 ```typescript
-// Example: Updating Vercel environment variables
-1. Navigate to Vercel dashboard
+// Example: Updating Render environment variables
+1. Navigate to Render dashboard
 2. Access project settings
 3. Update environment variables programmatically
 4. Trigger redeployment
 5. Verify deployment success
 
-// Example: Configuring Clerk authentication
-1. Access Clerk dashboard
+// Example: Configuring Supabase authentication
+1. Access Supabase dashboard
 2. Retrieve API keys
 3. Update deployment configuration
 4. Test authentication flow
@@ -571,8 +571,8 @@ cd server && npx prisma migrate deploy
 ```
 
 ### Deployment Checklist with Playwright
-- [ ] Use Playwright to update Vercel environment variables
-- [ ] Use Playwright to configure Clerk authentication
+- [ ] Use Playwright to update Render environment variables
+- [ ] Use Playwright to configure Supabase authentication
 - [ ] Use Playwright to set up database connections
 - [ ] Use Playwright to verify deployment health
 - [ ] Use Playwright to test production endpoints
@@ -625,7 +625,7 @@ try {
 ## Important Notes
 
 ### Authentication Flow
-- Clerk handles OAuth and JWT tokens
+- Supabase handles authentication and JWT tokens
 - Protected routes require authentication
 - User profile synced with database on first login
 

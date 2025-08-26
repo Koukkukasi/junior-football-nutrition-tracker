@@ -33,6 +33,13 @@ export const NutritionScoreDisplay: React.FC<NutritionScoreDisplayProps> = ({ sc
     return 'Needs improvement. Focus on healthier choices 🎯';
   };
 
+  const getProgressBarColor = (value: number) => {
+    if (value >= 80) return 'bg-green-500';
+    if (value >= 60) return 'bg-blue-500';
+    if (value >= 40) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500">
       <div className="flex items-center justify-between mb-4">
@@ -42,10 +49,37 @@ export const NutritionScoreDisplay: React.FC<NutritionScoreDisplayProps> = ({ sc
       
       {/* Main Score */}
       <div className="text-center mb-6">
-        <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full ${getScoreBackground(score.totalScore)}`}>
-          <span className={`text-4xl font-bold ${getScoreColor(score.totalScore)}`}>
-            {score.totalScore}
-          </span>
+        <div className="relative inline-block">
+          <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full ${getScoreBackground(score.totalScore)}`}>
+            <div className="text-center">
+              <span className={`text-4xl font-bold ${getScoreColor(score.totalScore)}`}>
+                {score.totalScore}
+              </span>
+              <p className="text-xs text-gray-600 mt-1">out of 100</p>
+            </div>
+          </div>
+          {/* Progress ring */}
+          <svg className="absolute inset-0 w-32 h-32 transform -rotate-90">
+            <circle
+              cx="64"
+              cy="64"
+              r="60"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              className="text-gray-200"
+            />
+            <circle
+              cx="64"
+              cy="64"
+              r="60"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              strokeDasharray={`${(score.totalScore / 100) * 377} 377`}
+              className={getScoreColor(score.totalScore)}
+            />
+          </svg>
         </div>
         <p className="mt-3 text-gray-600 font-medium">{getScoreMessage(score.totalScore)}</p>
       </div>
@@ -57,9 +91,9 @@ export const NutritionScoreDisplay: React.FC<NutritionScoreDisplayProps> = ({ sc
             <span className="text-gray-600">Meal Frequency</span>
             <span className="font-medium">{score.mealFrequency}/100</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              className={`${getProgressBarColor(score.mealFrequency)} h-2.5 rounded-full transition-all duration-500 ease-out`}
               style={{ width: `${score.mealFrequency}%` }}
             />
           </div>
@@ -71,9 +105,9 @@ export const NutritionScoreDisplay: React.FC<NutritionScoreDisplayProps> = ({ sc
             <span className="text-gray-600">Food Quality</span>
             <span className="font-medium">{score.foodQuality}/100</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div 
-              className="bg-green-500 h-2 rounded-full transition-all duration-300"
+              className={`${getProgressBarColor(score.foodQuality)} h-2.5 rounded-full transition-all duration-500 ease-out`}
               style={{ width: `${score.foodQuality}%` }}
             />
           </div>
@@ -88,13 +122,30 @@ export const NutritionScoreDisplay: React.FC<NutritionScoreDisplayProps> = ({ sc
           <div>
             <p className="text-sm text-blue-800 font-medium">Pro Tip:</p>
             <p className="text-sm text-blue-700">
-              {score.foodQuality < score.mealFrequency 
+              {score.totalScore === 0 
+                ? 'Start logging your meals to track your nutrition progress!'
+                : score.foodQuality < score.mealFrequency 
                 ? 'Focus on improving food quality - choose whole foods and lean proteins!'
-                : 'Great food choices! Make sure to eat regularly throughout the day.'}
+                : score.mealFrequency < 60
+                ? 'Try to eat more regularly throughout the day - aim for 5 meals!'
+                : 'Great job! Keep maintaining your healthy eating habits!'}
             </p>
           </div>
         </div>
       </div>
+      
+      {/* Achievement badges */}
+      {score.totalScore >= 80 && (
+        <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🏆</span>
+            <div>
+              <p className="text-sm font-semibold text-green-800">Excellence Achieved!</p>
+              <p className="text-xs text-green-700">You\'re fueling like a champion athlete!</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

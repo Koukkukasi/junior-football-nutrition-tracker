@@ -19,30 +19,52 @@ export default function Layout() {
   useEffect(() => {
     const fetchTodayStats = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-        // For Supabase, we'll use the session token
-        const token = user?.id
+        // Use Supabase directly to get today's stats
+        if (!user) return
         
-        if (!token) return
+        const { supabaseAPI } = await import('../lib/supabase-api')
         
-        const response = await fetch(`${API_BASE}/api/v1/users/stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        // Get today's food entries
+        const foodResponse = await supabaseAPI.food.getEntries()
+        const today = new Date().toDateString()
+        const todayMeals = (foodResponse.data || []).filter((entry: any) => 
+          new Date(entry.created_at).toDateString() === today
+        ).length
+        
+        // Get recent performance data for energy average
+        const perfResponse = await supabaseAPI.performance.getEntries()
+        const recentEnergy = (perfResponse.data || []).slice(0, 7)
+          .map((entry: any) => entry.energy_level || 3)
+        const avgEnergy = recentEnergy.length > 0 
+          ? recentEnergy.reduce((a: number, b: number) => a + b, 0) / recentEnergy.length
+          : 3
+        
+        // Calculate nutrition score from today's meals
+        const { calculateNutritionScore } = await import('../utils/foodUtils')
+        const { analyzeFoodQuality } = await import('../lib/food-database')
+        const todayEntries = (foodResponse.data || [])
+          .filter((entry: any) => new Date(entry.created_at).toDateString() === today)
+          .map((entry: any) => {
+            // Re-analyze the description to get the quality
+            const analysis = analyzeFoodQuality(entry.description)
+            return { quality: analysis.quality }
+          })
+        const scoreData = calculateNutritionScore(todayEntries)
+        
+        setTodayStats({
+          meals: todayMeals,
+          score: scoreData.totalScore || 0, // Extract totalScore from the object
+          energy: Math.round(avgEnergy)
         })
-        
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success && data.stats) {
-            setTodayStats({
-              meals: data.stats.todayMeals || 0,
-              score: data.stats.nutritionScore || 0,
-              energy: Math.round(data.stats.weekAvgEnergy || 0)
-            })
-          }
-        }
       } catch (error) {
-        console.error('Failed to fetch sidebar stats:', error)
+        // Silently fail - stats are not critical
+        console.log('Stats fetch skipped:', error)
+        // Set default values if fetch fails
+        setTodayStats({
+          meals: 0,
+          score: 0,
+          energy: 3
+        })
       }
     }
     
@@ -50,7 +72,7 @@ export default function Layout() {
     // Refresh stats every 30 seconds
     const interval = setInterval(fetchTodayStats, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [user])
   
   const isAdmin = profile?.role === 'ADMIN'
 

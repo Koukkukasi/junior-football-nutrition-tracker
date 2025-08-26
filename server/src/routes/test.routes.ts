@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth } from '../middleware/supabase-auth';
 import { AuthRequest } from '../types/auth.types';
 
 const router = Router();

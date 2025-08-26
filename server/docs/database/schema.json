@@ -1,0 +1,987 @@
+{
+  "models": [
+    {
+      "name": "User",
+      "description": "Represents a user in the system (player, coach, or admin)",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "clerkId",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "description": "clerkId"
+        },
+        {
+          "name": "supabaseId",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "description": "supabaseId"
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "User email address"
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Display name"
+        },
+        {
+          "name": "age",
+          "type": "Int",
+          "required": true,
+          "unique": false,
+          "description": "User age in years"
+        },
+        {
+          "name": "role",
+          "type": "UserRole",
+          "required": false,
+          "unique": false,
+          "default": "PLAYER",
+          "description": "User role in the system"
+        },
+        {
+          "name": "position",
+          "type": "PlayerPosition",
+          "required": false,
+          "unique": false,
+          "description": "Player position on the field"
+        },
+        {
+          "name": "parentEmail",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "parentEmail"
+        },
+        {
+          "name": "dataConsent",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "dataConsent"
+        },
+        {
+          "name": "teamId",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "Reference to team"
+        },
+        {
+          "name": "team",
+          "type": "Team",
+          "required": false,
+          "unique": false,
+          "description": "team"
+        },
+        {
+          "name": "ageGroup",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "ageGroup"
+        },
+        {
+          "name": "goals",
+          "type": "String[]",
+          "required": false,
+          "unique": false,
+          "default": "[]",
+          "description": "goals"
+        },
+        {
+          "name": "trainingDaysPerWeek",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "default": "3",
+          "description": "trainingDaysPerWeek"
+        },
+        {
+          "name": "completedOnboarding",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "completedOnboarding"
+        },
+        {
+          "name": "onboardingDate",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "description": "onboardingDate"
+        },
+        {
+          "name": "preferences",
+          "type": "Json",
+          "required": false,
+          "unique": false,
+          "description": "preferences"
+        },
+        {
+          "name": "foodEntries",
+          "type": "FoodEntry[]",
+          "required": true,
+          "unique": false,
+          "description": "foodEntries"
+        },
+        {
+          "name": "performanceMetrics",
+          "type": "PerformanceMetric[]",
+          "required": true,
+          "unique": false,
+          "description": "performanceMetrics"
+        },
+        {
+          "name": "teams",
+          "type": "TeamMember[]",
+          "required": true,
+          "unique": false,
+          "description": "teams"
+        },
+        {
+          "name": "nutritionGoals",
+          "type": "NutritionGoal[]",
+          "required": true,
+          "unique": false,
+          "description": "nutritionGoals"
+        },
+        {
+          "name": "achievements",
+          "type": "Achievement[]",
+          "required": true,
+          "unique": false,
+          "description": "achievements"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "Record creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Last update timestamp"
+        },
+        {
+          "name": "deletedAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "description": "deletedAt"
+        }
+      ],
+      "indexes": [
+        "clerkId",
+        "email",
+        "teamId"
+      ],
+      "constraints": []
+    },
+    {
+      "name": "Team",
+      "description": "Represents a football team",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Display name"
+        },
+        {
+          "name": "inviteCode",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "cuid(",
+          "description": "inviteCode"
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "description"
+        },
+        {
+          "name": "coachId",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "coachId"
+        },
+        {
+          "name": "players",
+          "type": "User[]",
+          "required": true,
+          "unique": false,
+          "description": "players"
+        },
+        {
+          "name": "members",
+          "type": "TeamMember[]",
+          "required": true,
+          "unique": false,
+          "description": "members"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "Record creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Last update timestamp"
+        }
+      ],
+      "indexes": [
+        "inviteCode",
+        "coachId"
+      ],
+      "constraints": []
+    },
+    {
+      "name": "TeamMember",
+      "description": "Junction table for user-team relationships",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Reference to user"
+        },
+        {
+          "name": "user",
+          "type": "User",
+          "required": true,
+          "unique": false,
+          "description": "user"
+        },
+        {
+          "name": "teamId",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Reference to team"
+        },
+        {
+          "name": "team",
+          "type": "Team",
+          "required": true,
+          "unique": false,
+          "description": "team"
+        },
+        {
+          "name": "role",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "default": "\"PLAYER\"",
+          "description": "User role in the system"
+        },
+        {
+          "name": "joinedAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "joinedAt"
+        }
+      ],
+      "indexes": [
+        "userId",
+        "teamId"
+      ],
+      "constraints": [
+        "UNIQUE(userId, teamId)"
+      ]
+    },
+    {
+      "name": "FoodEntry",
+      "description": "Records food consumption entries with nutrition analysis",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Reference to user"
+        },
+        {
+          "name": "user",
+          "type": "User",
+          "required": true,
+          "unique": false,
+          "description": "user"
+        },
+        {
+          "name": "date",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Date of entry"
+        },
+        {
+          "name": "mealType",
+          "type": "MealType",
+          "required": true,
+          "unique": false,
+          "description": "Type of meal"
+        },
+        {
+          "name": "time",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "time"
+        },
+        {
+          "name": "location",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "location"
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "description"
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "notes"
+        },
+        {
+          "name": "nutritionScore",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "description": "Calculated nutrition score (0-100)"
+        },
+        {
+          "name": "quality",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "quality"
+        },
+        {
+          "name": "calories",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "description": "calories"
+        },
+        {
+          "name": "protein",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "description": "protein"
+        },
+        {
+          "name": "carbs",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "description": "carbs"
+        },
+        {
+          "name": "fats",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "description": "fats"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "Record creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Last update timestamp"
+        }
+      ],
+      "indexes": [
+        "userId, date",
+        "date"
+      ],
+      "constraints": []
+    },
+    {
+      "name": "PerformanceMetric",
+      "description": "Tracks daily performance and recovery metrics",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Reference to user"
+        },
+        {
+          "name": "user",
+          "type": "User",
+          "required": true,
+          "unique": false,
+          "description": "user"
+        },
+        {
+          "name": "date",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Date of entry"
+        },
+        {
+          "name": "energyLevel",
+          "type": "Int",
+          "required": true,
+          "unique": false,
+          "description": "energyLevel"
+        },
+        {
+          "name": "sleepHours",
+          "type": "Float",
+          "required": true,
+          "unique": false,
+          "description": "sleepHours"
+        },
+        {
+          "name": "bedTime",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "bedTime"
+        },
+        {
+          "name": "wakeTime",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "wakeTime"
+        },
+        {
+          "name": "isTrainingDay",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "isTrainingDay"
+        },
+        {
+          "name": "trainingType",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "trainingType"
+        },
+        {
+          "name": "matchDay",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "matchDay"
+        },
+        {
+          "name": "recoveryLevel",
+          "type": "Int",
+          "required": false,
+          "unique": false,
+          "description": "recoveryLevel"
+        },
+        {
+          "name": "hadRecoveryMeal",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "hadRecoveryMeal"
+        },
+        {
+          "name": "recoveryNotes",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "recoveryNotes"
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "notes"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "Record creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Last update timestamp"
+        }
+      ],
+      "indexes": [
+        "userId, date",
+        "date"
+      ],
+      "constraints": [
+        "UNIQUE(userId, date)"
+      ]
+    },
+    {
+      "name": "NutritionGoal",
+      "description": "NutritionGoal model",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Reference to user"
+        },
+        {
+          "name": "user",
+          "type": "User",
+          "required": true,
+          "unique": false,
+          "description": "user"
+        },
+        {
+          "name": "goalType",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "goalType"
+        },
+        {
+          "name": "targetValue",
+          "type": "Float",
+          "required": true,
+          "unique": false,
+          "description": "targetValue"
+        },
+        {
+          "name": "unit",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "unit"
+        },
+        {
+          "name": "startDate",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "startDate"
+        },
+        {
+          "name": "endDate",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "description": "endDate"
+        },
+        {
+          "name": "isActive",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "true",
+          "description": "isActive"
+        },
+        {
+          "name": "progress",
+          "type": "Float",
+          "required": false,
+          "unique": false,
+          "default": "0",
+          "description": "progress"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "Record creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Last update timestamp"
+        }
+      ],
+      "indexes": [
+        "userId",
+        "goalType",
+        "isActive"
+      ],
+      "constraints": []
+    },
+    {
+      "name": "Achievement",
+      "description": "Achievement model",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Reference to user"
+        },
+        {
+          "name": "user",
+          "type": "User",
+          "required": true,
+          "unique": false,
+          "description": "user"
+        },
+        {
+          "name": "type",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "type"
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "Display name"
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "description"
+        },
+        {
+          "name": "icon",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "icon"
+        },
+        {
+          "name": "earnedAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "earnedAt"
+        },
+        {
+          "name": "metadata",
+          "type": "Json",
+          "required": false,
+          "unique": false,
+          "description": "metadata"
+        }
+      ],
+      "indexes": [
+        "userId",
+        "type",
+        "earnedAt"
+      ],
+      "constraints": []
+    },
+    {
+      "name": "FoodLibrary",
+      "description": "FoodLibrary model",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "required": false,
+          "unique": true,
+          "default": "uuid(",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "Display name"
+        },
+        {
+          "name": "nameFi",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "nameFi"
+        },
+        {
+          "name": "category",
+          "type": "String",
+          "required": true,
+          "unique": false,
+          "description": "category"
+        },
+        {
+          "name": "subcategory",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "subcategory"
+        },
+        {
+          "name": "nutritionData",
+          "type": "Json",
+          "required": true,
+          "unique": false,
+          "description": "nutritionData"
+        },
+        {
+          "name": "servingSizes",
+          "type": "Json",
+          "required": false,
+          "unique": false,
+          "description": "servingSizes"
+        },
+        {
+          "name": "isNordic",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "isNordic"
+        },
+        {
+          "name": "isVerified",
+          "type": "Boolean",
+          "required": false,
+          "unique": false,
+          "default": "false",
+          "description": "isVerified"
+        },
+        {
+          "name": "tags",
+          "type": "String[]",
+          "required": true,
+          "unique": false,
+          "description": "tags"
+        },
+        {
+          "name": "barcode",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "barcode"
+        },
+        {
+          "name": "brand",
+          "type": "String",
+          "required": false,
+          "unique": false,
+          "description": "brand"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false,
+          "unique": false,
+          "default": "now(",
+          "description": "Record creation timestamp"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": true,
+          "unique": false,
+          "description": "Last update timestamp"
+        }
+      ],
+      "indexes": [
+        "category",
+        "isNordic",
+        "isVerified",
+        "name"
+      ],
+      "constraints": []
+    }
+  ],
+  "enums": [
+    {
+      "name": "UserRole",
+      "values": [
+        "PLAYER",
+        "COACH",
+        "ADMIN"
+      ],
+      "description": "Defines user roles in the system"
+    },
+    {
+      "name": "PlayerPosition",
+      "values": [
+        "GOALKEEPER",
+        "DEFENDER",
+        "MIDFIELDER",
+        "FORWARD"
+      ],
+      "description": "Football player positions"
+    },
+    {
+      "name": "MealType",
+      "values": [
+        "BREAKFAST",
+        "SNACK",
+        "LUNCH",
+        "DINNER",
+        "EVENING_SNACK",
+        "AFTER_PRACTICE"
+      ],
+      "description": "Types of meals throughout the day"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Model",
+      "to": "User",
+      "type": "one-to-one",
+      "field": "user",
+      "description": "Relationship via user"
+    },
+    {
+      "from": "Model",
+      "to": "Team",
+      "type": "one-to-one",
+      "field": "team",
+      "description": "Relationship via team"
+    },
+    {
+      "from": "Model",
+      "to": "User",
+      "type": "one-to-one",
+      "field": "user",
+      "description": "Relationship via user"
+    },
+    {
+      "from": "Model",
+      "to": "User",
+      "type": "one-to-one",
+      "field": "user",
+      "description": "Relationship via user"
+    },
+    {
+      "from": "Model",
+      "to": "User",
+      "type": "one-to-one",
+      "field": "user",
+      "description": "Relationship via user"
+    },
+    {
+      "from": "Model",
+      "to": "User",
+      "type": "one-to-one",
+      "field": "user",
+      "description": "Relationship via user"
+    }
+  ],
+  "generatedAt": "2025-08-25T21:13:13.010Z",
+  "version": "1.0.0"
+}

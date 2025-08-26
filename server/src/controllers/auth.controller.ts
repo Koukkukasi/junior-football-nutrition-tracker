@@ -1,14 +1,28 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types/auth.types';
+import { PlayerPosition } from '@prisma/client';
 import prisma from '../db';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+
+// Convert position string to enum value
+const convertPositionToEnum = (positionString: string | null | undefined): PlayerPosition | null => {
+  if (!positionString) return null;
+  
+  const positionMap: Record<string, PlayerPosition> = {
+    'Goalkeeper': PlayerPosition.GOALKEEPER,
+    'Defender': PlayerPosition.DEFENDER, 
+    'Midfielder': PlayerPosition.MIDFIELDER,
+    'Forward': PlayerPosition.FORWARD
+  };
+  
+  return positionMap[positionString] || null;
+};
 
 export const authController = {
   async register(req: AuthRequest, res: Response) {
     try {
-      const { clerkId, email, name, age, role, position, parentEmail, teamCode } = req.body;
+      const { supabaseId, email, name, age, role, position, parentEmail, teamCode } = req.body;
 
-      if (!clerkId || !email || !name || !age) {
+      if (!supabaseId || !email || !name || !age) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
@@ -21,6 +35,7 @@ export const authController = {
         const team = await prisma.team.findUnique({
           where: { inviteCode: teamCode }
         });
+        
         if (team) {
           teamId = team.id;
         }
@@ -28,12 +43,12 @@ export const authController = {
 
       const user = await prisma.user.create({
         data: {
-          clerkId,
+          supabaseId,
           email,
           name,
           age,
           role: role || 'PLAYER',
-          position,
+          position: convertPositionToEnum(position),
           parentEmail,
           teamId,
           dataConsent: age >= 18
@@ -52,36 +67,56 @@ export const authController = {
 
   async syncUser(req: AuthRequest, res: Response) {
     try {
-      const { clerkId } = req.body;
+      const { supabaseId, email, name, age, role, position } = req.body;
 
-      if (!clerkId) {
-        return res.status(400).json({ error: 'Clerk ID is required' });
+      if (!supabaseId || !email) {
+        return res.status(400).json({ error: 'Supabase ID and email are required' });
       }
-
-      const clerkUser = await clerkClient.users.getUser(clerkId);
       
       let user = await prisma.user.findUnique({
-        where: { clerkId }
+        where: { supabaseId }
       });
 
       if (!user) {
-        const email = clerkUser.emailAddresses[0]?.emailAddress;
-        const name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 
-                    email?.split('@')[0] || 'User';
-
-        user = await prisma.user.create({
+        // Check if user exists with this email but different supabaseId
+        user = await prisma.user.findUnique({
+          where: { email }
+        });
+        
+        if (user) {
+          // Update existing user with supabaseId
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: { supabaseId }
+          });
+        } else {
+          // Create new user
+          user = await prisma.user.create({
+            data: {
+              supabaseId,
+              email,
+              name: name || email.split('@')[0] || 'User',
+              age: age || 18,
+              role: role || 'PLAYER',
+              position: convertPositionToEnum(position),
+              dataConsent: age >= 18
+            }
+          });
+        }
+      } else {
+        // Update existing user with latest data
+        user = await prisma.user.update({
+          where: { id: user.id },
           data: {
-            clerkId,
-            email: email || `${clerkId}@placeholder.com`,
-            name,
-            age: 18,
-            role: 'PLAYER',
-            dataConsent: false
+            name: name || user.name,
+            age: age || user.age,
+            role: role || user.role,
+            position: convertPositionToEnum(position) || user.position,
           }
         });
       }
 
-      return res.json({ user });
+      return res.json({ success: true, user });
     } catch (error) {
       console.error('Sync user error:', error);
       return res.status(500).json({ error: 'Failed to sync user' });
@@ -91,7 +126,7 @@ export const authController = {
   async getCurrentUser(req: AuthRequest, res: Response) {
     try {
       const user = await prisma.user.findUnique({
-        where: { clerkId: req.userId },
+        where: { supabaseId: req.userId },
         include: {
           team: true
         }
@@ -128,11 +163,11 @@ export const authController = {
       }
 
       const user = await prisma.user.update({
-        where: { clerkId: req.userId },
+        where: { supabaseId: req.userId },
         data: {
           ...(name && { name }),
           ...(age && { age, dataConsent: age >= 18 }),
-          ...(position !== undefined && { position }),
+          ...(position !== undefined && { position: convertPositionToEnum(position) }),
           ...(parentEmail !== undefined && { parentEmail }),
           ...(teamId !== undefined && { teamId })
         },

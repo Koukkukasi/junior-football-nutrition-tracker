@@ -18,7 +18,7 @@ junior-football-nutrition-tracker/
 - ✅ Backend setup with Node.js, TypeScript, and Express
 - ✅ PostgreSQL database configured with Docker
 - ✅ Prisma ORM with complete database schema
-- ✅ Clerk authentication integration
+- ✅ Supabase authentication integration
 - ✅ User registration and login endpoints
 - ✅ React frontend with TypeScript and Vite
 - ✅ ESLint and Prettier configuration

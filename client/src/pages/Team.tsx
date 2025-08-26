@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useUserProfile } from '../contexts/UserContext';
-import API from '../lib/api';
 
 interface Team {
   id: string;
@@ -30,6 +29,25 @@ interface TeamDetails extends Team {
   userRole: string;
 }
 
+// Mock data for teams feature (until backend/Supabase implementation is ready)
+const MOCK_TEAMS: Team[] = [
+  {
+    id: '1',
+    name: 'FC Inter P13 2012',
+    description: 'U13 competitive team focusing on nutrition and performance',
+    inviteCode: 'INTER2012',
+    memberRole: 'member',
+    joinedAt: new Date().toISOString(),
+    _count: { members: 0 }
+  }
+];
+
+const MOCK_TEAM_DETAILS: TeamDetails = {
+  ...MOCK_TEAMS[0],
+  userRole: 'member',
+  members: []
+};
+
 export default function Team() {
   const { profile } = useUserProfile();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -41,47 +59,13 @@ export default function Team() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  useEffect(() => {
-    if (selectedTeam) {
-      fetchTeamDetails(selectedTeam.id);
-    }
-  }, [selectedTeam?.id]);
-
-  const fetchTeams = async () => {
-    try {
-      const response = await API.teams.getMyTeams();
-      if (response.success) {
-        // Handle nested data structure from API
-        const teamsData = response.data?.data || response.data || [];
-        const teamsList = Array.isArray(teamsData) ? teamsData : [];
-        setTeams(teamsList);
-        if (teamsList.length > 0 && !selectedTeam) {
-          fetchTeamDetails(teamsList[0].id);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch teams:', error);
-      setTeams([]); // Set empty array on error
-    } finally {
+    // Simulate loading teams (using mock data for now)
+    setTimeout(() => {
+      setTeams(MOCK_TEAMS);
+      setSelectedTeam(MOCK_TEAM_DETAILS);
       setLoading(false);
-    }
-  };
-
-  const fetchTeamDetails = async (teamId: string) => {
-    try {
-      const response = await API.teams.getDetails(teamId);
-      if (response.success) {
-        // Handle nested data structure from API
-        const teamData = response.data?.data || response.data;
-        setSelectedTeam(teamData);
-      }
-    } catch (error) {
-      console.error('Failed to fetch team details:', error);
-    }
-  };
+    }, 500);
+  }, []);
 
   const handleJoinTeam = async () => {
     if (!inviteCode.trim()) {
@@ -90,34 +74,38 @@ export default function Team() {
     }
 
     setError('');
-    try {
-      const response = await API.teams.join(inviteCode);
-      if (response.success) {
-        setSuccess(response.message || 'Successfully joined team!');
-        setInviteCode('');
-        setJoiningTeam(false);
-        await fetchTeams();
-        setTimeout(() => setSuccess(''), 3000);
+    // Simulate joining a team
+    setLoading(true);
+    setTimeout(() => {
+      if (inviteCode === 'INTER2012') {
+        setSuccess('Successfully joined FC Inter P13 2012!');
+        setTeams(MOCK_TEAMS);
+        setSelectedTeam(MOCK_TEAM_DETAILS);
+      } else {
+        setError('Invalid invite code');
       }
-    } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to join team');
-    }
+      setInviteCode('');
+      setJoiningTeam(false);
+      setLoading(false);
+      setTimeout(() => {
+        setSuccess('');
+        setError('');
+      }, 3000);
+    }, 500);
   };
 
   const handleLeaveTeam = async (teamId: string) => {
     if (!confirm('Are you sure you want to leave this team?')) return;
 
-    try {
-      const response = await API.teams.leave(teamId);
-      if (response.success) {
-        setSuccess('Successfully left the team');
-        setSelectedTeam(null);
-        await fetchTeams();
-        setTimeout(() => setSuccess(''), 3000);
-      }
-    } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to leave team');
-    }
+    // Simulate leaving team (mock implementation)
+    setLoading(true);
+    setTimeout(() => {
+      setSuccess('Successfully left the team');
+      setTeams([]);
+      setSelectedTeam(null);
+      setLoading(false);
+      setTimeout(() => setSuccess(''), 3000);
+    }, 500);
   };
 
   if (loading) {

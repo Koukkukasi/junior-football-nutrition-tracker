@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth } from '../middleware/supabase-auth';
 
 const router = Router();
 

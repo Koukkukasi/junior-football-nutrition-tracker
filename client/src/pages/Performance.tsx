@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import API from '../lib/api'
+import { supabaseAPI } from '../lib/supabase-api'
 
 export default function Performance() {
   const [formData, setFormData] = useState({
@@ -59,25 +60,23 @@ export default function Performance() {
   const fetchPerformanceData = async () => {
     try {
       setLoading(true)
-      const response = await API.performance.history()
+      // Use Supabase API directly
+      const response = await supabaseAPI.performance.getEntries()
       
       if (response.success && response.data) {
-        // Handle the nested data structure
-        const performanceData = response.data.data || response.data
-        
-        // Process recent entries
-        const entries = (Array.isArray(performanceData) ? performanceData : []).slice(0, 7).map((entry: any) => ({
+        // Process recent entries from Supabase (snake_case fields)
+        const entries = (Array.isArray(response.data) ? response.data : []).slice(0, 7).map((entry: any) => ({
           date: new Date(entry.date),
-          energyLevel: entry.energyLevel,
-          sleepHours: entry.sleepHours,
-          bedTime: entry.bedTime,
-          wakeTime: entry.wakeTime,
-          recoveryLevel: entry.recoveryLevel,
-          hadRecoveryMeal: entry.hadRecoveryMeal,
-          recoveryNotes: entry.recoveryNotes,
-          isTrainingDay: entry.isTrainingDay,
-          trainingType: entry.trainingType,
-          notes: entry.notes
+          energyLevel: entry.energy_level || 3,
+          sleepHours: entry.sleep_hours || 8,
+          bedTime: entry.bed_time || '22:00',
+          wakeTime: entry.wake_time || '06:00',
+          recoveryLevel: entry.recovery_level || 3,
+          hadRecoveryMeal: entry.had_recovery_meal || false,
+          recoveryNotes: entry.recovery_notes || '',
+          isTrainingDay: entry.training_intensity ? true : false,
+          trainingType: entry.training_type || '',
+          notes: entry.notes || ''
         }))
         setRecentEntries(entries)
 
@@ -95,7 +94,42 @@ export default function Performance() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch performance data:', error)
+      console.error('Failed to fetch performance data from Supabase:', error)
+      // Try fallback to backend API
+      try {
+        const response = await API.performance.history()
+        if (response.success && response.data) {
+          const performanceData = response.data.data || response.data
+          const entries = (Array.isArray(performanceData) ? performanceData : []).slice(0, 7).map((entry: any) => ({
+            date: new Date(entry.date),
+            energyLevel: entry.energyLevel || entry.energy_level || 3,
+            sleepHours: entry.sleepHours || entry.sleep_hours || 8,
+            bedTime: entry.bedTime || entry.bed_time || '22:00',
+            wakeTime: entry.wakeTime || entry.wake_time || '06:00',
+            recoveryLevel: entry.recoveryLevel || entry.recovery_level || 3,
+            hadRecoveryMeal: entry.hadRecoveryMeal || entry.had_recovery_meal || false,
+            recoveryNotes: entry.recoveryNotes || entry.recovery_notes || '',
+            isTrainingDay: entry.isTrainingDay || (entry.training_intensity ? true : false),
+            trainingType: entry.trainingType || entry.training_type || '',
+            notes: entry.notes || ''
+          }))
+          setRecentEntries(entries)
+
+          if (entries.length > 0) {
+            const avgEnergy = entries.reduce((sum: number, e: any) => sum + e.energyLevel, 0) / entries.length
+            const avgSleep = entries.reduce((sum: number, e: any) => sum + e.sleepHours, 0) / entries.length
+            const trainingDays = entries.filter((e: any) => e.isTrainingDay).length
+            
+            setWeekSummary({
+              avgEnergy: Math.round(avgEnergy * 10) / 10,
+              avgSleep: Math.round(avgSleep * 10) / 10,
+              trainingDays
+            })
+          }
+        }
+      } catch (apiError) {
+        console.error('Both Supabase and backend API failed:', apiError)
+      }
     } finally {
       setLoading(false)
     }
@@ -107,19 +141,34 @@ export default function Performance() {
     console.log('Submitting performance data:', formData)
     
     try {
-      const response = await API.performance.submit({
-        energyLevel: formData.energyLevel,
-        sleepHours: formData.sleepHours,
-        bedTime: formData.bedTime,
-        wakeTime: formData.wakeTime,
-        recoveryLevel: formData.recoveryLevel,
-        hadRecoveryMeal: formData.hadRecoveryMeal,
-        recoveryNotes: formData.recoveryNotes,
-        isTrainingDay: formData.isTrainingDay,
-        trainingType: formData.trainingType,
-        notes: formData.notes,
-        matchDay: false // Add missing field
-      })
+      // Try Supabase first, fallback to backend API if it fails
+      let response;
+      try {
+        // Use Supabase directly for data persistence
+        response = await supabaseAPI.performance.upsert({
+          date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+          energy_level: formData.energyLevel,
+          sleep_hours: formData.sleepHours,
+          training_intensity: formData.isTrainingDay ? 7 : undefined,
+          notes: formData.notes || formData.recoveryNotes
+        });
+      } catch (supabaseError) {
+        console.log('Supabase failed, trying backend API:', supabaseError);
+        // Fallback to backend API
+        response = await API.performance.submit({
+          energyLevel: formData.energyLevel,
+          sleepHours: formData.sleepHours,
+          bedTime: formData.bedTime,
+          wakeTime: formData.wakeTime,
+          recoveryLevel: formData.recoveryLevel,
+          hadRecoveryMeal: formData.hadRecoveryMeal,
+          recoveryNotes: formData.recoveryNotes,
+          isTrainingDay: formData.isTrainingDay,
+          trainingType: formData.trainingType,
+          notes: formData.notes,
+          matchDay: false // Add missing field
+        });
+      }
       
       if (response.success) {
         alert('Performance data saved successfully!')

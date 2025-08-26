@@ -33,9 +33,9 @@ export default defineConfig({
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
             return 'react-vendor';
           }
-          // Clerk auth
-          if (id.includes('@clerk')) {
-            return 'clerk';
+          // Supabase auth
+          if (id.includes('@supabase')) {
+            return 'supabase';
           }
           // Query and data fetching
           if (id.includes('@tanstack') || id.includes('axios')) {
@@ -66,7 +66,7 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', '@clerk/clerk-react', '@tanstack/react-query', 'lucide-react'],
+    include: ['react', 'react-dom', '@supabase/supabase-js', '@tanstack/react-query', 'lucide-react'],
     // Force ESM transformation for lucide-react
     esbuildOptions: {
       target: 'es2020'

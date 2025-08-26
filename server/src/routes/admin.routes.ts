@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth } from '../middleware/supabase-auth';
 import { requireAdmin } from '../middleware/roleAuth';
 import { AuthRequest } from '../types/auth.types';
 import { prisma } from '../db';

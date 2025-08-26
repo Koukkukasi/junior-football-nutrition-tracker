@@ -6,6 +6,29 @@ import { analyzeFoodQuality, getAgeGroup } from '../services/nutritionAnalyzer';
 
 const router = Router();
 
+// Simple test endpoint (no auth required)
+router.get('/test', (_req: any, res: Response) => {
+  console.log('🍎 Food route TEST endpoint hit - console.log');
+  console.info('🍎 Food route TEST endpoint hit - console.info');
+  console.error('🍎 Food route TEST endpoint hit - console.error');
+  process.stdout.write('🍎 Food route TEST endpoint - RAW STDOUT\n');
+  process.stderr.write('🍎 Food route TEST endpoint - RAW STDERR\n');
+  res.json({ 
+    success: true,
+    message: 'Food routes are working!', 
+    endpoint: 'test',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Debug endpoint  
+router.get('/debug', (_req: any, res: Response) => {
+  console.log('🍎 Food route debug endpoint hit - console.log');
+  console.info('🍎 Food route debug endpoint hit - console.info');
+  console.error('🍎 Food route debug endpoint hit - console.error');
+  res.json({ message: 'Food routes debug working', timestamp: new Date().toISOString() });
+});
+
 // Interface for food entry request
 interface FoodEntryRequest {
   mealType: 'BREAKFAST' | 'SNACK' | 'LUNCH' | 'DINNER' | 'EVENING_SNACK';
@@ -22,9 +45,9 @@ interface FoodEntryRequest {
 router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { date, limit = '10', offset = '0' } = req.query;
-    const clerkId = req.userId;
+    const userId = req.dbUserId; // Use the database user ID set by middleware
 
-    if (!clerkId) {
+    if (!userId) {
       res.status(401).json({ 
         success: false,
         error: 'User not authenticated',
@@ -32,22 +55,6 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
       });
       return;
     }
-
-    // Look up the user by Clerk ID to get the database user ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
-
-    if (!user) {
-      res.status(404).json({ 
-        success: false,
-        error: 'User not found in database',
-        code: 'USER_NOT_FOUND'
-      });
-      return;
-    }
-
-    const userId = user.id;
 
     // Build date filter
     const dateFilter = date 
@@ -91,11 +98,11 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
 router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { mealType, time, location, description, notes, date, mealTiming }: FoodEntryRequest & { mealTiming?: 'pre-game' | 'post-game' | 'regular' } = req.body;
-    const clerkId = req.userId;
-    console.log('POST /food - Received request with clerkId:', clerkId);
+    const userId = req.dbUserId; // Use the database user ID set by middleware
+    console.log('POST /food - Received request with userId:', userId);
     console.log('Request body:', req.body);
 
-    if (!clerkId) {
+    if (!userId) {
       res.status(401).json({ 
         success: false,
         error: 'User not authenticated',
@@ -134,7 +141,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     const result = await prisma.$transaction(async (tx) => {
       // Verify user exists in transaction
       const user = await tx.user.findUnique({
-        where: { clerkId }
+        where: { id: userId }
       });
       console.log('Found user:', user ? { id: user.id, name: user.name, age: user.age } : 'null');
 
@@ -207,9 +214,9 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { mealType, time, location, description, notes }: FoodEntryRequest = req.body;
-    const clerkId = req.userId;
+    const userId = req.dbUserId; // Use the database user ID set by middleware
 
-    if (!clerkId) {
+    if (!userId) {
       res.status(401).json({ 
         success: false,
         error: 'User not authenticated',
@@ -217,22 +224,6 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
       });
       return;
     }
-
-    // Look up the user by Clerk ID to get the database user ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
-
-    if (!user) {
-      res.status(404).json({ 
-        success: false,
-        error: 'User not found in database',
-        code: 'USER_NOT_FOUND'
-      });
-      return;
-    }
-
-    const userId = user.id;
 
     // Check if food entry exists and belongs to user
     const existingEntry = await prisma.foodEntry.findFirst({
@@ -280,9 +271,9 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const clerkId = req.userId;
+    const userId = req.dbUserId; // Use the database user ID set by middleware
 
-    if (!clerkId) {
+    if (!userId) {
       res.status(401).json({ 
         success: false,
         error: 'User not authenticated',
@@ -290,22 +281,6 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
       });
       return;
     }
-
-    // Look up the user by Clerk ID to get the database user ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
-
-    if (!user) {
-      res.status(404).json({ 
-        success: false,
-        error: 'User not found in database',
-        code: 'USER_NOT_FOUND'
-      });
-      return;
-    }
-
-    const userId = user.id;
 
     // Check if food entry exists and belongs to user
     const existingEntry = await prisma.foodEntry.findFirst({
@@ -344,9 +319,9 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 router.get('/summary', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { date, period = 'day' } = req.query;
-    const clerkId = req.userId;
+    const userId = req.dbUserId; // Use the database user ID set by middleware
 
-    if (!clerkId) {
+    if (!userId) {
       res.status(401).json({ 
         success: false,
         error: 'User not authenticated',
@@ -354,22 +329,6 @@ router.get('/summary', requireAuth, async (req: AuthRequest, res: Response) => {
       });
       return;
     }
-
-    // Look up the user by Clerk ID to get the database user ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId }
-    });
-
-    if (!user) {
-      res.status(404).json({ 
-        success: false,
-        error: 'User not found in database',
-        code: 'USER_NOT_FOUND'
-      });
-      return;
-    }
-
-    const userId = user.id;
 
     const targetDate = date ? new Date(date as string) : new Date();
     let startDate: Date;

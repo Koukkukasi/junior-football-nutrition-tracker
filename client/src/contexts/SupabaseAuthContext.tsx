@@ -52,8 +52,33 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
     if (error) throw error
 
-    // Create profile in database
+    // Sync user with our backend database
     if (data.user) {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/sync-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            supabaseId: data.user.id,
+            email: data.user.email,
+            name: metadata?.full_name || data.user.email?.split('@')[0],
+            age: metadata?.age || 18,
+            role: metadata?.role || 'PLAYER',
+            position: metadata?.position,
+            team: metadata?.team
+          })
+        })
+
+        if (!response.ok) {
+          console.error('Failed to sync user with backend:', await response.text())
+        }
+      } catch (syncError) {
+        console.error('Error syncing user with backend:', syncError)
+      }
+
+      // Also try to create a Supabase profile for compatibility
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -67,18 +92,46 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         })
 
       if (profileError) {
-        console.error('Error creating profile:', profileError)
+        console.error('Error creating Supabase profile:', profileError)
       }
     }
   }
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) throw error
+
+    // Sync user with backend on sign in (in case they don't exist yet)
+    if (data.user) {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/sync-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            supabaseId: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
+            age: data.user.user_metadata?.age || 18,
+            role: data.user.user_metadata?.role || 'PLAYER',
+            position: data.user.user_metadata?.position,
+            team: data.user.user_metadata?.team
+          })
+        })
+
+        if (!response.ok) {
+          console.error('Failed to sync user with backend:', await response.text())
+        }
+      } catch (syncError) {
+        console.error('Error syncing user with backend:', syncError)
+      }
+    }
+
     navigate('/dashboard')
   }
 
