@@ -142,6 +142,11 @@ app.post('/api/v1/food', async (req, res) => {
     console.log('Creating food entry for user:', user.id);
     console.log('Data:', { mealType, time, description });
 
+    // Convert mealType to lowercase to match database constraint
+    // Frontend sends: BREAKFAST, LUNCH, DINNER, etc.
+    // Database expects: breakfast, lunch, dinner, etc.
+    const normalizedMealType = mealType ? mealType.toLowerCase() : 'breakfast';
+
     // Combine today's date with the provided time for created_at
     const today = new Date();
     let createdAt = new Date().toISOString();
@@ -152,12 +157,14 @@ app.post('/api/v1/food', async (req, res) => {
       createdAt = today.toISOString();
     }
 
+    console.log('Normalized meal_type for database:', normalizedMealType);
+
     // Save to Supabase (only with basic columns that exist)
     const { data, error } = await supabase
       .from('food_entries')
       .insert({
         user_id: user.id,
-        meal_type: mealType,
+        meal_type: normalizedMealType, // Use lowercase version
         description,
         quality_score: 85, // Hardcoded for testing
         created_at: createdAt
