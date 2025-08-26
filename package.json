@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
-    "build": "ls -la && cd client && npm install && npm run build",
+    "build": "npm install && ls -la && cd client && pwd && npm install && npm run build",
     "start": "node server.js",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
     "render-build": "npm install && cd client && npm install && npm run build"
