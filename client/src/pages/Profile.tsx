@@ -114,7 +114,7 @@ export default function Profile() {
               </label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
+                onChange={(e) => setRole(e.target.value as 'PLAYER' | 'COACH' | 'ADMIN')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="PLAYER">⚽ Player</option>

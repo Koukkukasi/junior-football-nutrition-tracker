@@ -4,6 +4,8 @@ import { useSupabaseAuth } from '../contexts/SupabaseAuthContext'
 import FeedbackWidget from './feedback/FeedbackWidget'
 import { useUserProfile } from '../contexts/UserContext'
 import { Menu, X, Home, UtensilsCrossed, TrendingUp, BarChart3, Users, User, Shield, LogOut } from 'lucide-react'
+import type { FoodEntry } from '../types/food.types'
+// import { calculateNutritionScore } from '../utils/foodUtils' // Will be imported dynamically
 
 export default function Layout() {
   const { user, signOut } = useSupabaseAuth()
@@ -40,14 +42,22 @@ export default function Layout() {
           : 3
         
         // Calculate nutrition score from today's meals
-        const { calculateNutritionScore } = await import('../utils/foodUtils')
         const { analyzeFoodQuality } = await import('../lib/food-database')
+        const { calculateNutritionScore } = await import('../utils/foodUtils')
         const todayEntries = (foodResponse.data || [])
           .filter((entry: any) => new Date(entry.created_at).toDateString() === today)
           .map((entry: any) => {
             // Re-analyze the description to get the quality
             const analysis = analyzeFoodQuality(entry.description)
-            return { quality: analysis.quality }
+            return {
+              ...entry,
+              id: entry.id || '',
+              quality: analysis.quality,
+              mealType: entry.meal_type || 'LUNCH',
+              time: entry.time || '',
+              location: entry.location || '',
+              description: entry.description || ''
+            } as FoodEntry
           })
         const scoreData = calculateNutritionScore(todayEntries)
         

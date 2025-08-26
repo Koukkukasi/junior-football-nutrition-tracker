@@ -7,6 +7,7 @@ import { Trophy, UtensilsCrossed, Zap, Moon, Plus, TrendingUp, Users, FileText, 
 import { supabaseAPI } from '../lib/supabase-api'
 import { analyzeFoodQuality } from '../lib/food-database'
 import { calculateNutritionScore } from '../utils/foodUtils'
+import type { FoodEntry } from '../types/food.types'
 import { calculateDailyXP, getLevelInfo, getLevelMessage } from '../lib/gamification'
 import { LevelBadge, LevelProgressBar } from '../components/gamification/LevelBadge'
 
@@ -25,7 +26,7 @@ function getTimeAgo(date: Date): string {
 }
 
 export default function Dashboard() {
-  const { user, session } = useSupabaseAuth()
+  const { user } = useSupabaseAuth()
   const navigate = useNavigate()
   useOnboarding() // Just run the hook for its side effects
   const [stats, setStats] = useState({
@@ -124,7 +125,15 @@ export default function Dashboard() {
         const todayQualityEntries = todayFoodEntries.map((entry: any) => {
           // Re-analyze the description to get the quality
           const analysis = analyzeFoodQuality(entry.description)
-          return { quality: analysis.quality }
+          return {
+            ...entry,
+            id: entry.id || '',
+            quality: analysis.quality,
+            mealType: entry.meal_type || 'LUNCH',
+            time: entry.time || '',
+            location: entry.location || '',
+            description: entry.description || ''
+          } as FoodEntry
         })
         const nutritionScoreData = calculateNutritionScore(todayQualityEntries)
         

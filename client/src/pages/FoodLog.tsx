@@ -122,30 +122,27 @@ export default function FoodLog() {
     try {
       // Try Supabase first, then backend API as fallback
       let response;
-      let saveError = null;
+      // let saveError = null; // Currently unused but might be needed for debugging
       
       try {
         // Use Supabase directly for data persistence
         console.log('Attempting to save via Supabase...');
         response = await supabaseAPI.food.create({
-          ...formData,
-          mealType: formData.mealType,
-          date: new Date().toISOString()
+          ...formData
         });
         console.log('Supabase save successful:', response);
       } catch (supabaseError) {
         console.log('Supabase failed:', supabaseError);
-        saveError = supabaseError;
+        // saveError = supabaseError;
         
         // Try backend API as fallback
         try {
           console.log('Attempting to save via backend API...');
           response = await API.food.create({
-            ...formData,
-            date: new Date().toISOString()
+            ...formData
           });
           console.log('Backend API save successful:', response);
-          saveError = null; // Clear error if backend succeeds
+          // saveError = null; // Clear error if backend succeeds
         } catch (apiError) {
           console.log('Backend API also failed:', apiError);
           // Both methods failed
@@ -172,7 +169,7 @@ export default function FoodLog() {
         const xpEarned = calculateDailyXP(nutritionScoreData.totalScore, todayEntries.length + 1);
         
         // Update user stats with XP (fire and forget, don't wait)
-        supabaseAPI.userStats.addXP(xpEarned, true, nutritionScoreData.totalScore >= 80).catch(err => {
+        supabaseAPI.userStats.addXP(xpEarned, true, nutritionScoreData.totalScore >= 80).catch(() => {
           // Silently fail if gamification isn't set up yet
           console.log('Gamification not set up yet - run setup-gamification.sql in Supabase');
         });
@@ -198,7 +195,7 @@ export default function FoodLog() {
         setShowForm(false);
       } else {
         // Show specific error message from backend if available
-        const errorMessage = response.error || 'Please try again';
+        const errorMessage = (response && 'error' in response ? response.error : null) || 'Please try again';
         error('Failed to save meal', errorMessage);
         console.error('Save failed - Backend returned:', response);
       }
@@ -212,7 +209,7 @@ export default function FoodLog() {
   };
 
   const nutritionScoreData = calculateNutritionScore(todayEntries);
-  const nutritionScore = nutritionScoreData.totalScore || 0;
+  // const nutritionScore = nutritionScoreData.totalScore || 0; // Currently using nutritionScoreData directly
   const currentHour = new Date().getHours();
   const recommendations = getTimeBasedRecommendations(currentHour);
 

@@ -94,7 +94,7 @@ export default function Team() {
     }, 500);
   };
 
-  const handleLeaveTeam = async (teamId: string) => {
+  const handleLeaveTeam = async () => {
     if (!confirm('Are you sure you want to leave this team?')) return;
 
     // Simulate leaving team (mock implementation)
@@ -184,7 +184,7 @@ export default function Team() {
                   {teams.map((team) => (
                     <div
                       key={team.id}
-                      onClick={() => fetchTeamDetails(team.id)}
+                      onClick={() => setSelectedTeam({...team, members: [], userRole: team.memberRole})}
                       className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         selectedTeam?.id === team.id
                           ? 'border-indigo-600 bg-indigo-50'
@@ -236,7 +236,7 @@ export default function Team() {
                   </div>
                   {selectedTeam.userRole !== 'COACH' && (
                     <button
-                      onClick={() => handleLeaveTeam(selectedTeam.id)}
+                      onClick={() => handleLeaveTeam()}
                       className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all"
                     >
                       Leave Team

@@ -119,7 +119,7 @@ export function useAnalyticsData(period: Period) {
           
           if (analyticsData.success && analyticsData.data) {
             // Process Supabase data into analytics format
-            const { foodEntries, performanceEntries } = analyticsData.data;
+            const { foodEntries } = analyticsData.data; // performanceEntries will be used in future updates
             
             // Generate trends from food entries
             const trends: NutritionTrend[] = [];

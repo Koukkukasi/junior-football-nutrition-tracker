@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '../contexts/UserContext';
 import { supabaseAPI } from '../lib/supabase-api';
 import { analyzeFoodQuality } from '../lib/food-database';
-import { calculateNutritionScore } from '../utils/foodUtils';
+// import { calculateNutritionScore } from '../utils/foodUtils'; // Currently unused
 import { 
   Users, 
   TrendingUp, 
@@ -13,7 +13,7 @@ import {
   Activity,
   ChevronRight,
   Search,
-  Filter,
+  // Filter, // Currently unused
   Moon,
   Zap,
   Trophy,
@@ -48,7 +48,7 @@ interface PlayerDetailModalProps {
 
 const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({ player, onClose }) => {
   const [playerMeals, setPlayerMeals] = useState<any[]>([]);
-  const [playerPerformance, setPlayerPerformance] = useState<any[]>([]);
+  // const [playerPerformance, setPlayerPerformance] = useState<any[]>([]); // Performance data - will be displayed in future updates
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,8 +78,8 @@ const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({ player, onClose }
       }
       
       if (perfResponse.success && perfResponse.data) {
-        const recentPerf = (perfResponse.data || []).slice(0, 7);
-        setPlayerPerformance(recentPerf);
+        // const recentPerf = (perfResponse.data || []).slice(0, 7);
+        // setPlayerPerformance(recentPerf); // Will use in future updates
       }
     } catch (error) {
       console.error('Failed to fetch player details:', error);
@@ -344,7 +344,7 @@ export default function CoachDashboard() {
         email: profile?.email || 'user@example.com',
         age: profile?.age || 14,
         ageGroup: profile?.ageGroup || '13-15',
-        position: profile?.position || 'PLAYER',
+        position: (profile as any)?.position || 'PLAYER',
         lastActive: new Date(),
         todayMeals,
         weekAvgScore,

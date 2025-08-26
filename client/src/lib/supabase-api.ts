@@ -9,7 +9,8 @@ interface FoodEntry {
   id?: string;
   user_id?: string;
   description: string;
-  meal_type: string;
+  meal_type?: string;
+  mealType?: string;  // Support both naming conventions
   quality_score?: number;
   calories?: number;
   protein?: number;

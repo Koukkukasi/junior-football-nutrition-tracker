@@ -188,7 +188,10 @@ export default function Performance() {
         fetchPerformanceData()
       } else {
         console.error('API error response:', response)
-        alert(response.error || response.message || 'Failed to save performance data')
+        const errorMessage = (response && 'error' in response ? response.error : null) || 
+                              (response && 'message' in response ? response.message : null) || 
+                              'Failed to save performance data';
+        alert(errorMessage)
       }
     } catch (error) {
       console.error('Error submitting performance data:', error)
