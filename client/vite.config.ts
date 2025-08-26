@@ -24,7 +24,7 @@ export default defineConfig({
     // Better code splitting
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
+        manualChunks: (id: string) => {
           // Bundle lucide-react icons with main bundle for better loading
           if (id.includes('lucide-react')) {
             return undefined; // Include in main bundle
@@ -51,7 +51,7 @@ export default defineConfig({
           }
         },
         // Better chunk naming
-        chunkFileNames: (chunkInfo) => {
+        chunkFileNames: (chunkInfo: any) => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
           return `js/${facadeModuleId}-[hash].js`;
         },
