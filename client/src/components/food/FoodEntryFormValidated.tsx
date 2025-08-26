@@ -55,10 +55,11 @@ export const FoodEntryFormValidated: React.FC<FoodEntryFormValidatedProps> = ({
 
   const mealTypes: { value: MealType; label: string; color: string }[] = [
     { value: 'BREAKFAST', label: 'Breakfast', color: 'from-yellow-400 to-orange-500' },
-    { value: 'SNACK', label: 'Morning Snack', color: 'from-green-400 to-emerald-500' },
+    { value: 'SNACK', label: 'Snack', color: 'from-green-400 to-emerald-500' },
     { value: 'LUNCH', label: 'Lunch', color: 'from-blue-400 to-cyan-500' },
     { value: 'DINNER', label: 'Dinner', color: 'from-purple-400 to-pink-500' },
-    { value: 'EVENING_SNACK', label: 'Evening Snack', color: 'from-indigo-400 to-purple-500' }
+    { value: 'PRE_GAME', label: 'Pre-Game', color: 'from-red-400 to-orange-500' },
+    { value: 'POST_GAME', label: 'Post-Game', color: 'from-indigo-400 to-purple-500' }
   ];
 
   // Validation functions

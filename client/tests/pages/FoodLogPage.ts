@@ -2,7 +2,7 @@ import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export interface MealEntry {
-  mealType: 'BREAKFAST' | 'SNACK' | 'LUNCH' | 'DINNER' | 'EVENING_SNACK';
+  mealType: 'BREAKFAST' | 'SNACK' | 'LUNCH' | 'DINNER' | 'PRE_GAME' | 'POST_GAME';
   time: string;
   location: string;
   description: string;

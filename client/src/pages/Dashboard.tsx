@@ -378,7 +378,8 @@ export default function Dashboard() {
                   LUNCH: 'from-green-400 to-green-600',
                   DINNER: 'from-blue-400 to-blue-600',
                   SNACK: 'from-purple-400 to-purple-600',
-                  EVENING_SNACK: 'from-pink-400 to-pink-600'
+                  PRE_GAME: 'from-red-400 to-red-600',
+                  POST_GAME: 'from-pink-400 to-pink-600'
                 }
                 const color = mealTypeColors[activity.mealType as keyof typeof mealTypeColors] || 'from-gray-400 to-gray-600'
                 const timeAgo = getTimeAgo(activity.timestamp)

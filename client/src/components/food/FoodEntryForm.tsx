@@ -22,11 +22,11 @@ export const FoodEntryForm: React.FC<FoodEntryFormProps> = ({
 }) => {
   const mealTypes: { value: MealType; label: string }[] = [
     { value: 'BREAKFAST', label: 'Breakfast' },
-    { value: 'SNACK', label: 'Morning Snack' },
+    { value: 'SNACK', label: 'Snack' },
     { value: 'LUNCH', label: 'Lunch' },
     { value: 'DINNER', label: 'Dinner' },
-    { value: 'EVENING_SNACK', label: 'Evening Snack' },
-    { value: 'AFTER_PRACTICE', label: '🏃 After Practice (Recovery)' }
+    { value: 'PRE_GAME', label: '⚽ Pre-Game' },
+    { value: 'POST_GAME', label: '🏃 Post-Game (Recovery)' }
   ];
 
   return (

@@ -140,7 +140,7 @@ test.describe('Food Logging E2E Tests', () => {
         description: 'Grilled fish, steamed vegetables, rice'
       },
       {
-        mealType: 'EVENING_SNACK' as const,
+        mealType: 'POST_GAME' as const,
         time: '20:00',
         location: 'Home',
         description: 'Yogurt with nuts'
@@ -166,7 +166,7 @@ test.describe('Food Logging E2E Tests', () => {
       { type: 'SNACK' as const, icon: '🥨' },
       { type: 'LUNCH' as const, icon: '☀️' },
       { type: 'DINNER' as const, icon: '🌙' },
-      { type: 'EVENING_SNACK' as const, icon: '🌃' }
+      { type: 'POST_GAME' as const, icon: '🏃' }
     ];
 
     for (const { type, icon } of mealTypes) {

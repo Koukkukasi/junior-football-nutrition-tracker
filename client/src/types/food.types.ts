@@ -2,7 +2,7 @@
  * Type definitions for Food Logging module
  */
 
-export type MealType = 'BREAKFAST' | 'SNACK' | 'LUNCH' | 'DINNER' | 'EVENING_SNACK' | 'AFTER_PRACTICE';
+export type MealType = 'BREAKFAST' | 'SNACK' | 'LUNCH' | 'DINNER' | 'PRE_GAME' | 'POST_GAME';
 export type MealTiming = 'pre-game' | 'post-game' | 'after-practice' | 'regular';
 export type FoodQuality = 'poor' | 'fair' | 'good' | 'excellent';
 
