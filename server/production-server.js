@@ -142,26 +142,46 @@ app.post('/api/v1/food', async (req, res) => {
     console.log('Creating food entry for user:', user.id);
     console.log('Data:', { mealType, time, description });
 
-    // Convert mealType to match database constraint
-    // Frontend might send: BREAKFAST, MORNING_SNACK, LUNCH, EVENING_SNACK, DINNER
-    // Need to handle all cases and map to what database expects
-    let normalizedMealType = 'breakfast'; // default
+    // Convert mealType to match database constraint exactly
+    // Frontend sends: BREAKFAST, MORNING_SNACK, LUNCH, EVENING_SNACK, DINNER
+    // Database might expect specific values - let's check what was sent
+    console.log('Raw mealType received from frontend:', mealType);
     
-    if (mealType) {
-      // First convert to lowercase
-      const lowerMealType = mealType.toLowerCase();
+    let normalizedMealType;
+    
+    if (!mealType) {
+      normalizedMealType = 'Breakfast'; // Try with capital first letter
+    } else {
+      // Try different formats to see what works
+      const upperMealType = mealType.toUpperCase();
       
-      // Map frontend values to database values
-      const mealTypeMap = {
-        'breakfast': 'breakfast',
-        'morning_snack': 'snack',
-        'lunch': 'lunch',
-        'evening_snack': 'snack',
-        'dinner': 'dinner',
-        'snack': 'snack'
-      };
-      
-      normalizedMealType = mealTypeMap[lowerMealType] || 'breakfast';
+      // Map to exact database format - might need capital first letter
+      switch(upperMealType) {
+        case 'BREAKFAST':
+          normalizedMealType = 'Breakfast';
+          break;
+        case 'MORNING_SNACK':
+        case 'MORNING SNACK':
+          normalizedMealType = 'Snack';
+          break;
+        case 'LUNCH':
+          normalizedMealType = 'Lunch';
+          break;
+        case 'EVENING_SNACK':
+        case 'EVENING SNACK':
+          normalizedMealType = 'Snack';
+          break;
+        case 'DINNER':
+          normalizedMealType = 'Dinner';
+          break;
+        case 'SNACK':
+          normalizedMealType = 'Snack';
+          break;
+        default:
+          // If nothing matches, try the original value
+          normalizedMealType = 'Breakfast';
+          console.warn('Unknown meal type:', mealType, '- defaulting to Breakfast');
+      }
     }
 
     // Combine today's date with the provided time for created_at
@@ -174,7 +194,7 @@ app.post('/api/v1/food', async (req, res) => {
       createdAt = today.toISOString();
     }
 
-    console.log('Normalized meal_type for database:', normalizedMealType);
+    console.log('Normalized meal_type for database:', normalizedMealType, '(from original:', mealType, ')');
 
     // Save to Supabase (only with basic columns that exist)
     const { data, error } = await supabase
