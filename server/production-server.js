@@ -155,27 +155,27 @@ app.post('/api/v1/food', async (req, res) => {
       // Try different formats to see what works
       const upperMealType = mealType.toUpperCase();
       
-      // Map to exact database format - database might want UPPERCASE
+      // Map to exact database format - keep the original format with underscores
       switch(upperMealType) {
         case 'BREAKFAST':
           normalizedMealType = 'BREAKFAST';
           break;
         case 'MORNING_SNACK':
         case 'MORNING SNACK':
-          normalizedMealType = 'SNACK';
+          normalizedMealType = 'MORNING_SNACK';
           break;
         case 'LUNCH':
           normalizedMealType = 'LUNCH';
           break;
         case 'EVENING_SNACK':
         case 'EVENING SNACK':
-          normalizedMealType = 'SNACK';
+          normalizedMealType = 'EVENING_SNACK';
           break;
         case 'DINNER':
           normalizedMealType = 'DINNER';
           break;
         case 'SNACK':
-          normalizedMealType = 'SNACK';
+          normalizedMealType = 'MORNING_SNACK';  // Default snack to morning
           break;
         default:
           // If nothing matches, try the original value
