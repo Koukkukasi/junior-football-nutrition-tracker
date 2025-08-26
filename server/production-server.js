@@ -56,10 +56,10 @@ app.use((req, res, next) => {
 // Serve static files from the React app build directory
 // Try multiple possible paths since Render's structure might vary
 const possiblePaths = [
-  path.join(__dirname, '..', 'client', 'dist'),  // From server directory
-  path.join(__dirname, '..', '..', 'client', 'dist'),  // From deeper directory
-  path.join(process.cwd(), 'client', 'dist'),  // From working directory
-  '/opt/render/project/src/client/dist'  // Absolute Render path
+  '/opt/render/project/src/client/dist',  // Absolute Render path (correct one)
+  path.join(__dirname, '..', 'client', 'dist'),  // From server directory to sibling client
+  path.join(process.cwd(), '..', 'client', 'dist'),  // From working directory up one level
+  path.join(__dirname, '..', '..', 'client', 'dist')  // From deeper directory
 ];
 
 let clientBuildPath = null;
@@ -78,7 +78,34 @@ if (!clientBuildPath) {
   console.error('✗ Client build directory not found in any of:', possiblePaths);
   console.log('Current directory:', __dirname);
   console.log('Working directory:', process.cwd());
-  console.log('Directory contents:', fs.readdirSync(process.cwd()));
+  console.log('Current dir contents:', fs.readdirSync(process.cwd()));
+  
+  // Check parent directory
+  const parentDir = path.join(process.cwd(), '..');
+  console.log('Parent directory:', parentDir);
+  try {
+    console.log('Parent dir contents:', fs.readdirSync(parentDir));
+    
+    // Check if client exists in parent
+    const clientPath = path.join(parentDir, 'client');
+    if (fs.existsSync(clientPath)) {
+      console.log('Client directory found at:', clientPath);
+      console.log('Client contents:', fs.readdirSync(clientPath));
+      
+      // Check for dist in client
+      const distPath = path.join(clientPath, 'dist');
+      if (fs.existsSync(distPath)) {
+        console.log('✓ Found dist at:', distPath);
+        clientBuildPath = distPath;
+        app.use(express.static(clientBuildPath));
+        console.log('Now serving static files from:', clientBuildPath);
+      } else {
+        console.log('✗ No dist directory in client');
+      }
+    }
+  } catch (e) {
+    console.error('Error reading parent directory:', e.message);
+  }
 } else {
   app.use(express.static(clientBuildPath));
   console.log('Serving static files from:', clientBuildPath);
