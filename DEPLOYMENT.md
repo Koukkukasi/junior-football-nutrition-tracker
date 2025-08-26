@@ -33,7 +33,7 @@
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-org/junior-football-nutrition-tracker.git
+git clone https://github.com/ilmiv/junior-football-nutrition-tracker.git
 cd junior-football-nutrition-tracker
 ```
 
@@ -47,7 +47,8 @@ Create `.env` files for production:
 DATABASE_URL=postgresql://nutrition_user:secure_password@localhost:5432/nutrition_tracker
 
 # Authentication
-CLERK_SECRET_KEY=sk_live_your_production_secret_key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 CLERK_PUBLISHABLE_KEY=pk_live_your_production_publishable_key
 CLERK_WEBHOOK_SECRET=whsec_your_webhook_secret
 

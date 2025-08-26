@@ -2,10 +2,4 @@
  * Global type declarations
  */
 
-interface Window {
-  Clerk?: {
-    session?: {
-      getToken: () => Promise<string | null>;
-    };
-  };
-}
+// Add any global type declarations here if needed

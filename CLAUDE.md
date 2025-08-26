@@ -391,11 +391,11 @@ interface ApiResponse<T> {
 // Prisma ORM with proper indexing
 model User {
   id        String   @id @default(uuid())
-  clerkId   String   @unique
+  supabaseId String   @unique
   email     String   @unique
   // ... fields
   
-  @@index([clerkId])
+  @@index([supabaseId])
   @@index([email])
 }
 ```
@@ -488,14 +488,15 @@ export function analyzeFoodQuality(
 #### Server (.env)
 ```bash
 DATABASE_URL="postgresql://nutrition_user:nutrition_pass@localhost:5433/nutrition_tracker"
-CLERK_SECRET_KEY="sk_test_..."
+SUPABASE_SERVICE_ROLE_KEY="your_service_role_key"
 FRONTEND_URL="http://localhost:5173"
 NODE_ENV="development"
 ```
 
 #### Client (.env.local)
 ```bash
-VITE_CLERK_PUBLISHABLE_KEY="pk_test_..."
+VITE_SUPABASE_URL="https://your-project.supabase.co"
+VITE_SUPABASE_ANON_KEY="your_anon_key"
 VITE_API_URL="http://localhost:3001"
 ```
 

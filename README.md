@@ -48,7 +48,7 @@ npm install
 3. Set up environment variables:
 ```bash
 cp .env.example .env
-# Edit .env with your Clerk API keys
+# Edit .env with your Supabase configuration
 ```
 
 4. Generate Prisma client:
@@ -87,7 +87,7 @@ The frontend will run on http://localhost:5173
 
 ### Authentication
 - `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/sync-user` - Sync user with Clerk
+- `POST /api/v1/auth/sync-user` - Sync user with Supabase
 - `GET /api/v1/auth/me` - Get current user
 - `PUT /api/v1/auth/profile` - Update user profile
 
@@ -96,7 +96,7 @@ The frontend will run on http://localhost:5173
 
 ## Database Schema
 
-- **Users** - Player/coach profiles with Clerk integration
+- **Users** - Player/coach profiles with Supabase authentication
 - **Teams** - Team management with unique codes
 - **FoodEntries** - Daily nutrition logging
 - **PerformanceMetrics** - Energy levels, sleep, training data
