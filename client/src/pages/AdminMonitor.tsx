@@ -39,7 +39,7 @@ export default function AdminMonitor() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`
+          'Authorization': `Bearer ${localStorage.getItem('sb-qlhkefgrafakbrcwquhv-auth-token') || ''}`
         },
         body: JSON.stringify({ email })
       });

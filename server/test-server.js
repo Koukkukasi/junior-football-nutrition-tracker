@@ -12,10 +12,31 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Middleware
+// Middleware - Allow all localhost origins for development
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    // Allow any localhost port
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      return callback(null, true);
+    }
+    
+    // Allow specific production URLs if needed
+    const allowedOrigins = [
+      'https://junior-football-nutrition-client.onrender.com'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -85,23 +106,30 @@ app.post('/api/v1/food', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
-    const { mealType, time, location, description, notes, date } = req.body;
+    const { mealType, time, description } = req.body;
     
     console.log('Creating food entry for user:', user.id);
-    console.log('Data:', { mealType, time, location, description });
+    console.log('Data:', { mealType, time, description });
 
-    // Save to Supabase
+    // Combine today's date with the provided time for created_at
+    const today = new Date();
+    let createdAt = new Date().toISOString();
+    
+    if (time) {
+      const [hours, minutes] = time.split(':');
+      today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      createdAt = today.toISOString();
+    }
+
+    // Save to Supabase (store time in created_at field)
     const { data, error } = await supabase
       .from('food_entries')
       .insert({
         user_id: user.id,
         meal_type: mealType,
-        time,
-        location,
         description,
-        notes,
         quality_score: 85, // Hardcoded for testing
-        created_at: new Date().toISOString()
+        created_at: createdAt
       })
       .select()
       .single();
@@ -112,7 +140,12 @@ app.post('/api/v1/food', async (req, res) => {
     }
 
     console.log('Food entry created:', data.id);
-    res.status(201).json({ success: true, data });
+    // Include the time in the response
+    const responseData = {
+      ...data,
+      time: time || new Date(data.created_at).toTimeString().slice(0, 5)
+    };
+    res.status(201).json({ success: true, data: responseData });
   } catch (error) {
     console.error('Error creating food entry:', error);
     res.status(500).json({ success: false, error: error.message });
