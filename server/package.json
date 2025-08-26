@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "cd ../client && npm install && npm run build",
+    "build": "cd ../client && npm install --production=false && npm run build",
     "start": "node production-server.js",
     "test": "jest",
     "test:watch": "jest --watch",

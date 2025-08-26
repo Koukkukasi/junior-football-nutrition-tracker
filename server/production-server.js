@@ -106,8 +106,8 @@ if (!clientBuildPath) {
         // Try to build the client if dist doesn't exist
         const { execSync } = require('child_process');
         try {
-          console.log('Installing client dependencies...');
-          execSync('npm install', { cwd: clientPath, stdio: 'inherit' });
+          console.log('Installing client dependencies (including dev)...');
+          execSync('npm install --production=false', { cwd: clientPath, stdio: 'inherit' });
           console.log('Building client...');
           execSync('npm run build', { cwd: clientPath, stdio: 'inherit' });
           
