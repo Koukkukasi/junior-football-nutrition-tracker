@@ -142,10 +142,27 @@ app.post('/api/v1/food', async (req, res) => {
     console.log('Creating food entry for user:', user.id);
     console.log('Data:', { mealType, time, description });
 
-    // Convert mealType to lowercase to match database constraint
-    // Frontend sends: BREAKFAST, LUNCH, DINNER, etc.
-    // Database expects: breakfast, lunch, dinner, etc.
-    const normalizedMealType = mealType ? mealType.toLowerCase() : 'breakfast';
+    // Convert mealType to match database constraint
+    // Frontend might send: BREAKFAST, MORNING_SNACK, LUNCH, EVENING_SNACK, DINNER
+    // Need to handle all cases and map to what database expects
+    let normalizedMealType = 'breakfast'; // default
+    
+    if (mealType) {
+      // First convert to lowercase
+      const lowerMealType = mealType.toLowerCase();
+      
+      // Map frontend values to database values
+      const mealTypeMap = {
+        'breakfast': 'breakfast',
+        'morning_snack': 'snack',
+        'lunch': 'lunch',
+        'evening_snack': 'snack',
+        'dinner': 'dinner',
+        'snack': 'snack'
+      };
+      
+      normalizedMealType = mealTypeMap[lowerMealType] || 'breakfast';
+    }
 
     // Combine today's date with the provided time for created_at
     const today = new Date();
