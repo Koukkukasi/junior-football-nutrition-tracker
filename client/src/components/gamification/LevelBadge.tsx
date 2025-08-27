@@ -48,11 +48,11 @@ export function LevelProgressBar({ totalXP }: { totalXP: number }) {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-white/90">
-          Level {levelInfo.levelNumber} - {levelInfo.rank}
+        <span className="text-sm text-white/90">
+          Level {levelInfo.levelNumber}
         </span>
-        <span className="text-xs text-white/70">
-          {levelInfo.xpToNextLevel} XP to next level
+        <span className="text-sm text-white/70">
+          {levelInfo.xpToNextLevel} XP to next
         </span>
       </div>
       <div className="w-full bg-white/20 rounded-full h-2">
