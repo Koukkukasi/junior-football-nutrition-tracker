@@ -22,10 +22,10 @@ export function LevelBadge({ totalXP, size = 'medium', showProgress = true }: Le
         <span className={`${sizeClasses[size]} font-semibold`}>
           {levelInfo.emoji}
         </span>
-        <span className={`${sizeClasses[size]} font-medium text-gray-700`}>
+        <span className={`${sizeClasses[size]} font-medium text-white`}>
           {levelInfo.rank}
         </span>
-        <span className={`${sizeClasses[size === 'small' ? 'small' : size]} text-gray-500`}>
+        <span className={`${sizeClasses[size === 'small' ? 'small' : size]} text-white/80`}>
           Lvl {levelInfo.levelNumber}
         </span>
       </div>
@@ -33,7 +33,7 @@ export function LevelBadge({ totalXP, size = 'medium', showProgress = true }: Le
       {/* XP display */}
       {showProgress && (
         <div className="flex items-center gap-1">
-          <span className={`${sizeClasses[size]} text-gray-600`}>
+          <span className={`${sizeClasses[size]} text-white/90`}>
             {formatXP(totalXP)} XP
           </span>
         </div>
@@ -48,16 +48,16 @@ export function LevelProgressBar({ totalXP }: { totalXP: number }) {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-gray-600">
+        <span className="text-xs text-white/90">
           Level {levelInfo.levelNumber} - {levelInfo.rank}
         </span>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-white/70">
           {levelInfo.xpToNextLevel} XP to next level
         </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-white/20 rounded-full h-2">
         <div 
-          className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
+          className="h-2 rounded-full bg-white/60 transition-all duration-500"
           style={{ width: `${levelInfo.progressPercent}%` }}
         />
       </div>
