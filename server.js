@@ -145,13 +145,37 @@ app.post('/api/v1/food', async (req, res) => {
 
 // Serve static files from the React app build directory
 const clientBuildPath = path.join(__dirname, 'client', 'dist');
-app.use(express.static(clientBuildPath));
+console.log('Attempting to serve static files from:', clientBuildPath);
 
-// The "catchall" handler: for any request that doesn't match API routes,
-// send back the React app's index.html file.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
+// Check if build directory exists
+const fs = require('fs');
+if (fs.existsSync(clientBuildPath)) {
+  console.log('Client build directory found!');
+  app.use(express.static(clientBuildPath));
+  
+  // The "catchall" handler: for any request that doesn't match API routes,
+  // send back the React app's index.html file.
+  app.get('*', (req, res) => {
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('Frontend build not found. Please ensure the client has been built.');
+    }
+  });
+} else {
+  console.error('WARNING: Client build directory not found at:', clientBuildPath);
+  console.error('Please run "npm run build" to build the client first.');
+  
+  // Fallback response when no build exists
+  app.get('*', (req, res) => {
+    res.status(503).json({
+      error: 'Frontend not available',
+      message: 'The client application has not been built. Please run npm run build.',
+      path: clientBuildPath
+    });
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

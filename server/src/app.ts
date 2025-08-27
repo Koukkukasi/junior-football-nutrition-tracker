@@ -6,6 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 // import morgan from 'morgan';
 import compression from 'compression';
+import path from 'path';
 import authRoutes from './routes/auth.routes';
 import foodRoutes from './routes/food.routes';
 import performanceRoutes from './routes/performance.routes';
@@ -110,16 +111,39 @@ app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/teams', teamRoutes);
 
-// 404 handler for unmatched routes
-app.use((req: Request, res: Response) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    method: req.method,
-    url: req.url,
-    path: req.path,
-    timestamp: new Date().toISOString()
+// Serve static files from the client build in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the client build directory
+  const clientBuildPath = path.join(__dirname, '../../client/dist');
+  app.use(express.static(clientBuildPath));
+  
+  // Serve index.html for all non-API routes (client-side routing)
+  app.get('*', (req: Request, res: Response) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api/')) {
+      res.status(404).json({ 
+        error: 'API route not found',
+        method: req.method,
+        url: req.url,
+        path: req.path,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.sendFile(path.join(clientBuildPath, 'index.html'));
+    }
   });
-});
+} else {
+  // 404 handler for unmatched routes in development
+  app.use((req: Request, res: Response) => {
+    res.status(404).json({ 
+      error: 'Route not found',
+      method: req.method,
+      url: req.url,
+      path: req.path,
+      timestamp: new Date().toISOString()
+    });
+  });
+}
 
 // Error handling middleware
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
