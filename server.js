@@ -24,9 +24,21 @@ app.use(helmet({
   },
 }));
 app.use(compression());
-app.use(cors());
+
+// More permissive CORS for production
+app.use(cors({
+  origin: true, // Allow all origins for now
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined'));
+
+// Handle OPTIONS requests for CORS preflight
+app.options('*', cors());
 
 // Import backend routes
 const { createClient } = require('@supabase/supabase-js');
@@ -41,6 +53,15 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  if (req.method === 'POST') {
+    console.log('POST body:', req.body);
+  }
+  next();
+});
+
 // API Routes
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
@@ -50,7 +71,7 @@ app.get('/api/v1/health', (req, res) => {
   res.json({
     name: 'Junior Football Nutrition Tracker API',
     status: 'running',
-    endpoints: ['/health', '/api/v1/health', '/api/v1/food']
+    endpoints: ['/health', '/api/v1/health', '/api/v1/food', '/api/v1/feedback']
   });
 });
 
@@ -174,8 +195,13 @@ app.get('/api/v1/users/profile', async (req, res) => {
   }
 });
 
-// Feedback endpoint
+// Feedback endpoint - explicit route
 app.post('/api/v1/feedback', async (req, res) => {
+  console.log('Feedback endpoint hit!');
+  console.log('Request method:', req.method);
+  console.log('Request path:', req.path);
+  console.log('Request body:', req.body);
+  
   try {
     const authHeader = req.headers.authorization;
     const { type, message, rating, userAgent, url, timestamp } = req.body;
