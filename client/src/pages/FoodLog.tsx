@@ -34,7 +34,7 @@ export default function FoodLog() {
   const [formData, setFormData] = useState<FoodFormData>({
     mealType: 'BREAKFAST',
     time: '',
-    location: '',
+    location: 'Home',
     description: '',
     notes: ''
   });
@@ -163,7 +163,7 @@ export default function FoodLog() {
         setFormData({
           mealType: 'BREAKFAST',
           time: '',
-          location: '',
+          location: 'Home',
           description: '',
           notes: ''
         });
@@ -217,7 +217,7 @@ export default function FoodLog() {
             setFormData({
               mealType: 'BREAKFAST',
               time: '',
-              location: '',
+              location: 'Home',
               description: '',
               notes: ''
             });
