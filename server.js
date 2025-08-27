@@ -268,35 +268,54 @@ app.post('/api/v1/feedback', async (req, res) => {
 });
 
 // Serve static files from the React app build directory
-const clientBuildPath = path.join(__dirname, 'client', 'dist');
-console.log('Attempting to serve static files from:', clientBuildPath);
-
-// Check if build directory exists
 const fs = require('fs');
+const clientBuildPath = path.join(__dirname, 'client', 'dist');
+
+console.log('=== Frontend Configuration ===');
+console.log('Looking for client build at:', clientBuildPath);
+console.log('Directory exists?', fs.existsSync(clientBuildPath));
+
 if (fs.existsSync(clientBuildPath)) {
-  console.log('Client build directory found!');
+  const indexPath = path.join(clientBuildPath, 'index.html');
+  console.log('Index.html exists?', fs.existsSync(indexPath));
+  
+  // List files in build directory
+  const files = fs.readdirSync(clientBuildPath);
+  console.log('Files in build directory:', files);
+  
+  // Serve static files
   app.use(express.static(clientBuildPath));
   
-  // The "catchall" handler: for any request that doesn't match API routes,
-  // send back the React app's index.html file.
+  // For any non-API route, serve the React app
   app.get('*', (req, res) => {
-    const indexPath = path.join(clientBuildPath, 'index.html');
+    // Skip API routes
+    if (req.path.startsWith('/api/') || req.path.startsWith('/health')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    
+    // Serve index.html for client routes
     if (fs.existsSync(indexPath)) {
+      console.log(`Serving index.html for route: ${req.path}`);
       res.sendFile(indexPath);
     } else {
-      res.status(404).send('Frontend build not found. Please ensure the client has been built.');
+      res.status(500).send('index.html not found in build directory');
     }
   });
 } else {
-  console.error('WARNING: Client build directory not found at:', clientBuildPath);
-  console.error('Please run "npm run build" to build the client first.');
+  console.error('ERROR: Client build directory not found!');
+  console.error('Build command should create:', clientBuildPath);
   
-  // Fallback response when no build exists
+  // Return error for all non-API routes
   app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/health')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    
     res.status(503).json({
-      error: 'Frontend not available',
-      message: 'The client application has not been built. Please run npm run build.',
-      path: clientBuildPath
+      error: 'Frontend not built',
+      message: 'Client build directory not found. The build process may have failed.',
+      expected: clientBuildPath,
+      exists: false
     });
   });
 }
