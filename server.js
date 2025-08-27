@@ -195,73 +195,122 @@ app.get('/api/v1/users/profile', async (req, res) => {
   }
 });
 
-// Feedback endpoint - explicit route
+// Feedback endpoint - explicit route with improved error handling
 app.post('/api/v1/feedback', async (req, res) => {
-  console.log('Feedback endpoint hit!');
-  console.log('Request method:', req.method);
-  console.log('Request path:', req.path);
-  console.log('Request body:', req.body);
+  console.log('[FEEDBACK] Endpoint hit at:', new Date().toISOString());
+  console.log('[FEEDBACK] Request body:', req.body);
   
   try {
     const authHeader = req.headers.authorization;
     const { type, message, rating, userAgent, url, timestamp } = req.body;
     
-    // Log feedback for now (you can store in Supabase later)
-    console.log('Feedback received:', {
-      type,
+    // Validate required fields
+    if (!message || !type) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message and type are required fields'
+      });
+    }
+    
+    // Create feedback object
+    const feedbackData = {
+      type: type || 'general',
       message,
-      rating,
-      userAgent,
-      url,
-      timestamp,
-      hasAuth: !!authHeader
-    });
-
-    // If we have Supabase configured and auth, we could save to database
-    if (authHeader && supabase) {
+      rating: rating || null,
+      page_url: url || req.headers.referer || null,
+      user_agent: userAgent || req.headers['user-agent'] || null,
+      created_at: timestamp || new Date().toISOString()
+    };
+    
+    // Try to save to database if authenticated
+    let savedToDatabase = false;
+    let userId = null;
+    
+    if (authHeader && supabase && supabaseUrl && supabaseKey) {
       const token = authHeader.replace('Bearer ', '');
       
       try {
         // Verify user with Supabase
-        const { data: { user } } = await supabase.auth.getUser(token);
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         
-        if (user) {
-          // Try to save to feedback table if it exists
+        if (user && !authError) {
+          userId = user.id;
+          feedbackData.user_id = userId;
+          
+          // Try to save to feedback table
           const { data, error } = await supabase
             .from('feedback')
-            .insert([{
-              user_id: user.id,
-              type: type || 'general',
-              message,
-              rating,
-              page_url: url,
-              user_agent: userAgent,
-              created_at: timestamp || new Date().toISOString()
-            }])
+            .insert([feedbackData])
             .select()
             .single();
 
           if (!error) {
-            return res.json({ success: true, data });
+            savedToDatabase = true;
+            console.log('[FEEDBACK] Successfully saved to database:', data.id);
+            
+            // Return early with database success
+            return res.json({ 
+              success: true,
+              message: 'Feedback saved successfully',
+              id: data.id,
+              savedToDatabase: true
+            });
+          } else {
+            console.log('[FEEDBACK] Database save failed:', error.message);
+            // Continue to fallback file storage
           }
-          // If table doesn't exist, just log it
-          console.log('Could not save to database:', error?.message);
         }
       } catch (dbError) {
-        console.log('Feedback database save failed:', dbError);
+        console.log('[FEEDBACK] Database operation error:', dbError.message);
+        // Continue to fallback file storage
       }
     }
     
-    // Return success even if we couldn't save to database
-    res.json({ 
-      success: true, 
-      message: 'Feedback received. Thank you!' 
-    });
+    // Fallback: Save to file system
+    const fs = require('fs').promises;
+    const feedbackDir = path.join(__dirname, 'feedback');
+    
+    try {
+      // Ensure feedback directory exists
+      await fs.mkdir(feedbackDir, { recursive: true });
+      
+      // Create filename with timestamp
+      const feedbackId = `feedback_${Date.now()}_${type}`;
+      const filename = `${feedbackId}.json`;
+      const filepath = path.join(feedbackDir, filename);
+      
+      // Add user info if available
+      feedbackData.user_id = userId;
+      feedbackData.saved_to = 'filesystem';
+      
+      // Write feedback to file
+      await fs.writeFile(filepath, JSON.stringify(feedbackData, null, 2), 'utf-8');
+      
+      console.log('[FEEDBACK] Saved to file:', filename);
+      
+      res.json({ 
+        success: true, 
+        message: 'Feedback received and saved. Thank you!',
+        id: feedbackId,
+        savedToDatabase: false,
+        savedToFile: true
+      });
+    } catch (fileError) {
+      console.error('[FEEDBACK] File save error:', fileError);
+      
+      // Even if file save fails, acknowledge receipt
+      res.json({ 
+        success: true, 
+        message: 'Feedback received. Thank you!',
+        savedToDatabase: false,
+        savedToFile: false
+      });
+    }
   } catch (error) {
-    console.error('Error in POST /api/v1/feedback:', error);
+    console.error('[FEEDBACK] Critical error:', error);
     res.status(500).json({ 
       success: false,
-      error: 'Failed to submit feedback',
+      error: 'Failed to process feedback',
       code: 'HTTP_500'
     });
   }
