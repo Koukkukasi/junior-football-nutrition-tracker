@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Send, Bug, Lightbulb, Heart, AlertCircle } from 'lucide-react';
 import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
+import { apiRequest } from '../../lib/api';
 
 type FeedbackType = 'bug' | 'feature' | 'general' | 'praise';
 
@@ -39,18 +40,14 @@ export default function FeedbackWidget() {
     };
     
     try {
-      // Send feedback to backend
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_BASE}/api/v1/feedback`, {
+      // Send feedback to backend using centralized API configuration
+      const response = await apiRequest('/api/v1/feedback', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify(feedbackData)
+        body: feedbackData,
+        token: session?.access_token
       });
       
-      if (response.ok) {
+      if (response.success) {
         setShowSuccess(true);
         setMessage('');
         setRating(0);
