@@ -143,6 +143,104 @@ app.post('/api/v1/food', async (req, res) => {
   }
 });
 
+// User profile endpoints
+app.get('/api/v1/users/profile', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No authorization header' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    res.json({ 
+      success: true, 
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        age: user.user_metadata?.age || 16,
+        ageGroup: '16-18'
+      }
+    });
+  } catch (error) {
+    console.error('Error in GET /api/v1/users/profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Feedback endpoint
+app.post('/api/v1/feedback', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const { type, message, rating, userAgent, url, timestamp } = req.body;
+    
+    // Log feedback for now (you can store in Supabase later)
+    console.log('Feedback received:', {
+      type,
+      message,
+      rating,
+      userAgent,
+      url,
+      timestamp,
+      hasAuth: !!authHeader
+    });
+
+    // If we have Supabase configured and auth, we could save to database
+    if (authHeader && supabase) {
+      const token = authHeader.replace('Bearer ', '');
+      
+      try {
+        // Verify user with Supabase
+        const { data: { user } } = await supabase.auth.getUser(token);
+        
+        if (user) {
+          // Try to save to feedback table if it exists
+          const { data, error } = await supabase
+            .from('feedback')
+            .insert([{
+              user_id: user.id,
+              type: type || 'general',
+              message,
+              rating,
+              page_url: url,
+              user_agent: userAgent,
+              created_at: timestamp || new Date().toISOString()
+            }])
+            .select()
+            .single();
+
+          if (!error) {
+            return res.json({ success: true, data });
+          }
+          // If table doesn't exist, just log it
+          console.log('Could not save to database:', error?.message);
+        }
+      } catch (dbError) {
+        console.log('Feedback database save failed:', dbError);
+      }
+    }
+    
+    // Return success even if we couldn't save to database
+    res.json({ 
+      success: true, 
+      message: 'Feedback received. Thank you!' 
+    });
+  } catch (error) {
+    console.error('Error in POST /api/v1/feedback:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to submit feedback',
+      code: 'HTTP_500'
+    });
+  }
+});
+
 // Serve static files from the React app build directory
 const clientBuildPath = path.join(__dirname, 'client', 'dist');
 console.log('Attempting to serve static files from:', clientBuildPath);
@@ -186,4 +284,6 @@ app.listen(PORT, () => {
   console.log('  GET  /api/v1/health');
   console.log('  GET  /api/v1/food');
   console.log('  POST /api/v1/food');
+  console.log('  GET  /api/v1/users/profile');
+  console.log('  POST /api/v1/feedback');
 });
