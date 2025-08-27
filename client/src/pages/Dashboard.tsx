@@ -200,64 +200,64 @@ export default function Dashboard() {
         ) : (
           <>
             {/* Combined Progress Card - Nutrition Score & Level */}
-            <div className="bg-gradient-to-br from-purple-500 via-blue-600 to-cyan-500 rounded-xl shadow-lg p-6 text-white col-span-2">
-          <div className="grid grid-cols-2 gap-6">
-            {/* Left side - Level and XP */}
-            <div>
-              <p className="text-sm font-medium text-white/80 uppercase tracking-wider mb-2">
-                Your Progress
-              </p>
-              <div className="flex items-center gap-3 mb-3">
-                <LevelBadge totalXP={userStats.totalXP} size="large" showProgress={false} />
+            <div className="bg-gradient-to-br from-purple-500 via-blue-600 to-cyan-500 rounded-xl shadow-lg p-6 text-white col-span-1 md:col-span-2 lg:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left side - Level and XP */}
                 <div>
-                  <p className="text-2xl font-bold">+{todayXP} XP</p>
-                  <p className="text-xs text-white/80">earned today</p>
+                  <p className="text-sm font-medium text-white/80 uppercase tracking-wider mb-2">
+                    Your Progress
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-3">
+                    <LevelBadge totalXP={userStats.totalXP} size="large" showProgress={false} />
+                    <div>
+                      <p className="text-2xl font-bold">+{todayXP} XP</p>
+                      <p className="text-xs text-white/80">earned today</p>
+                    </div>
+                  </div>
+                  <LevelProgressBar totalXP={userStats.totalXP} />
+                  <p className="text-xs text-white/70 mt-2">
+                    {getLevelMessage(getLevelInfo(userStats.totalXP).levelNumber)}
+                  </p>
+                  {userStats.currentStreak > 0 && (
+                    <p className="text-xs text-white/90 mt-2">
+                      🔥 {userStats.currentStreak} day streak!
+                    </p>
+                  )}
+                </div>
+                
+                {/* Right side - Nutrition Score */}
+                <div>
+                  <p className="text-sm font-medium text-white/80 uppercase tracking-wider mb-2">
+                    Today's Nutrition
+                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-3xl font-bold">
+                        {stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '--'}
+                      </p>
+                      <p className="text-xs text-white/80">
+                        {stats.todayMeals > 0 ? 'nutrition score' : 'Log meals to see score'}
+                      </p>
+                    </div>
+                    <Trophy className="w-10 h-10 text-white/70" />
+                  </div>
+                  <div className="w-full bg-white/20 rounded-full h-2.5 mb-2">
+                    <div 
+                      className="h-2.5 rounded-full transition-all duration-500"
+                      style={{ 
+                        width: stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '0%',
+                        backgroundColor: stats.nutritionScore >= 81 ? '#10b981' : 
+                                        stats.nutritionScore >= 61 ? '#3b82f6' :
+                                        stats.nutritionScore >= 41 ? '#f59e0b' : '#ef4444'
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-white/70">
+                    {stats.todayMeals} of 5 meals logged today
+                  </p>
                 </div>
               </div>
-              <LevelProgressBar totalXP={userStats.totalXP} />
-              <p className="text-xs text-white/70 mt-2">
-                {getLevelMessage(getLevelInfo(userStats.totalXP).levelNumber)}
-              </p>
-              {userStats.currentStreak > 0 && (
-                <p className="text-xs text-white/90 mt-2">
-                  🔥 {userStats.currentStreak} day streak!
-                </p>
-              )}
             </div>
-            
-            {/* Right side - Nutrition Score */}
-            <div>
-              <p className="text-sm font-medium text-white/80 uppercase tracking-wider mb-2">
-                Today's Nutrition
-              </p>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-3xl font-bold">
-                    {stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '--'}
-                  </p>
-                  <p className="text-xs text-white/80">
-                    {stats.todayMeals > 0 ? 'nutrition score' : 'Log meals to see score'}
-                  </p>
-                </div>
-                <Trophy className="w-10 h-10 text-white/70" />
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-2.5 mb-2">
-                <div 
-                  className="h-2.5 rounded-full transition-all duration-500"
-                  style={{ 
-                    width: stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '0%',
-                    backgroundColor: stats.nutritionScore >= 81 ? '#10b981' : 
-                                    stats.nutritionScore >= 61 ? '#3b82f6' :
-                                    stats.nutritionScore >= 41 ? '#f59e0b' : '#ef4444'
-                  }}
-                />
-              </div>
-              <p className="text-xs text-white/70">
-                {stats.todayMeals} of 5 meals logged today
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Meals Logged Card */}
         <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
