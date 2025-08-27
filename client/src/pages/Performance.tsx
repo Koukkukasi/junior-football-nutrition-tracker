@@ -437,17 +437,52 @@ export default function Performance() {
                   );
                 })()}
                 
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.hadRecoveryMeal}
-                    onChange={(e) => setFormData({...formData, hadRecoveryMeal: e.target.checked})}
-                    className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    I ate something with protein after training 🥛🥜
-                  </span>
-                </label>
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">
+                    Recovery Nutrition
+                  </p>
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 border border-green-200">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.hadRecoveryMeal}
+                        onChange={(e) => setFormData({...formData, hadRecoveryMeal: e.target.checked})}
+                        className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        Had recovery meal/snack within 30 minutes
+                      </span>
+                    </label>
+                    
+                    {formData.hadRecoveryMeal && (
+                      <div className="mt-3 ml-8 space-y-2">
+                        <p className="text-xs text-gray-600 font-medium">Recovery meal included:</p>
+                        <div className="flex flex-wrap gap-2">
+                          <label className="flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full cursor-pointer">
+                            <input type="checkbox" className="w-3 h-3 text-blue-600 rounded" />
+                            <span>🥛 Protein</span>
+                          </label>
+                          <label className="flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full cursor-pointer">
+                            <input type="checkbox" className="w-3 h-3 text-blue-600 rounded" />
+                            <span>🍌 Carbs</span>
+                          </label>
+                          <label className="flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full cursor-pointer">
+                            <input type="checkbox" className="w-3 h-3 text-blue-600 rounded" />
+                            <span>💧 Fluids</span>
+                          </label>
+                          <label className="flex items-center gap-1 text-xs bg-white px-2 py-1 rounded-full cursor-pointer">
+                            <input type="checkbox" className="w-3 h-3 text-blue-600 rounded" />
+                            <span>🥗 Vegetables</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="mt-3 p-2 bg-white/60 rounded text-xs text-gray-600">
+                      💡 <strong>Tip:</strong> Protein + carbs within 30 min = faster recovery!
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
