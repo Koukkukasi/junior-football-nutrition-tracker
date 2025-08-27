@@ -27,6 +27,7 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3000',
+      'https://junior-football-nutrition-tracker.onrender.com',  // Main production URL
       'https://junior-football-nutrition-client.onrender.com',
       'https://junior-football-nutrition-tracker.vercel.app',
       'https://junior-football-nutrition.netlify.app'
