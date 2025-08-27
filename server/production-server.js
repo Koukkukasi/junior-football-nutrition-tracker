@@ -266,6 +266,127 @@ app.post('/api/v1/food', async (req, res) => {
   }
 });
 
+// Feedback endpoint with fallback to filesystem
+app.post('/api/v1/feedback', async (req, res) => {
+  console.log('[FEEDBACK] Endpoint hit at:', new Date().toISOString());
+  console.log('[FEEDBACK] Request body:', req.body);
+  
+  try {
+    const authHeader = req.headers.authorization;
+    const { type, message, rating, userAgent, url, timestamp } = req.body;
+    
+    // Validate required fields
+    if (!message || !type) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message and type are required fields'
+      });
+    }
+    
+    // Create feedback object
+    const feedbackData = {
+      type: type || 'general',
+      message,
+      rating: rating || null,
+      page_url: url || req.headers.referer || null,
+      user_agent: userAgent || req.headers['user-agent'] || null,
+      created_at: timestamp || new Date().toISOString()
+    };
+    
+    // Try to save to database if authenticated
+    let savedToDatabase = false;
+    let userId = null;
+    
+    if (authHeader && supabase) {
+      const token = authHeader.replace('Bearer ', '');
+      
+      try {
+        // Verify user with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (user && !authError) {
+          userId = user.id;
+          feedbackData.user_id = userId;
+          
+          // Try to save to feedback table
+          const { data, error } = await supabase
+            .from('feedback')
+            .insert([feedbackData])
+            .select()
+            .single();
+
+          if (!error) {
+            savedToDatabase = true;
+            console.log('[FEEDBACK] Successfully saved to database:', data.id);
+            
+            // Return early with database success
+            return res.json({ 
+              success: true,
+              message: 'Feedback saved successfully',
+              id: data.id,
+              savedToDatabase: true
+            });
+          } else {
+            console.log('[FEEDBACK] Database save failed:', error.message);
+            // Continue to fallback file storage
+          }
+        }
+      } catch (dbError) {
+        console.log('[FEEDBACK] Database operation error:', dbError.message);
+        // Continue to fallback file storage
+      }
+    }
+    
+    // Fallback: Save to file system
+    const fs = require('fs').promises;
+    const feedbackDir = path.join(__dirname, 'feedback');
+    
+    try {
+      // Ensure feedback directory exists
+      await fs.mkdir(feedbackDir, { recursive: true });
+      
+      // Create filename with timestamp
+      const feedbackId = `feedback_${Date.now()}_${type}`;
+      const filename = `${feedbackId}.json`;
+      const filepath = path.join(feedbackDir, filename);
+      
+      // Add user info if available
+      feedbackData.user_id = userId;
+      feedbackData.saved_to = 'filesystem';
+      
+      // Write feedback to file
+      await fs.writeFile(filepath, JSON.stringify(feedbackData, null, 2), 'utf-8');
+      
+      console.log('[FEEDBACK] Saved to file:', filename);
+      
+      res.json({ 
+        success: true, 
+        message: 'Feedback received and saved. Thank you!',
+        id: feedbackId,
+        savedToDatabase: false,
+        savedToFile: true
+      });
+    } catch (fileError) {
+      console.error('[FEEDBACK] File save error:', fileError);
+      
+      // Even if file save fails, acknowledge receipt
+      res.json({ 
+        success: true, 
+        message: 'Feedback received. Thank you!',
+        savedToDatabase: false,
+        savedToFile: false
+      });
+    }
+  } catch (error) {
+    console.error('[FEEDBACK] Critical error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to process feedback',
+      code: 'HTTP_500'
+    });
+  }
+});
+
 // The "catchall" handler: for any request that doesn't match API routes,
 // send back the React app's index.html file.
 app.get('*', (req, res) => {
@@ -320,6 +441,7 @@ const server = app.listen(PORT, () => {
   console.log(`  GET  /api/v1/health`);
   console.log(`  GET  /api/v1/food`);
   console.log(`  POST /api/v1/food`);
+  console.log(`  POST /api/v1/feedback`);
 });
 
 // Handle graceful shutdown
