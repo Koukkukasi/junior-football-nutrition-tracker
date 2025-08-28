@@ -65,6 +65,114 @@ export const authController = {
     }
   },
 
+  async teamSignup(req: AuthRequest, res: Response) {
+    try {
+      const { email, password, name, teamCode, jerseyNumber, role, isTeamAccount } = req.body;
+
+      if (!email || !password || !name || !teamCode || !jerseyNumber) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Missing required fields' 
+        });
+      }
+
+      // Import Supabase client
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.SUPABASE_URL || '',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+      );
+
+      // Check if team exists
+      let team = await prisma.team.findUnique({
+        where: { inviteCode: teamCode }
+      });
+
+      if (!team) {
+        // Create a default team if it doesn't exist
+        team = await prisma.team.create({
+          data: {
+            name: teamCode,
+            inviteCode: teamCode,
+            description: `Team ${teamCode}`
+          }
+        });
+      }
+
+      // Check if user already exists in Supabase
+      const { data: existingUser } = await supabase.auth.admin.listUsers();
+      const userExists = existingUser?.users?.some(u => u.email === email);
+
+      if (userExists) {
+        return res.json({ 
+          success: false,
+          userExists: true,
+          message: 'User already exists. Please sign in.' 
+        });
+      }
+
+      // Create user in Supabase
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: name,
+          jersey_number: jerseyNumber,
+          team_code: teamCode,
+          is_team_account: isTeamAccount
+        }
+      });
+
+      if (authError) {
+        console.error('Supabase auth error:', authError);
+        return res.status(400).json({ 
+          success: false,
+          message: authError.message 
+        });
+      }
+
+      if (!authData.user) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Failed to create user' 
+        });
+      }
+
+      // Create user in our database
+      const user = await prisma.user.create({
+        data: {
+          supabaseId: authData.user.id,
+          email,
+          name,
+          age: 16, // Default age for team players
+          role: role || 'PLAYER',
+          teamId: team?.id,
+          dataConsent: false
+        }
+      });
+
+      return res.json({ 
+        success: true,
+        user,
+        message: 'Team account created successfully' 
+      });
+    } catch (error: any) {
+      console.error('Team signup error:', error);
+      if (error.code === 'P2002') {
+        return res.json({ 
+          success: false,
+          userExists: true,
+          message: 'User already exists' 
+        });
+      }
+      return res.status(500).json({ 
+        success: false,
+        message: 'Failed to create team account' 
+      });
+    }
+  },
+
   async syncUser(req: AuthRequest, res: Response) {
     try {
       const { supabaseId, email, name, age, role, position } = req.body;

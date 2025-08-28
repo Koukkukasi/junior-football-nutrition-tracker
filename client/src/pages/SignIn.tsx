@@ -1,14 +1,46 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext'
 import { useToast } from '../hooks/useToast'
 
 export default function SignIn() {
+  const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const { signIn } = useSupabaseAuth()
   const { showToast } = useToast()
+  
+  useEffect(() => {
+    // Auto-fill and auto-sign in for team accounts
+    if (location.state) {
+      const { email: stateEmail, password: statePassword, autoSignIn, isTeamAccount } = location.state as any
+      
+      if (stateEmail && statePassword) {
+        setEmail(stateEmail)
+        setPassword(statePassword)
+        
+        // Auto sign-in for team accounts
+        if (autoSignIn && isTeamAccount) {
+          setTimeout(() => {
+            handleAutoSignIn(stateEmail, statePassword)
+          }, 100)
+        }
+      }
+    }
+  }, [location.state])
+  
+  const handleAutoSignIn = async (autoEmail: string, autoPassword: string) => {
+    setLoading(true)
+    try {
+      await signIn(autoEmail, autoPassword)
+      showToast('success', 'Welcome to your team nutrition tracker!')
+    } catch (error: any) {
+      showToast('error', 'Failed to sign in', error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

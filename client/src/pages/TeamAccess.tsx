@@ -16,20 +16,74 @@ export default function TeamAccess() {
   const handlePlayerAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create a pseudo-email from team code and jersey number
-    const pseudoEmail = `player${formData.jerseyNumber}@${formData.teamCode.toLowerCase()}.team`;
-    
-    // Store player info in localStorage for now
-    localStorage.setItem('teamPlayer', JSON.stringify({
-      name: formData.playerName,
-      jerseyNumber: formData.jerseyNumber,
-      teamCode: formData.teamCode,
-      email: pseudoEmail,
-      isTeamAccount: true
-    }));
-    
-    // Navigate to dashboard
-    navigate('/dashboard');
+    try {
+      // Create a pseudo-email from team code and jersey number
+      // Use a valid email format that Supabase will accept
+      const pseudoEmail = `player${formData.jerseyNumber}.${formData.teamCode.toLowerCase()}@nutritiontracker.app`;
+      const defaultPassword = `${formData.teamCode}-${formData.jerseyNumber}-2025`;
+      
+      // Import Supabase client directly
+      const { supabase } = await import('../lib/supabase');
+      
+      // Try to sign up directly with Supabase
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: pseudoEmail,
+        password: defaultPassword,
+        options: {
+          data: {
+            full_name: formData.playerName,
+            jersey_number: formData.jerseyNumber,
+            team_code: formData.teamCode,
+            is_team_account: true,
+            role: 'PLAYER'
+          }
+        }
+      });
+      
+      if (signUpError && signUpError.message?.includes('already registered')) {
+        // User exists, try to sign in
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: pseudoEmail,
+          password: defaultPassword
+        });
+        
+        if (signInError) {
+          console.error('Sign in error:', signInError);
+          alert('Failed to sign in. Please try again or contact your coach.');
+          return;
+        }
+        
+        // Store player info and navigate
+        localStorage.setItem('teamPlayer', JSON.stringify({
+          name: formData.playerName,
+          jerseyNumber: formData.jerseyNumber,
+          teamCode: formData.teamCode,
+          email: pseudoEmail,
+          isTeamAccount: true
+        }));
+        
+        // Navigate directly to dashboard
+        navigate('/dashboard');
+      } else if (signUpError) {
+        console.error('Sign up error:', signUpError);
+        alert('Failed to create account. Please try again.');
+      } else {
+        // Sign up successful, store info and navigate
+        localStorage.setItem('teamPlayer', JSON.stringify({
+          name: formData.playerName,
+          jerseyNumber: formData.jerseyNumber,
+          teamCode: formData.teamCode,
+          email: pseudoEmail,
+          isTeamAccount: true
+        }));
+        
+        // Navigate to dashboard
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Error joining team:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   return (
