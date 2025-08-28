@@ -199,65 +199,64 @@ export default function Dashboard() {
           </>
         ) : (
           <>
-            {/* Combined Progress Card - Nutrition Score & Level */}
-            <div className="bg-gradient-to-br from-purple-500 via-blue-600 to-cyan-500 rounded-xl shadow-lg p-6 text-white col-span-1 md:col-span-2 lg:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left side - Level and XP */}
+            {/* Your Progress Card */}
+            <div className="bg-gradient-to-br from-purple-500 via-blue-600 to-cyan-500 rounded-xl shadow-lg p-6 text-white">
+              <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-3">
                     Your Progress
                   </p>
-                  <div className="mb-4">
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-2xl">{getLevelInfo(userStats.totalXP).emoji}</span>
-                      <span className="text-xl font-semibold text-white">{getLevelInfo(userStats.totalXP).rank}</span>
-                      <span className="text-sm text-white/70">Lvl {getLevelInfo(userStats.totalXP).levelNumber}</span>
-                    </div>
-                    <p className="text-lg font-medium text-white/90">+{todayXP} XP today</p>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl">{getLevelInfo(userStats.totalXP).emoji}</span>
+                    <span className="text-xl font-semibold text-white">{getLevelInfo(userStats.totalXP).rank}</span>
+                    <span className="text-sm text-white/70">Lvl {getLevelInfo(userStats.totalXP).levelNumber}</span>
                   </div>
-                  <LevelProgressBar totalXP={userStats.totalXP} />
-                  <p className="text-sm text-white/80 mt-2">
-                    {getLevelMessage(getLevelInfo(userStats.totalXP).levelNumber)}
-                  </p>
-                  {userStats.currentStreak > 0 && (
-                    <p className="text-sm text-white/90 mt-1">
-                      🔥 {userStats.currentStreak} day streak
-                    </p>
-                  )}
-                </div>
-                
-                {/* Right side - Nutrition Score */}
-                <div>
-                  <p className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-3">
-                    Today's Nutrition
-                  </p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-3xl font-bold text-white">
-                        {stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '--'}
-                      </p>
-                      <p className="text-sm text-white/80">
-                        {stats.todayMeals > 0 ? 'nutrition score' : 'Log meals to see score'}
-                      </p>
-                    </div>
-                    <Trophy className="w-8 h-8 text-white/50" />
-                  </div>
-                  <div className="w-full bg-white/20 rounded-full h-2 mb-3">
-                    <div 
-                      className="h-2 rounded-full transition-all duration-500"
-                      style={{ 
-                        width: stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '0%',
-                        backgroundColor: stats.nutritionScore >= 81 ? '#10b981' : 
-                                        stats.nutritionScore >= 61 ? '#3b82f6' :
-                                        stats.nutritionScore >= 41 ? '#f59e0b' : '#ef4444'
-                      }}
-                    />
-                  </div>
-                  <p className="text-sm text-white/80">
-                    {stats.todayMeals} of 5 meals logged today
-                  </p>
+                  <p className="text-lg font-medium text-white/90">+{todayXP} XP today</p>
                 </div>
               </div>
+              <LevelProgressBar totalXP={userStats.totalXP} />
+              <div className="mt-3 space-y-1">
+                <p className="text-sm text-white/80">
+                  {getLevelMessage(getLevelInfo(userStats.totalXP).levelNumber)}
+                </p>
+                {userStats.currentStreak > 0 && (
+                  <p className="text-sm text-white/90">
+                    🔥 {userStats.currentStreak} day streak
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Today's Nutrition Card */}
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-sm font-semibold text-white/90 uppercase tracking-wider">
+                  Today's Nutrition
+                </p>
+                <Trophy className="w-8 h-8 text-white/50" />
+              </div>
+              <div className="mb-4">
+                <p className="text-3xl font-bold text-white">
+                  {stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '--'}
+                </p>
+                <p className="text-sm text-white/80">
+                  {stats.todayMeals > 0 ? 'nutrition score' : 'Log meals to see score'}
+                </p>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-3 mb-3">
+                <div 
+                  className="h-3 rounded-full transition-all duration-500"
+                  style={{ 
+                    width: stats.todayMeals > 0 ? `${stats.nutritionScore}%` : '0%',
+                    backgroundColor: stats.nutritionScore >= 81 ? '#10b981' : 
+                                    stats.nutritionScore >= 61 ? '#3b82f6' :
+                                    stats.nutritionScore >= 41 ? '#f59e0b' : '#ef4444'
+                  }}
+                />
+              </div>
+              <p className="text-sm text-white/80">
+                {stats.todayMeals} of 5 meals logged today
+              </p>
             </div>
 
         {/* Meals Logged Card */}
