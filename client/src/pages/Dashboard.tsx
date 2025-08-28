@@ -295,8 +295,8 @@ export default function Dashboard() {
               <Zap className="w-8 h-8 text-white" />
             </div>
           </div>
-          <div className="flex gap-1 mt-4">
-            {[1, 2, 3, 4, 5].map((level) => (
+          <div className="flex gap-0.5 mt-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
               <div
                 key={level}
                 className={`h-2 flex-1 rounded-full ${

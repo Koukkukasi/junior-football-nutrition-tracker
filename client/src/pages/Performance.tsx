@@ -4,7 +4,7 @@ import { supabaseAPI } from '../lib/supabase-api'
 
 export default function Performance() {
   const [formData, setFormData] = useState({
-    energyLevel: 3,
+    energyLevel: 5,
     sleepHours: 8,
     bedTime: '22:00',
     wakeTime: '06:00',
@@ -173,7 +173,7 @@ export default function Performance() {
       if (response.success) {
         alert('Performance data saved successfully!')
         setFormData({
-          energyLevel: 3,
+          energyLevel: 5,
           sleepHours: 8,
           bedTime: '22:00',
           wakeTime: '06:00',
@@ -219,15 +219,14 @@ export default function Performance() {
               <label className="block text-sm font-medium text-gray-700 uppercase tracking-wider mb-3">
                 Energy Level
               </label>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500 font-medium">Low</span>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((level) => (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-1 justify-center">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
                     <button
                       key={level}
                       type="button"
                       onClick={() => setFormData({...formData, energyLevel: level})}
-                      className={`w-12 h-12 rounded-xl font-bold transition-all transform hover:scale-110 ${
+                      className={`w-9 h-9 rounded-lg font-bold text-sm transition-all transform hover:scale-110 ${
                         formData.energyLevel >= level
                           ? 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-white shadow-lg'
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
@@ -237,7 +236,10 @@ export default function Performance() {
                     </button>
                   ))}
                 </div>
-                <span className="text-xs text-gray-500 font-medium">High</span>
+                <div className="flex justify-between text-xs text-gray-500 font-medium px-2">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
               </div>
             </div>
 
@@ -321,10 +323,20 @@ export default function Performance() {
                       checked={formData.recoveryNotes?.includes('legs_heavy') || false}
                       onChange={(e) => {
                         const notes = formData.recoveryNotes || '';
-                        const updated = e.target.checked 
-                          ? notes + ' legs_heavy' 
-                          : notes.replace(' legs_heavy', '');
-                        setFormData({...formData, recoveryNotes: updated.trim()});
+                        const notesArray = notes.split(' ').filter(n => n);
+                        
+                        if (e.target.checked) {
+                          if (!notesArray.includes('legs_heavy')) {
+                            notesArray.push('legs_heavy');
+                          }
+                        } else {
+                          const index = notesArray.indexOf('legs_heavy');
+                          if (index > -1) {
+                            notesArray.splice(index, 1);
+                          }
+                        }
+                        
+                        setFormData({...formData, recoveryNotes: notesArray.join(' ')});
                       }}
                       className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500"
                     />
@@ -337,10 +349,20 @@ export default function Performance() {
                       checked={formData.recoveryNotes?.includes('muscles_sore') || false}
                       onChange={(e) => {
                         const notes = formData.recoveryNotes || '';
-                        const updated = e.target.checked 
-                          ? notes + ' muscles_sore' 
-                          : notes.replace(' muscles_sore', '');
-                        setFormData({...formData, recoveryNotes: updated.trim()});
+                        const notesArray = notes.split(' ').filter(n => n);
+                        
+                        if (e.target.checked) {
+                          if (!notesArray.includes('muscles_sore')) {
+                            notesArray.push('muscles_sore');
+                          }
+                        } else {
+                          const index = notesArray.indexOf('muscles_sore');
+                          if (index > -1) {
+                            notesArray.splice(index, 1);
+                          }
+                        }
+                        
+                        setFormData({...formData, recoveryNotes: notesArray.join(' ')});
                       }}
                       className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500"
                     />
@@ -353,10 +375,19 @@ export default function Performance() {
                       checked={formData.recoveryNotes?.includes('hard_to_run') || false}
                       onChange={(e) => {
                         const notes = formData.recoveryNotes || '';
-                        const updated = e.target.checked 
-                          ? notes + ' hard_to_run' 
-                          : notes.replace(' hard_to_run', '');
-                        setFormData({...formData, recoveryNotes: updated.trim()});
+                        const notesArray = notes.split(' ').filter(n => n);
+                        
+                        if (e.target.checked) {
+                          if (!notesArray.includes('hard_to_run')) {
+                            notesArray.push('hard_to_run');
+                          }
+                        } else {
+                          const index = notesArray.indexOf('hard_to_run');
+                          if (index > -1) {
+                            notesArray.splice(index, 1);
+                          }
+                        }
+                        setFormData({...formData, recoveryNotes: notesArray.join(' ')});
                       }}
                       className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500"
                     />
@@ -369,13 +400,20 @@ export default function Performance() {
                       checked={formData.recoveryNotes?.includes('feel_great') || false}
                       onChange={(e) => {
                         const notes = formData.recoveryNotes || '';
-                        const updated = e.target.checked 
-                          ? notes + ' feel_great' 
-                          : notes.replace(' feel_great', '');
-                        setFormData({...formData, recoveryNotes: updated.trim()});
-                        // If feeling great, calculate better recovery level
+                        const notesArray = notes.split(' ').filter(n => n);
+                        
                         if (e.target.checked) {
-                          setFormData(prev => ({...prev, recoveryLevel: 5}));
+                          if (!notesArray.includes('feel_great')) {
+                            notesArray.push('feel_great');
+                          }
+                          // If feeling great, calculate better recovery level
+                          setFormData(prev => ({...prev, recoveryLevel: 5, recoveryNotes: notesArray.join(' ')}));
+                        } else {
+                          const index = notesArray.indexOf('feel_great');
+                          if (index > -1) {
+                            notesArray.splice(index, 1);
+                          }
+                          setFormData({...formData, recoveryNotes: notesArray.join(' ')});
                         }
                       }}
                       className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
@@ -575,12 +613,12 @@ export default function Performance() {
                   const daysAgo = Math.floor((Date.now() - entry.date.getTime()) / (1000 * 60 * 60 * 24));
                   const daysAgoText = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`;
                   
-                  // Determine border color based on energy level
-                  const borderColor = entry.energyLevel >= 4 ? 'border-green-500' : 
-                                     entry.energyLevel === 3 ? 'border-yellow-500' : 
+                  // Determine border color based on energy level (1-10 scale)
+                  const borderColor = entry.energyLevel >= 7 ? 'border-green-500' : 
+                                     entry.energyLevel >= 4 ? 'border-yellow-500' : 
                                      'border-red-500';
-                  const bgGradient = entry.energyLevel >= 4 ? 'from-green-50' : 
-                                    entry.energyLevel === 3 ? 'from-yellow-50' : 
+                  const bgGradient = entry.energyLevel >= 7 ? 'from-green-50' : 
+                                    entry.energyLevel >= 4 ? 'from-yellow-50' : 
                                     'from-red-50';
                   
                   // Training type labels
@@ -600,7 +638,7 @@ export default function Performance() {
                           <div className="flex items-center gap-3 text-sm">
                             <span className="flex items-center gap-1">
                               <span>⚡</span>
-                              <span className="font-medium">{entry.energyLevel}/5</span>
+                              <span className="font-medium">{entry.energyLevel}/10</span>
                             </span>
                             <span className="text-gray-400">•</span>
                             <span className="flex items-center gap-1">
