@@ -156,12 +156,13 @@ export default function TeamAccess() {
                 <input
                   type="text"
                   required
+                  maxLength={20}
                   placeholder="Ask your coach for the code"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   value={formData.teamCode}
                   onChange={(e) => setFormData({ ...formData, teamCode: e.target.value.toUpperCase() })}
                 />
-                <p className="text-xs text-gray-500 mt-1">Example: EAGLES-2025</p>
+                <p className="text-xs text-gray-500 mt-1">Example: INTER2012 or EAGLES-2025</p>
               </div>
 
               <div>
