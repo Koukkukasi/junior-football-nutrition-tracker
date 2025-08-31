@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Shield, UserPlus, LogIn } from 'lucide-react';
+import { API } from '../lib/api';
 
 export default function TeamAccess() {
   const navigate = useNavigate();
@@ -53,32 +54,76 @@ export default function TeamAccess() {
           return;
         }
         
-        // Store player info and navigate
-        localStorage.setItem('teamPlayer', JSON.stringify({
-          name: formData.playerName,
-          jerseyNumber: formData.jerseyNumber,
-          teamCode: formData.teamCode,
-          email: pseudoEmail,
-          isTeamAccount: true
-        }));
-        
-        // Navigate directly to dashboard
-        navigate('/dashboard');
+        // Try to join the team (might already be a member)
+        try {
+          const joinResponse = await API.teams.join(formData.teamCode);
+          
+          // It's okay if they're already a member
+          if (!joinResponse.success && !joinResponse.error?.includes('already a member')) {
+            console.error('Failed to join team:', joinResponse.error);
+            alert(`Failed to join team: ${joinResponse.error || 'Unknown error'}`);
+            await supabase.auth.signOut();
+            return;
+          }
+          
+          // Store player info and navigate
+          localStorage.setItem('teamPlayer', JSON.stringify({
+            name: formData.playerName,
+            jerseyNumber: formData.jerseyNumber,
+            teamCode: formData.teamCode,
+            email: pseudoEmail,
+            isTeamAccount: true,
+            teamId: joinResponse.data?.team?.id
+          }));
+          
+          // Navigate directly to dashboard
+          navigate('/dashboard');
+        } catch (joinError) {
+          console.error('Error joining team after signin:', joinError);
+          // Still navigate if they're already a member
+          localStorage.setItem('teamPlayer', JSON.stringify({
+            name: formData.playerName,
+            jerseyNumber: formData.jerseyNumber,
+            teamCode: formData.teamCode,
+            email: pseudoEmail,
+            isTeamAccount: true
+          }));
+          navigate('/dashboard');
+        }
       } else if (signUpError) {
         console.error('Sign up error:', signUpError);
         alert('Failed to create account. Please try again.');
       } else {
-        // Sign up successful, store info and navigate
-        localStorage.setItem('teamPlayer', JSON.stringify({
-          name: formData.playerName,
-          jerseyNumber: formData.jerseyNumber,
-          teamCode: formData.teamCode,
-          email: pseudoEmail,
-          isTeamAccount: true
-        }));
-        
-        // Navigate to dashboard
-        navigate('/dashboard');
+        // Sign up successful, now join the team
+        try {
+          const joinResponse = await API.teams.join(formData.teamCode);
+          
+          if (!joinResponse.success) {
+            console.error('Failed to join team:', joinResponse.error);
+            alert(`Failed to join team: ${joinResponse.error || 'Unknown error'}`);
+            
+            // Sign out if team join failed
+            await supabase.auth.signOut();
+            return;
+          }
+          
+          // Store player info and navigate
+          localStorage.setItem('teamPlayer', JSON.stringify({
+            name: formData.playerName,
+            jerseyNumber: formData.jerseyNumber,
+            teamCode: formData.teamCode,
+            email: pseudoEmail,
+            isTeamAccount: true,
+            teamId: joinResponse.data?.team?.id
+          }));
+          
+          // Navigate to dashboard
+          navigate('/dashboard');
+        } catch (joinError) {
+          console.error('Error joining team after signup:', joinError);
+          alert('Account created but failed to join team. Please try signing in again.');
+          await supabase.auth.signOut();
+        }
       }
     } catch (error) {
       console.error('Error joining team:', error);
