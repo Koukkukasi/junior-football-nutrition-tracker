@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useUserProfile } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
+import AchievementsDisplay from '../components/achievements/AchievementsDisplay';
 
 export default function Profile() {
   const { profile, updateAge, getNutritionRequirements, getAgeSpecificMultiplier } = useUserProfile();
+  const { user } = useSupabaseAuth();
   const navigate = useNavigate();
   const [age, setAge] = useState(profile?.age || 14);
   const [role, setRole] = useState(profile?.role || 'PLAYER');
   const [saved, setSaved] = useState(false);
+  const [totalXP, setTotalXP] = useState(0);
 
   useEffect(() => {
     if (profile) {
@@ -318,6 +322,15 @@ export default function Profile() {
         </div>
       </div>
       )}
+
+      {/* Achievements Section - Show for all users */}
+      <div className="mt-6">
+        <AchievementsDisplay 
+          userId={user?.id || ''} 
+          totalXP={totalXP}
+          compact={false}
+        />
+      </div>
     </div>
   );
 }

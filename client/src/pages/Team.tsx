@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUserProfile } from '../contexts/UserContext';
+import API from '../lib/api';
 
 interface Team {
   id: string;
@@ -29,24 +30,7 @@ interface TeamDetails extends Team {
   userRole: string;
 }
 
-// Mock data for teams feature (until backend/Supabase implementation is ready)
-const MOCK_TEAMS: Team[] = [
-  {
-    id: '1',
-    name: 'FC Inter P13 2012',
-    description: 'U13 competitive team focusing on nutrition and performance',
-    inviteCode: 'INTER2012',
-    memberRole: 'member',
-    joinedAt: new Date().toISOString(),
-    _count: { members: 0 }
-  }
-];
-
-const MOCK_TEAM_DETAILS: TeamDetails = {
-  ...MOCK_TEAMS[0],
-  userRole: 'member',
-  members: []
-};
+// Team data will be fetched from API
 
 export default function Team() {
   const { profile } = useUserProfile();
@@ -59,13 +43,38 @@ export default function Team() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    // Simulate loading teams (using mock data for now)
-    setTimeout(() => {
-      setTeams(MOCK_TEAMS);
-      setSelectedTeam(MOCK_TEAM_DETAILS);
-      setLoading(false);
-    }, 500);
+    fetchTeams();
   }, []);
+
+  const fetchTeams = async () => {
+    setLoading(true);
+    try {
+      const response = await API.teams.getMyTeams();
+      if (response.success && response.data) {
+        setTeams(response.data);
+        // If there are teams, select the first one
+        if (response.data.length > 0) {
+          await fetchTeamDetails(response.data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch teams:', error);
+      setError('Failed to load teams');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTeamDetails = async (teamId: string) => {
+    try {
+      const response = await API.teams.getDetails(teamId);
+      if (response.success && response.data) {
+        setSelectedTeam(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch team details:', error);
+    }
+  };
 
   const handleJoinTeam = async () => {
     if (!inviteCode.trim()) {
@@ -74,38 +83,54 @@ export default function Team() {
     }
 
     setError('');
-    // Simulate joining a team
     setLoading(true);
-    setTimeout(() => {
-      if (inviteCode === 'INTER2012') {
-        setSuccess('Successfully joined FC Inter P13 2012!');
-        setTeams(MOCK_TEAMS);
-        setSelectedTeam(MOCK_TEAM_DETAILS);
+    
+    try {
+      const response = await API.teams.join(inviteCode);
+      if (response.success) {
+        setSuccess(`Successfully joined team!`);
+        await fetchTeams(); // Refresh teams list
+        setInviteCode('');
+        setJoiningTeam(false);
       } else {
-        setError('Invalid invite code');
+        setError(response.error || 'Failed to join team');
       }
-      setInviteCode('');
-      setJoiningTeam(false);
+    } catch (error) {
+      console.error('Failed to join team:', error);
+      setError('Failed to join team. Please try again.');
+    } finally {
+      setLoading(false);
+      // Clear messages after 3 seconds
+      setTimeout(() => {
+        setSuccess('');
+        setError('');
+      }, 3000);
+    }
+  };
+
+  const handleLeaveTeam = async () => {
+    if (!selectedTeam || !confirm('Are you sure you want to leave this team?')) return;
+
+    setLoading(true);
+    try {
+      const response = await API.teams.leave(selectedTeam.id);
+      if (response.success) {
+        setSuccess('Successfully left the team');
+        setSelectedTeam(null);
+        await fetchTeams(); // Refresh teams list
+      } else {
+        setError(response.error || 'Failed to leave team');
+      }
+    } catch (error) {
+      console.error('Failed to leave team:', error);
+      setError('Failed to leave team. Please try again.');
+    } finally {
       setLoading(false);
       setTimeout(() => {
         setSuccess('');
         setError('');
       }, 3000);
-    }, 500);
-  };
-
-  const handleLeaveTeam = async () => {
-    if (!confirm('Are you sure you want to leave this team?')) return;
-
-    // Simulate leaving team (mock implementation)
-    setLoading(true);
-    setTimeout(() => {
-      setSuccess('Successfully left the team');
-      setTeams([]);
-      setSelectedTeam(null);
-      setLoading(false);
-      setTimeout(() => setSuccess(''), 3000);
-    }, 500);
+    }
   };
 
   if (loading) {
@@ -184,7 +209,7 @@ export default function Team() {
                   {teams.map((team) => (
                     <div
                       key={team.id}
-                      onClick={() => setSelectedTeam({...team, members: [], userRole: team.memberRole})}
+                      onClick={() => fetchTeamDetails(team.id)}
                       className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         selectedTeam?.id === team.id
                           ? 'border-indigo-600 bg-indigo-50'
@@ -304,8 +329,8 @@ export default function Team() {
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-center text-lg"
-                    placeholder="XXXXXXXX"
-                    maxLength={8}
+                    placeholder="Enter invite code"
+                    maxLength={20}
                   />
                 </div>
                 {error && (

@@ -10,6 +10,11 @@ import { calculateNutritionScore } from '../utils/foodUtils'
 import type { FoodEntry } from '../types/food.types'
 import { calculateDailyXP, getLevelInfo, getLevelMessage } from '../lib/gamification'
 import { LevelBadge, LevelProgressBar } from '../components/gamification/LevelBadge'
+import AchievementsDisplay from '../components/achievements/AchievementsDisplay'
+import AchievementNotification from '../components/achievements/AchievementNotification'
+import { achievementService } from '../services/achievementService'
+import type { Achievement } from '../lib/achievements'
+import { localStatsService } from '../lib/local-stats'
 
 // Helper function to format time ago
 function getTimeAgo(date: Date): string {
@@ -45,6 +50,7 @@ export default function Dashboard() {
     totalMealsLogged: 0
   })
   const [todayXP, setTodayXP] = useState(0)
+  const [unlockedAchievement, setUnlockedAchievement] = useState<Achievement | null>(null)
 
   useEffect(() => {
     // Fetch recent food entries for activity feed
@@ -85,12 +91,13 @@ export default function Dashboard() {
       } catch (error: any) {
         // Table might not exist yet - that's okay
         console.log('Gamification not set up yet. Run setup-gamification.sql in Supabase')
-        // Set default values so the UI doesn't break
+        // Use local storage as fallback
+        const localStats = localStatsService.getStats()
         setUserStats({
-          totalXP: 0,
-          currentStreak: 0,
-          longestStreak: 0,
-          totalMealsLogged: 0
+          totalXP: localStats.total_xp,
+          currentStreak: localStats.current_streak,
+          longestStreak: localStats.longest_streak,
+          totalMealsLogged: localStats.total_meals_logged
         })
       }
     }
@@ -141,6 +148,21 @@ export default function Dashboard() {
         const xpEarned = calculateDailyXP(nutritionScoreData.totalScore || 0, todayFoodEntries.length)
         setTodayXP(xpEarned)
         
+        // Save XP to local storage if it's new
+        const currentTodayXP = localStatsService.getTodayXP()
+        if (xpEarned > currentTodayXP) {
+          const isPerfectDay = nutritionScoreData.totalScore >= 80
+          localStatsService.addXP(xpEarned - currentTodayXP, todayFoodEntries.length > 0, isPerfectDay)
+          // Update user stats from local storage
+          const updatedStats = localStatsService.getStats()
+          setUserStats({
+            totalXP: updatedStats.total_xp,
+            currentStreak: updatedStats.current_streak,
+            longestStreak: updatedStats.longest_streak,
+            totalMealsLogged: updatedStats.total_meals_logged
+          })
+        }
+        
         // Debug logging
         console.log('Today meals:', todayFoodEntries.length)
         console.log('Quality entries:', todayQualityEntries)
@@ -173,8 +195,27 @@ export default function Dashboard() {
       fetchStats()
       fetchRecentActivities()
       fetchUserStats()
+      checkAchievements()
     }
   }, [user])
+
+  // Check for new achievements
+  const checkAchievements = async () => {
+    if (!user?.id) return
+    
+    try {
+      await achievementService.initialize(user.id)
+      const userStats = await achievementService.calculateUserStats(user.id)
+      const newlyUnlocked = await achievementService.checkAchievements(userStats)
+      
+      // Show notification for first achievement
+      if (newlyUnlocked.length > 0) {
+        setUnlockedAchievement(newlyUnlocked[0])
+      }
+    } catch (error) {
+      console.error('Failed to check achievements:', error)
+    }
+  }
 
   return (
     <div>
@@ -429,6 +470,23 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Achievements Section */}
+      <div className="mt-8">
+        <AchievementsDisplay 
+          userId={user?.id || ''} 
+          totalXP={userStats.totalXP}
+          compact={true}
+        />
+      </div>
+
+      {/* Achievement Notification */}
+      {unlockedAchievement && (
+        <AchievementNotification
+          achievement={unlockedAchievement}
+          onClose={() => setUnlockedAchievement(null)}
+        />
+      )}
     </div>
   )
 }

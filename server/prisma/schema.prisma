@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -51,12 +52,23 @@ model User {
   onboardingDate       DateTime?
   preferences          Json?            // Stores user preferences as JSON
   
+  // Gamification fields
+  totalXP              Int              @default(0)
+  currentLevel         Int              @default(1)
+  currentStreak        Int              @default(0)
+  longestStreak        Int              @default(0)
+  lastMealDate         DateTime?
+  
   // Relations
   foodEntries          FoodEntry[]
   performanceMetrics   PerformanceMetric[]
   teams                TeamMember[]
   nutritionGoals       NutritionGoal[]
   achievements         Achievement[]
+  leaderboardEntries   LeaderboardEntry[]
+  teamMessages         TeamMessage[]
+  teamAnnouncements    TeamAnnouncement[]
+  teamChallenges       TeamChallenge[]
   
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
@@ -65,18 +77,23 @@ model User {
   @@index([clerkId])
   @@index([email])
   @@index([teamId])
+  @@index([totalXP])
 }
 
 model Team {
-  id          String       @id @default(uuid())
-  name        String
-  inviteCode  String       @unique @default(cuid())
-  description String?
-  coachId     String?
-  players     User[]       // Legacy relation, use TeamMember for new features
-  members     TeamMember[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                String            @id @default(uuid())
+  name              String
+  inviteCode        String            @unique @default(cuid())
+  description       String?
+  coachId           String?
+  players           User[]            // Legacy relation, use TeamMember for new features
+  members           TeamMember[]
+  leaderboardEntries TeamLeaderboard[]
+  messages          TeamMessage[]
+  announcements     TeamAnnouncement[]
+  challenges        TeamChallenge[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([inviteCode])
   @@index([coachId])
@@ -201,4 +218,124 @@ model FoodLibrary {
   @@index([isNordic])
   @@index([isVerified])
   @@index([name])
+}
+
+model LeaderboardEntry {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  period           String   // 'week', 'month', 'all-time'
+  startDate        DateTime
+  endDate          DateTime?
+  
+  // Stats
+  xpEarned         Int      @default(0)
+  nutritionScore   Float    @default(0) // Average nutrition score for period
+  mealsLogged      Int      @default(0)
+  streakDays       Int      @default(0)
+  performanceScore Float?   // Average performance score
+  
+  // Ranking
+  rank             Int?
+  previousRank     Int?
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@unique([userId, period, startDate])
+  @@index([period, xpEarned])
+  @@index([userId])
+  @@index([startDate])
+}
+
+model TeamLeaderboard {
+  id                String   @id @default(uuid())
+  teamId            String
+  team              Team     @relation(fields: [teamId], references: [id])
+  period            String   // 'week', 'month', 'all-time'
+  startDate         DateTime
+  endDate           DateTime?
+  
+  // Team Stats
+  totalXP           Int      @default(0)
+  avgNutritionScore Float    @default(0)
+  totalMealsLogged  Int      @default(0)
+  activePlayers     Int      @default(0)
+  topPerformerId    String?  // User ID of top performer
+  topPerformerName  String?  // Cached name for display
+  
+  // Ranking
+  rank              Int?
+  previousRank      Int?
+  weeklyProgress    Float?   // Percentage change from last week
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([teamId, period, startDate])
+  @@index([period, totalXP])
+  @@index([teamId])
+  @@index([startDate])
+}
+
+model TeamMessage {
+  id          String    @id @default(uuid())
+  teamId      String
+  team        Team      @relation(fields: [teamId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  content     String
+  messageType String    @default("text") // 'text', 'announcement', 'challenge', 'achievement'
+  metadata    Json?     // For storing additional data like mentions, reactions, etc.
+  edited      Boolean   @default(false)
+  editedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  
+  @@index([teamId, createdAt])
+  @@index([userId])
+}
+
+model TeamAnnouncement {
+  id          String    @id @default(uuid())
+  teamId      String
+  team        Team      @relation(fields: [teamId], references: [id])
+  authorId    String    // Coach or Admin who created it
+  author      User      @relation(fields: [authorId], references: [id])
+  title       String
+  content     String
+  priority    String    @default("normal") // 'low', 'normal', 'high', 'urgent'
+  pinned      Boolean   @default(false)
+  expiresAt   DateTime? // Optional expiry date
+  readBy      String[]  @default([]) // Array of user IDs who have read it
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([teamId, pinned])
+  @@index([authorId])
+  @@index([expiresAt])
+}
+
+model TeamChallenge {
+  id             String    @id @default(uuid())
+  teamId         String
+  team           Team      @relation(fields: [teamId], references: [id])
+  createdBy      String
+  creator        User      @relation(fields: [createdBy], references: [id])
+  name           String
+  description    String
+  challengeType  String    // 'nutrition', 'streak', 'performance', 'team'
+  target         Json      // Flexible target data (e.g., { meals: 100, days: 7 })
+  reward         Json?     // XP, badges, etc.
+  startDate      DateTime
+  endDate        DateTime
+  status         String    @default("active") // 'draft', 'active', 'completed', 'cancelled'
+  participants   String[]  @default([]) // User IDs participating
+  progress       Json?     // Track progress data
+  winnerId       String?   // User or Team ID of winner
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  @@index([teamId, status])
+  @@index([startDate, endDate])
+  @@index([createdBy])
 }

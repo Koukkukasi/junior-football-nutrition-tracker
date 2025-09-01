@@ -18,6 +18,9 @@ import testInviteRoutes from './routes/test-invite.routes';
 import testRoutes from './routes/test.routes';
 import adminRoutes from './routes/admin.routes';
 import teamRoutes from './routes/team.routes';
+import teamMockRoutes from './routes/team-mock.routes';
+import leaderboardRoutes from './routes/leaderboard.routes';
+import initRoutes from './routes/init.routes';
 
 const app: Application = express();
 
@@ -27,6 +30,7 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:5174',
+      'http://localhost:5175',
       'http://localhost:3000',
       'https://junior-football-nutrition-tracker.onrender.com',  // Main production URL
       'https://junior-football-nutrition-client.onrender.com',
@@ -109,7 +113,12 @@ app.use('/api/v1/invites', inviteRoutes);
 app.use('/api/v1/test-invite', testInviteRoutes);
 app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/teams', teamRoutes);
+// Use mock team routes when database is not available
+// Check if we can connect to database by testing if prisma is ready
+const isDatabaseAvailable = process.env.DATABASE_URL && !process.env.USE_MOCK_DATA;
+app.use('/api/v1/teams', isDatabaseAvailable ? teamRoutes : teamMockRoutes);
+app.use('/api/v1/leaderboard', leaderboardRoutes);
+app.use('/api/v1/init', initRoutes);
 
 // Serve static files from the client build in production
 if (process.env.NODE_ENV === 'production') {

@@ -6,13 +6,19 @@ const PORT = process.env.PORT || 3001;
 
 async function startServer() {
   try {
-    // Test database connection
-    await prisma.$connect();
-    logger.info('✅ Database connected successfully');
+    // Try to connect to database, but don't fail if it's not available
+    try {
+      await prisma.$connect();
+      logger.info('✅ Database connected successfully');
+    } catch (dbError) {
+      logger.warn('⚠️ Database connection failed - running in limited mode');
+      logger.warn('Some features may not work without database connection');
+    }
     
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Server is running on port ${PORT}`);
       logger.info(`📡 Health check available at http://localhost:${PORT}/health`);
+      logger.info(`📝 Team endpoints available at http://localhost:${PORT}/api/v1/teams`);
     });
     
     // Keep the process alive

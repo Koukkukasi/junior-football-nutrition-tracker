@@ -19,6 +19,7 @@ const Performance = lazy(() => import('./pages/Performance'))
 const Team = lazy(() => import('./pages/Team'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Analytics = lazy(() => import('./pages/Analytics'))
+const Leaderboard = lazy(() => import('./pages/Leaderboard'))
 const OnboardingWizard = lazy(() => import('./components/onboarding/OnboardingWizard'))
 const AdminInvite = lazy(() => import('./pages/AdminInvite'))
 const AdminMonitor = lazy(() => import('./pages/AdminMonitor'))
@@ -28,6 +29,7 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TeamAccess = lazy(() => import('./pages/TeamAccess'))
 const FCInterSignup = lazy(() => import('./pages/FCInterSignup'))
 const AdminSignup = lazy(() => import('./pages/AdminSignup'))
+const TeamDashboard = lazy(() => import('./pages/TeamDashboard'))
 
 // Loading component
 function PageLoader() {
@@ -131,10 +133,24 @@ function App() {
               </Suspense>
             </ProtectedRoute>
           } />
+          <Route path="/teams/:teamId" element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <TeamDashboard />
+              </Suspense>
+            </ProtectedRoute>
+          } />
           <Route path="/analytics" element={
             <ProtectedRoute>
               <Suspense fallback={<PageLoader />}>
                 <Analytics />
+              </Suspense>
+            </ProtectedRoute>
+          } />
+          <Route path="/leaderboard" element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <Leaderboard />
               </Suspense>
             </ProtectedRoute>
           } />

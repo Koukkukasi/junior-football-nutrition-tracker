@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext'
 import FeedbackWidget from './feedback/FeedbackWidget'
 import { useUserProfile } from '../contexts/UserContext'
-import { Menu, X, Home, UtensilsCrossed, TrendingUp, BarChart3, Users, User, Shield, LogOut } from 'lucide-react'
+import { Menu, X, Home, UtensilsCrossed, TrendingUp, BarChart3, Users, User, Shield, LogOut, Trophy } from 'lucide-react'
 import type { FoodEntry } from '../types/food.types'
 // import { calculateNutritionScore } from '../utils/foodUtils' // Will be imported dynamically
 
@@ -90,6 +90,7 @@ export default function Layout() {
     { path: '/dashboard', label: 'Dashboard', color: 'from-blue-500 to-cyan-500', icon: Home },
     { path: '/food', label: 'Food Log', color: 'from-emerald-500 to-green-500', icon: UtensilsCrossed },
     { path: '/performance', label: 'Performance', color: 'from-amber-500 to-orange-500', icon: TrendingUp },
+    { path: '/leaderboard', label: 'Leaderboard', color: 'from-yellow-500 to-amber-500', icon: Trophy },
     { path: '/analytics', label: 'Analytics', color: 'from-purple-500 to-pink-500', icon: BarChart3 },
     { path: '/team', label: 'Team', color: 'from-indigo-500 to-purple-500', icon: Users },
     { path: '/profile', label: 'Profile', color: 'from-gray-500 to-gray-600', icon: User },
